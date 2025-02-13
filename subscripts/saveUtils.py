@@ -1,4 +1,4 @@
-from spacesavers import *
+from subscripts.spacesavers import *
 
 class Save:
     def __init__(self, deck, ante, blindIndex, money, handLevels, illegalHandsDiscovered):
@@ -27,7 +27,7 @@ def createSaveFromDict(saveDict):
 def saveGame(save):
     savejson("save", save.toDict())
 
-def createBlankSave():
+def createBlankSave(deck):
     handLevels = {"High Card": 1,
               "Pair": 1,
               "Two Pair": 1,
@@ -40,5 +40,5 @@ def createBlankSave():
               "Five Of A Kind": 1,
               "Flush House": 1,
               "Flush Five": 1}
-    return Save(deck=openjson("decks")["standard"], ante=1, blindIndex=0, money=0, handLevels=handLevels,
+    return Save(deck=openjson("decks")[deck], ante=1, blindIndex=0, money=0, handLevels=handLevels,
                 illegalHandsDiscovered=[])

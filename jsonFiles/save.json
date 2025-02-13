@@ -2,368 +2,8 @@
     "deck": [
         {
             "subset": "playing",
-            "number": "9",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "H",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "2",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "D",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "5",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "H",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
             "number": "A",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "S",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "6",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "D",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "4",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "C",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "7",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "H",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "A",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "C",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "3",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "H",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "7",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "C",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "2",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "S",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "10",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "D",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "Q",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "C",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "J",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "C",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "J",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "D",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "5",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "D",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "K",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "H",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "5",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "C",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "8",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "D",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "6",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "S",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "K",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "S",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "3",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "D",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "Q",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "H",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "Q",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "S",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "9",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "C",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "8",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "H",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "2",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "C",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "8",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "C",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "5",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "S",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "Q",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "D",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "10",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "H",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "6",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "H",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "10",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "C",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "J",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "H",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "8",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "S",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "4",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "D",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "K",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "C",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "9",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "D",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "4",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "S",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "10",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "S",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "J",
-            "enhancement": "lucky",
+            "enhancement": null,
             "edition": null,
             "seal": null,
             "suit": "S",
@@ -372,79 +12,16 @@
         {
             "subset": "playing",
             "number": "A",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "D",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "7",
-            "enhancement": "lucky",
+            "enhancement": null,
             "edition": null,
             "seal": null,
             "suit": "S",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "3",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "C",
             "retriggerCount": null
         },
         {
             "subset": "playing",
             "number": "A",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "H",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "6",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "C",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "2",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "H",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "7",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "D",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "4",
-            "enhancement": "lucky",
-            "edition": null,
-            "seal": null,
-            "suit": "H",
-            "retriggerCount": null
-        },
-        {
-            "subset": "playing",
-            "number": "3",
-            "enhancement": "lucky",
+            "enhancement": null,
             "edition": null,
             "seal": null,
             "suit": "S",
@@ -452,17 +29,440 @@
         },
         {
             "subset": "playing",
-            "number": "K",
-            "enhancement": "lucky",
+            "number": "A",
+            "enhancement": null,
             "edition": null,
             "seal": null,
-            "suit": "D",
+            "suit": "S",
             "retriggerCount": null
         },
         {
             "subset": "playing",
-            "number": "9",
-            "enhancement": "lucky",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "A",
+            "enhancement": null,
             "edition": null,
             "seal": null,
             "suit": "S",
@@ -471,5 +471,20 @@
     ],
     "ante": 1,
     "blindIndex": 1,
-    "money": 26
+    "money": 6,
+    "handLevels": {
+        "High Card": 1,
+        "Pair": 1,
+        "Two Pair": 1,
+        "Three Of A Kind": 1,
+        "Straight": 1,
+        "Flush": 1,
+        "Full House": 1,
+        "Four Of A Kind": 1,
+        "Straight Flush": 1,
+        "Five Of A Kind": 1,
+        "Flush House": 1,
+        "Flush Five": 1
+    },
+    "illegalHandsDiscovered": []
 }

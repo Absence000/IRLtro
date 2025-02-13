@@ -1,6 +1,8 @@
+from subscripts.cardUtils import *
 from subscripts.handFinderAndPointsAssigner import *
 from subscripts.spacesavers import *
 from subscripts.saveUtils import *
+from subscripts.planetCards import *
 import random
 
 
@@ -128,7 +130,7 @@ def play(fromSave):
     if fromSave:
         save = createSaveFromDict(openjson("save"))
     else:
-        save = createBlankSave()
+        save = createBlankSave(deck="easy")
     alive = True
     while alive:
         # while state == "selectingAndPlayingBlind":
@@ -174,38 +176,33 @@ def play(fromSave):
                 save.blindIndex += 1
                 saveGame(save)
 
-
-defaultplanetCards = [Card(subset="Planet", number="Pluto"),
-                      Card(subset="Planet", number="Mercury"),
-                      Card(subset="Planet", number="Uranus"),
-                      Card(subset="Planet", number="Venus"),
-                      Card(subset="Planet", number="Saturn"),
-                      Card(subset="Planet", number="Jupiter"),
-                      Card(subset="Planet", number="Earth"),
-                      Card(subset="Planet", number="Mars"),
-                      Card(subset="Planet", number="Neptune")]
-
-secretPlanetCardDict = {"Five Of A Kind": Card(subset="Planet", number="Planet X"),
-                        "Flush House": Card(subset="Planet", number="Ceres"),
-                        "Flush Five": Card(subset="Planet", number="Eris"),}
-
-planetCardsDict = {
-
-}
-
-def generateShuffledListOfUnlockedPlanetCards(save):
-    unlockedPlanets = defaultplanetCards
-    for illegalHand in save.illegalHandsDiscovered:
-        unlockedPlanets.append(secretPlanetCardDict[illegalHand])
-
-
-# right now only planet cards are ready
 def loadShop(save):
-    #TODO: add packs and vouchers
-    cardsForSale = generateCardForSale(save)
+    print("SHOP:")
+    itemsForSale = []
+    itemDisplayMessage = []
+    itemNum = 1
+    for i in range(2):
+        cardForSale = generateCardForSale(save)
+        price = calculatePrice(cardForSale, save)
+        itemsForSale.append([cardForSale, price])
+        itemDisplayMessage.append(f"{itemNum+1}: {cardForSale.toString()} (${price})")
+        itemNum += 1
+    #TODO: add packs and vouchers here too
+    print("\n".join(itemDisplayMessage))
+    print("Type the number of the item you want to buy!")
 
+    #TODO: add credit card joker support in the price cost calculation
+
+
+#TODO: only works with planet cards, add weighted choice: joker (20), tarot(4), planet(4)
 def generateCardForSale(save):
-    generateShuffledListOfUnlockedPlanetCards(save)[0]
+    return generateShuffledListOfUnlockedPlanetCards(save)[0]
+
+#TODO: add cost for joker rarities, playing cards, tarot, spectral, and vouchers
+def calculatePrice(item, save):
+    if type(item) == Card:
+        if item.subset == "planet":
+            return 3
 
 # commandLinePlayAnte(300, openjson("decks")["standard"])
 
