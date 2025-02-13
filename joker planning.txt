@@ -1,0 +1,236 @@
+blind select checks (activate upon entering a round):
+    - marble joker
+    - burglar
+    - riff-raff
+    - turtle bean
+    - juggler
+    - drunkard
+    - troubadour
+    - certificate
+    - merry andy
+    - cartomancer
+    - chicot
+    - stuntman (also on hand card check)
+    - ceremonial dagger (weird)
+    - madness
+
+hand checks:
+    - space joker
+    - splash
+    - vagabond
+    - midas mask
+    - banner
+    - stone joker
+    - bull
+    - castle
+    - stuntman (also on blind select check)
+    - joker
+    - mystic summit
+    - misprint
+    - raised fist
+    - abstract joker
+    - gros michel (also end of round)
+    - supernova
+    - green joker (also discard)
+    - cavendish (also end of round)
+    - baseball card
+    retriggerers:
+        - mime
+        - dusk
+        - hack
+        - seltzer
+        - sock and buskin
+        - hanging chad (double retrigger, weird)
+    card checks:
+        - 8 ball
+        - superposition
+        - seance
+        - scholar
+        - walkie talkie
+        - business card
+        - to-do list (resets at end of round)
+        - reserved parking (paradolia) (checks unplayed cards)
+        - golden ticket
+        - rough gem
+        - scary face (paradolia)
+        - odd todd
+        - runner
+        - ice cream
+        - blue joker
+        - hiker (weird)
+        - square joker
+        - arrowhead
+        - wee joker
+        - fibonacci
+        - even steven
+        - ride the bus (paradolia)
+        - smiley face (paradolia)
+        - swashbuckler (kind of)
+        - booststraps (checks money)
+        - joker stencil
+        - loyalty card
+        suit checks:
+            - ancient joker (resets at end of round)
+            diamond:
+                - greedy joker
+            heart:
+                - lusty joker
+                - bloodstone
+            spade:
+                - wrathful joker
+            club:
+                - gluttonous joker
+                - onyx agate
+                - seeing double
+            spade/club:
+                - blackboard
+            all:
+                - flower pot
+        hand type checks:
+            pair:
+                - sly joker
+                - jolly joker
+                - the duo
+            three of a kind:
+                - wily joker
+                - zany joker
+                - the trio
+            two pair:
+                - clever joker
+                - mad joker
+                - spare trousers
+            straight:
+                - devious joker
+                - crazy joker
+                - the order
+            flush:
+                - crafty joker
+                - droll joker
+                - the tribe
+            four of a kind:
+                - the family
+        card amount checks:
+            - half joker
+        card type checks:
+            queen:
+                - shoot the moon
+            king:
+                - baron
+            variable:
+                - the idol (resets every round)
+            king/queen:
+                - triboulet
+        deck checks:
+            - steel joker
+        already played checks:
+            - card sharp
+        already played hands:
+            - obelisk
+        enhanced card checks:
+            - vampire (here it turns the card into a random one instead of preserving the original if it's stone)
+        first played face card checks:
+            - photograph
+        lucky card trigger checks:
+            - lucky cat
+    boss blind checks:
+        - matador
+
+death checks:
+    - mr. bones
+
+shop checks:
+    - chaos the clown
+    - astronomer
+
+first hand checks:
+    - dna
+    - sixth sense
+
+final hand checks:
+    - acrobat
+
+blind skip checks:
+    - throwback
+
+discard checks:
+    - burnt joker
+    - faceless joker
+    - mail-in rebate (resets at end of round)
+    - trading card
+    - green joker (also hand play)
+    - ramen
+    - hit the road
+    - yorick
+
+booster pack open checks:
+    - hallucination
+
+booster pack skip check:
+    - red card
+
+sell checks:
+    - luchador
+    - campfire
+
+item pool checks:
+    - showman
+
+weird:
+    - pareidolia
+    - diet cola
+    - blueprint
+    - brainstorm
+    - credit card
+
+
+hand decider checks:
+    - four fingers
+    - shortcut
+    - smeared joker
+
+probablilty checks:
+    - oops! all 6s
+
+end of round check:
+    - invisible joker
+    - delayed gratification
+    - egg
+    - to do list (for resetting)
+    - cloud 9
+    - rocket
+    - gift card
+    - mail-in rebate (for resetting)
+    - to the moon
+    - golden joker
+    - satellite
+    - gros michel (for resetting)
+    - popcorn
+    - cavendish (for resetting)
+    - ancient joker (for resetting)
+    - the idol (for resetting)
+
+add/remove card from deck check:
+    - erosion
+    - hologram
+    - canio (paradolia)
+
+shop exit check:
+    - perkeo
+
+tarot card use check:
+    - fortune teller
+
+planet card use check:
+    - constellation
+
+shop reroll check:
+    - flash card
+
+boss blind defeated check:
+    - campfire
+
+glass card destroy check:
+    - glass joker
+
+enhanced cards in deck check:
+    - driver's license

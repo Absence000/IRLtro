@@ -1,0 +1,29 @@
+so far I have:
+- recognizing and scoring all hands including illegal ones
+- bonus, mult, glass (without breaking), stone, and lucky cards (without money)
+- foil, holographic, and polychrome
+- red seal
+
+missing features:
+
+barebones
+    - wild cards (done)
+    - hands (done)
+    - steel cards (done)
+    - decks (done)
+    - glass card destruction (done)
+    - money (done)
+    - lucky card money win chance (done)
+    - gold seal
+    - gold cards
+
+harder
+    - planet cards
+    - rounds
+
+
+final
+    - tarot and spectral cards
+    - antes
+    - shop
+    - every single joker
