@@ -1,13 +1,15 @@
 from subscripts.spacesavers import *
 
 class Save:
-    def __init__(self, deck, ante, blindIndex, money, handLevels, illegalHandsDiscovered):
+    def __init__(self, deck, ante, blindIndex, money, handLevels, illegalHandsDiscovered, consumables, consumablesLimit):
         self.deck = deck
         self.ante = ante
         self.blindIndex = blindIndex
         self.money = money
         self.handLevels = handLevels
         self.illegalHandsDiscovered = illegalHandsDiscovered
+        self.consumables = consumables
+        self.consumablesLimit = consumablesLimit
 
     def toDict(self):
         return({
@@ -16,13 +18,16 @@ class Save:
             "blindIndex": self.blindIndex,
             "money": self.money,
             "handLevels": self.handLevels,
-            "illegalHandsDiscovered": self.illegalHandsDiscovered
+            "illegalHandsDiscovered": self.illegalHandsDiscovered,
+            "consumables": self.consumables,
+            "consumablesLimit": self.consumablesLimit
         })
 
 def createSaveFromDict(saveDict):
     return Save(deck=saveDict["deck"], ante=saveDict["ante"], blindIndex=saveDict["blindIndex"],
                 money=saveDict["money"], handLevels=saveDict["handLevels"],
-                illegalHandsDiscovered=saveDict["illegalHandsDiscovered"])
+                illegalHandsDiscovered=saveDict["illegalHandsDiscovered"], consumables=saveDict["consumables"],
+                consumablesLimit=saveDict["consumablesLimit"])
 
 def saveGame(save):
     savejson("save", save.toDict())
@@ -41,4 +46,4 @@ def createBlankSave(deck):
               "Flush House": 1,
               "Flush Five": 1}
     return Save(deck=openjson("decks")[deck], ante=1, blindIndex=0, money=0, handLevels=handLevels,
-                illegalHandsDiscovered=[])
+                illegalHandsDiscovered=[], consumables=[])

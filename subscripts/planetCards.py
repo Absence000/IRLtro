@@ -1,4 +1,5 @@
 from subscripts.cardUtils import Card
+from subscripts.spacesavers import *
 import random
 
 defaultplanetCards = [Card(subset="planet", number="Pluto"),
@@ -23,3 +24,6 @@ def generateShuffledListOfUnlockedPlanetCards(save):
 
     random.shuffle(viablePlanetCards)
     return viablePlanetCards
+
+def usePlanetCard(card, save):
+    planetCardsDict = openjson("planetCards/planetCardsDict")

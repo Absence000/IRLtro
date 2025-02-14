@@ -15,4 +15,4 @@ def createDeck(name):
             deck[name].append(Card(subset="playing", number="A", suit="S").toDict())
     savejson("decks", deck)
 
-createDeck("easy")
+# createDeck("easy")

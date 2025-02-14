@@ -3,6 +3,7 @@ from subscripts.handFinderAndPointsAssigner import *
 from subscripts.spacesavers import *
 from subscripts.saveUtils import *
 from subscripts.planetCards import *
+from subscripts.shop import *
 import random
 
 
@@ -176,33 +177,6 @@ def play(fromSave):
                 save.blindIndex += 1
                 saveGame(save)
 
-def loadShop(save):
-    print("SHOP:")
-    itemsForSale = []
-    itemDisplayMessage = []
-    itemNum = 1
-    for i in range(2):
-        cardForSale = generateCardForSale(save)
-        price = calculatePrice(cardForSale, save)
-        itemsForSale.append([cardForSale, price])
-        itemDisplayMessage.append(f"{itemNum+1}: {cardForSale.toString()} (${price})")
-        itemNum += 1
-    #TODO: add packs and vouchers here too
-    print("\n".join(itemDisplayMessage))
-    print("Type the number of the item you want to buy!")
-
-    #TODO: add credit card joker support in the price cost calculation
-
-
-#TODO: only works with planet cards, add weighted choice: joker (20), tarot(4), planet(4)
-def generateCardForSale(save):
-    return generateShuffledListOfUnlockedPlanetCards(save)[0]
-
-#TODO: add cost for joker rarities, playing cards, tarot, spectral, and vouchers
-def calculatePrice(item, save):
-    if type(item) == Card:
-        if item.subset == "planet":
-            return 3
 
 # commandLinePlayAnte(300, openjson("decks")["standard"])
 
