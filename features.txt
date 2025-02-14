@@ -18,8 +18,10 @@ barebones
     - gold cards
 
 harder
-    - planet cards
-    - rounds
+    - planet cards (done)
+    - blue seal
+    - purple seal
+    - rounds (done)
 
 
 final

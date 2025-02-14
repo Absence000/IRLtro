@@ -49,7 +49,7 @@ class Card:
             # else:
             #     descriptor += valueAbrToName[self.number] + " of "
 
-            return self.number + suitAbrToName[self.suit]
+            return descriptor + self.number + suitAbrToName[self.suit]
         if self.subset == "planet":
             return f"{self.number} (Upgrade {openjson('planetCards/planetCardsDict')[self.number]['hand']})"
 

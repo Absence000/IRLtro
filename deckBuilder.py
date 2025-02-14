@@ -12,7 +12,7 @@ def createDeck(name):
     values = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"]
     for suit in suits:
         for value in values:
-            deck[name].append(Card(subset="playing", number="A", suit="S").toDict())
+            deck[name].append(Card(subset="playing", number="A", suit="S", enhancement="gold").toDict())
     savejson("decks", deck)
 
-# createDeck("easy")
+# createDeck("gold test")

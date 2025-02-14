@@ -39,18 +39,35 @@ def commandLinePlayRound(requiredScore, save):
         print(f"Current hand:\n" + '\n'.join(handDisplay))
         # print(f"{len(deck) + len()} cards")
         selectionIsValid = False
-        validResponses = ["play", "discard"]
+        validResponses = ["play", "discard", "use", "inv"]
         while not selectionIsValid:
-            choice = input("what do you want to do now? Type \"play\" or \"discard\".")
+            choice = input("what do you want to do now? Type \"play\" to play, \"discard\" to discard, \"use\" to use/sell "
+                           "a consumable, and \"inv\" to see your consumables.")
             if choice in validResponses:
                 if choice == "discard" and discardCount <= 0:
                     print("You have no discards left!")
+                if choice == "inv":
+                    printConsumables(save)
                 else:
                     selectionIsValid = True
+                if choice == "use" and len(save.consumables) > 0:
+                    print("You have no consumables!")
             else:
                 print(f"Unrecognized action: {choice}")
 
-        if choice == "play" or choice == "discard":
+        # consumable selection logic handling
+        if choice == "use":
+            selectionIsValid = False
+            while not selectionIsValid:
+                printConsumables(save)
+                consumableSelect = input("Type the number of the consumable you want to buy or sell! Type \"cancel\" "
+                                         " to cancel.")
+                if consumableSelect == "cancel":
+                    print("Cancelled!")
+                    selectionIsValid = True
+
+        # card selection logic handling
+        if choice in ["play", "discard"]:
             selectionIsValid = False
             while not selectionIsValid:
                 cardSelection = input(f"Type the card indexes that you want to {choice}, separated by commas and a space.")
@@ -86,17 +103,22 @@ def commandLinePlayRound(requiredScore, save):
                                 print(f"{selectedHand[cardIndex].toString()} broke!")
                                 del selectedHand[cardIndex]
 
-
-                #TODO: put gold card stuff here too
-
-
                 print(f"+{points} points! \n")
                 score += points
                 handsCount -= 1
                 if score >= requiredScore:
                     print(f"Victory!\nScore:{score}")
+                    # TODO: put blue seal stuff here
+                    goldCardAmnt = 0
+                    for card in hand:
+                        if card.enhancement == "gold":
+                            goldCardAmnt += 1
+                            save.money += 3
+                    if goldCardAmnt > 0:
+                        print(f"Earned ${3 * goldCardAmnt} from {goldCardAmnt} gold cards in your hand!")
                     playing = False
                     win = True
+
                 elif handsCount <= 0:
                     print(f"Defeat!\nScore:{score}")
                     playing = False
@@ -131,7 +153,7 @@ def play(fromSave):
     if fromSave:
         save = createSaveFromDict(openjson("save"))
     else:
-        save = createBlankSave(deck="easy")
+        save = createBlankSave(deck="gold test")
     alive = True
     while alive:
         # while state == "selectingAndPlayingBlind":

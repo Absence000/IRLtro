@@ -143,6 +143,7 @@ multmult = 1
 # now that we identified the hand and the cards that need to be assigned the points, we can figure out how many points
 # to add!
 # TODO: this is where most of the joker effects come in oh god
+# TODO: make illegal hand discovery work for planet cards
 def calcPointsFromHand(hand, handData, unselectedHand, save):
     # gets the base chips and mult
     handType = handData[0]
@@ -163,7 +164,7 @@ def calcPointsFromHand(hand, handData, unselectedHand, save):
     chips = baseChips
     mult = baseMult
 
-    print(handType)
+    print(f"{handType} lvl {save.handLevels[handType]['level']}")
     print(f"Triggered cards: {affectedCards}")
 
     # iterates through each card in the hand to award points

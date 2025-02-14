@@ -3,6 +3,7 @@ from operator import truediv
 from subscripts.planetCards import *
 from subscripts.saveUtils import *
 from subscripts.consumableCards import *
+from subscripts.priceCalcLogic import calculatePrice
 
 #TODO: add something for the voucher to remain the same until the Boss Blind is defeated
 class Shop:
@@ -133,14 +134,6 @@ def loadShop(save):
 # TODO: only works with planet cards, add weighted choice: joker (20), tarot(4), planet(4)
 def generateCardForSale(save):
     return generateShuffledListOfUnlockedPlanetCards(save)[0]
-
-
-# TODO: add cost for joker rarities, playing cards, tarot, spectral, and vouchers
-def calculatePrice(item, save):
-    if type(item) == Card:
-        if item.subset == "planet":
-            return 3
-
 
 # if the item is consumable it asks if the player wants to use it right away or not
 def newItemIsConsumable(item):
