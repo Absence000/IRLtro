@@ -1,5 +1,5 @@
-from cardUtils import Card
-from planetCards import usePlanetCard
+from subscripts.cardUtils import Card
+from subscripts.planetCards import usePlanetCard
 
 #TODO: get tarots and spectrals working here too
 def useConsumable(consumable, save):

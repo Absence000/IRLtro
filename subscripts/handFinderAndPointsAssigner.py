@@ -135,22 +135,6 @@ def turnNumberBackIntoPlayingCardValue(number):
     else:
         return [key for key, value in faceCardValueDict.items() if value == number][0]
 
-handDictionary = {
-    "High Card": {"chips": 5, "mult": 1},
-    "Pair": {"chips": 10, "mult": 2},
-    "Two Pair": {"chips": 20, "mult": 2},
-    "Three Of A Kind": {"chips": 30, "mult": 3},
-    "Straight": {"chips": 30, "mult": 4},
-    "Flush": {"chips": 35, "mult": 4},
-    "Full House": {"chips": 40, "mult": 4},
-    "Four Of A Kind": {"chips": 60, "mult": 7},
-    "Straight Flush": {"chips": 100, "mult": 8},
-    "Royal Flush": {"chips": 100, "mult": 8},
-    "Five Of A Kind": {"chips": 120, "mult": 12},
-    "Flush House": {"chips": 140, "mult": 14},
-    "Flush Five": {"chips": 160, "mult": 16}
-}
-
 
 chips = 0
 mult = 0
@@ -172,8 +156,9 @@ def calcPointsFromHand(hand, handData, unselectedHand, save):
     mult = 0
     multmult = 1
 
-    baseChips = handDictionary[handType]["chips"]
-    baseMult = handDictionary[handType]["mult"]
+    handInfo = save.handLevels
+    baseChips = handInfo[handType]["chips"]
+    baseMult = handInfo[handType]["mult"]
 
     chips = baseChips
     mult = baseMult

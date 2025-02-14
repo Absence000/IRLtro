@@ -80,7 +80,7 @@ def loadShop(save):
         buyChoice = input("Type the number of the item you want to buy! Type 'none' to buy nothing!")
         if buyChoice == "none":
             buying = False
-        if buyChoice.isdigit() and 1 <= int(buyChoice) <= len(shop.toList()):
+        elif buyChoice.isdigit() and 1 <= int(buyChoice) <= len(shop.toList()):
             item = shop.buyItemByItemIndex(int(buyChoice), save)
             if item == "Can't afford":
                 print("You don't have enough money!")
@@ -90,17 +90,25 @@ def loadShop(save):
                 print("Bought " + item.toString() + "!")
                 # if it's consumable it asks if it wants to use it immediately or put it into the consumables slot
                 if newItemIsConsumable(item):
-                    if len(save.consumables) >= save.consumablesLimit:
-                        print("You have no space for this consumable! Using immediately!")
-                    else:
-                        askingAboutImmediateUse = True
-                    while askingAboutImmediateUse:
-                        useImmediately = input("Do you want to use this immediately? Type \"y\" or \"n\".")
-                        validResponses = ["y", "n"]
-                        if useImmediately == "y":
-
-                        elif useImmediately == "n":
-                            print("Putting your consumable into storage!")
+                    if consumableCanBeUsedImmediately(item):
+                        if len(save.consumables) >= save.consumablesLimit:
+                            print("You have no space for this consumable! Do you want to use it now?")
+                            useConsumable(item, save)
+                            askingAboutImmediateUse = False
+                        else:
+                            askingAboutImmediateUse = True
+                        while askingAboutImmediateUse:
+                            useImmediately = input("Do you want to use this immediately? Type \"y\" or \"n\".")
+                            validResponses = ["y", "n"]
+                            if useImmediately == "y":
+                                useConsumable(item, save)
+                                askingAboutImmediateUse = False
+                            elif useImmediately == "n":
+                                print("Putting your consumable into storage!")
+                                save.consumables.append(item)
+                                askingAboutImmediateUse = False
+                            else:
+                                print(f"Unexpected response: {useImmediately}")
                 print(f"New Balance: ${save.money}")
         else:
             print(f"invalid input: {buyChoice}")
@@ -123,7 +131,12 @@ def calculatePrice(item, save):
 
 # if the item is consumable it asks if the player wants to use it right away or not
 def newItemIsConsumable(item):
-    if type(item) == Card:
-        if item.subset in ["planet, tarot, spectral"]:
+    if isinstance(item, Card):
+        if item.subset in ["planet", "tarot", "spectral"]:
             return True
     return False
+
+# consumables that need a hand to work can't be used immediately
+# TODO: make this work for non-planets
+def consumableCanBeUsedImmediately(item):
+    return True
