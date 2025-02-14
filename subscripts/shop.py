@@ -4,12 +4,14 @@ from subscripts.planetCards import *
 from subscripts.saveUtils import *
 from subscripts.consumableCards import *
 
+#TODO: add something for the voucher to remain the same until the Boss Blind is defeated
 class Shop:
 
-    def __init__(self, cards, boosters, vouchers):
+    def __init__(self, cards, boosters, vouchers, rerollCost):
         self.cards = cards
         self.boosters = boosters
         self.vouchers = vouchers
+        self.rerollCost = rerollCost
 
     def rollCards(self, save):
         cardList = []
@@ -71,14 +73,15 @@ class Shop:
         return "Slot is empty"
 
 def loadShop(save):
-    shop = Shop(cards=[None, None], boosters=[None, None], vouchers=[None])
+    shop = Shop(cards=[None, None], boosters=[None, None], vouchers=[None], rerollCost=5)
     shop.rollCards(save)
     buying = True
     while buying:
         print("SHOP:")
         print(shop.toString())
-        buyChoice = input("Type the number of the item you want to buy! Type 'none' to buy nothing!")
-        if buyChoice == "none":
+        print(f"Reroll: ${shop.rerollCost}")
+        buyChoice = input("Type the number of the item you want to buy! Type 'reroll' to reroll, and 'exit' to leave!")
+        if buyChoice == "exit":
             buying = False
         elif buyChoice.isdigit() and 1 <= int(buyChoice) <= len(shop.toList()):
             item = shop.buyItemByItemIndex(int(buyChoice), save)
@@ -110,6 +113,16 @@ def loadShop(save):
                             else:
                                 print(f"Unexpected response: {useImmediately}")
                 print(f"New Balance: ${save.money}")
+        elif buyChoice == "reroll":
+            if save.money >= shop.rerollCost:
+                shop.rollCards(save)
+                save.money -= shop.rerollCost
+                shop.rerollCost += 1
+                print("Shop rerolled!")
+                print(f"New Balance: ${save.money}")
+            else:
+                print(f"You don't have enough money! ({save.money})")
+
         else:
             print(f"invalid input: {buyChoice}")
 
