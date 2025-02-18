@@ -1,7 +1,7 @@
 from subscripts.spacesavers import *
 
 class Save:
-    def __init__(self, deck, ante, blindIndex, money, handLevels, illegalHandsDiscovered, consumables, consumablesLimit):
+    def __init__(self, deck, ante, blindIndex, money, handLevels, illegalHandsDiscovered, consumables, consumablesLimit, hand):
         self.deck = deck
         self.ante = ante
         self.blindIndex = blindIndex
@@ -10,6 +10,7 @@ class Save:
         self.illegalHandsDiscovered = illegalHandsDiscovered
         self.consumables = consumables
         self.consumablesLimit = consumablesLimit
+        self.hand = hand
 
     def toDict(self):
         # turns the jokers and consumables into dicts
@@ -24,14 +25,15 @@ class Save:
             "handLevels": self.handLevels,
             "illegalHandsDiscovered": self.illegalHandsDiscovered,
             "consumables": consumables,
-            "consumablesLimit": self.consumablesLimit
+            "consumablesLimit": self.consumablesLimit,
+            "hand": self.hand
         })
 
 def createSaveFromDict(saveDict):
     return Save(deck=saveDict["deck"], ante=saveDict["ante"], blindIndex=saveDict["blindIndex"],
                 money=saveDict["money"], handLevels=saveDict["handLevels"],
                 illegalHandsDiscovered=saveDict["illegalHandsDiscovered"], consumables=saveDict["consumables"],
-                consumablesLimit=saveDict["consumablesLimit"])
+                consumablesLimit=saveDict["consumablesLimit"], hand=saveDict["hand"])
 
 def saveGame(save):
     savejson("save", save.toDict())
@@ -53,4 +55,4 @@ def createBlankSave(deck):
         "Flush Five": {"level": 1, "chips": 160, "mult": 16}
     }
     return Save(deck=openjson("decks")[deck], ante=1, blindIndex=0, money=0, handLevels=handLevels,
-                illegalHandsDiscovered=[], consumables=[], consumablesLimit=2)
+                illegalHandsDiscovered=[], consumables=[], consumablesLimit=2, hand=[])

@@ -1,0 +1,58 @@
+{
+    "Familiar": {"description": "Destroy 1 random card in your hand, add 3 random Enchanted face cards to your hand",
+                 "type": "destroyRandom", "destroyAmount": 1, "secondaryEffect": "addRandomEnchantmentCards",
+                 "enhancementSubset": "face", "addAmount": 3},
+
+    "Grim": {"description": "Destroy 1 random card in your hand, add 2 random Enchanted Aces to your hand",
+             "type": "destroyRandom", "destroyAmount": 1, "secondaryEffect": "addRandomEnchantmentCards",
+             "enchantmentSubset": "ace", "addAmount": 2},
+
+    "Incantation": {"description": "Destroy 1 random card in your hand, add 4 random Enchanted numbered cards to your hand",
+             "type": "destroyRandom", "destroyAmount": 1, "secondaryEffect": "addRandomEnchantmentCards",
+             "enchantmentSubset": "numbered", "addAmount": 1},
+
+    "Talisman": {"description": "Add a Gold Seal to 1 selected card in your hand",
+                    "type": "handModifier", "amnt": 1, "modifier": "seal", "sealType": "gold"},
+
+    "Aura": {"description": "Add Foil, Holographic, or Polychrome effect to 1 selected card in your hand",
+                 "type": "handModifier", "amnt": 1, "modifier": "effect", "effector": "random"},
+
+    "Wraith": {"description": "Creates a random Rare Joker, sets money to $0",
+                 "type": "creator", "subset": "joker", "rarity": "rare", "secondaryEffect": "setMoneyToZero"},
+
+    "Sigil": {"description": "Converts all cards in hand to a single random suit",
+                 "type": "handConverter", "convertAttribute": "randomSuit"},
+
+    "Ouija": {"description": "Converts all cards in hand to a single random rank, -1 hand size",
+              "type": "handConverter", "convertAttribute": "randomRank", "secondaryEffect": "handSizeMinusOne"},
+
+    "Ectoplasm": {"description": "adds Negative to a random Joker, -1 hand size",
+              "type": "randomJokerModifier", "modifier": "negative", "secondaryEffect": "handSizeMinusOne"},
+
+    "Immolate": {"description": "Destroys 5 random cards in hand, gain $20",
+                 "type": "destroyRandom", "destroyAmount": 5, "secondaryEffect": "addMoney", "moneyAmount": 20},
+
+    "Ankh": {"description": "Create a copy of a random Joker, destroy all other Jokers",
+                 "type": "effectOneJokerAndDestroyOthers", "effect": "copy"},
+
+    "Deja Vu": {"description": "Add a Red Seal to 1 selected card in your hand",
+                    "type": "handModifier", "amnt": 1, "modifier": "seal", "sealType": "red"},
+
+    "Hex": {"description": "Adds Polychrome to a random Joker, destroy all other Jokers",
+             "type": "effectOneJokerAndDestroyOthers", "effect": "polychrome"},
+
+    "Trance": {"description": "Add a Blue Seal to 1 selected card in your hand",
+                "type": "handModifier", "amnt": 1, "modifier": "seal", "sealType": "blue"},
+
+    "Medium": {"description": "Add a Purple Seal to 1 selected card in your hand",
+               "type": "handModifier", "amnt": 1, "modifier": "seal", "sealType": "purple"},
+
+    "Cryptid": {"description": "Create 2 copies of 1 selected card in your hand",
+               "type": "handModifier", "amnt": 1, "modifier": "copy", "copyAmount": 2},
+
+    "Soul": {"description": "Creates a Legendary Joker (must have room)",
+                "type": "creator", "subset": "joker", "rarity": "rare"},
+
+    "Black Hole": {"description": "Upgrade every poker hand by 1 level",
+                   "type": "upgradeAllHands"}
+}

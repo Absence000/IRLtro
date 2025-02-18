@@ -167,6 +167,13 @@ def calcPointsFromHand(hand, handData, unselectedHand, save):
     print(f"{handType} lvl {save.handLevels[handType]['level']}")
     print(f"Triggered cards: {affectedCards}")
 
+
+    # if an illegal hand has been played it updates the save
+    if handType in ["Flush Five", "Flush House", "Five Of A Kind"]:
+        if handType not in save.illegalHandsDiscovered:
+            save.illegalHandsDiscovered.append(handType)
+            print(f"Discovered {handType}!")
+
     # iterates through each card in the hand to award points
     for card in hand:
         if affectedCards == "all" or card.number in affectedCards or card.enhancement == "stone":

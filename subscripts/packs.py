@@ -9,12 +9,20 @@ class Pack():
     # returns the proper amount of cards if opened
     def open(self):
         cardList = []
+        subset = self.subset
+        if self.subset == "arcana":
+            subset = "tarot"
         for iterator in range(subsetDict[self.size]):
-            cardList.append(generateWeightedRandomCard("playing"))
+            cardList.append(generateWeightedRandomCard(subset))
         return cardList
 
     def toString(self):
         return f"{self.size.capitalize()} {self.subset.capitalize()} Pack"
+
+    def needsHandToUse(self):
+        if self.subset in ["arcana", "spectral"]:
+            return True
+        return False
 
 subsetDict = {
     "normal": 3,
@@ -33,5 +41,5 @@ packWeightDict = {
 # TODO: add support for all the other packs once their cards are done, right now this can only generate standard ones
 def generatePackForSale():
     sizes = ["normal", "jumbo", "mega"]
-    weights = packWeightDict["standard"]
-    return Pack(subset="standard", size=random.choices(sizes, weights)[0])
+    weights = packWeightDict["arcana"]
+    return Pack(subset="arcana", size=random.choices(sizes, weights)[0])

@@ -3,11 +3,7 @@ from subscripts.packs import Pack
 
 
 priceDict = {
-    "pack": {"standard": {
-        "normal": 4,
-        "jumbo": 6,
-        "mega": 8
-    }}
+    "pack": {"normal": 4, "jumbo": 6, "mega": 8}
 }
 
 # TODO: add cost for joker rarities, playing cards, tarot, spectral, and vouchers
@@ -17,5 +13,5 @@ def calculatePrice(item, save):
         if item.subset == "planet":
             return 3
     if type(item) == Pack:
-        return priceDict["pack"][item.subset][item.size]
+        return priceDict["pack"][item.size]
 

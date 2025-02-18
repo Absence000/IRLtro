@@ -54,7 +54,10 @@ class Card:
 
             return descriptor + self.number + suitAbrToName[self.suit]
         if self.subset == "planet":
-            return f"{self.number} (Upgrade {openjson('planetCards/planetCardsDict')[self.number]['hand']})"
+            return f"{self.number} (Upgrade {openjson('consumables/planetDict')[self.number]['hand']})"
+
+        if self.subset == "tarot":
+            return f"{self.number}: {openjson('consumables/tarotDict')[self.number]['description']}"
 
     # TODO: add a joker list and all the other card stuff here
     def toBinary(card):
@@ -180,3 +183,27 @@ def generateWeightedRandomCard(subset):
                     edition=edition,
                     enhancement=enhancement,
                     seal=seal)
+    elif subset == "tarot":
+        return generateShuffledListOfFinishedTarotCards()[0]
+
+
+def generateShuffledListOfFinishedTarotCards():
+    finishedTarots = ["The Magician (I)", "The Empress (III)", "The Hierophant (V)", "The Lovers (VI)",
+                      "The Chariot (VII)", "Justice (VIII)", "Strength (XI)", "The Hanged Man (XII)",
+                      "Death (XIII)", "The Devil (XV)", "The Tower (XVI)", "The Star (XVII)", "The Moon (XVIII)",
+                      "The Sun (XIX)", "The World (XXI)"]
+
+    viableTarotCards = []
+    for tarot in finishedTarots:
+        viableTarotCards.append(Card(subset="tarot", number=tarot))
+    random.shuffle(viableTarotCards)
+    return viableTarotCards
+
+def CLDisplayHand(hand):
+    handDisplay = []
+    listNum = 1
+    for handCard in hand:
+        handDisplay.append(str(listNum) + ": " + handCard.toString())
+        listNum += 1
+
+    return('\n'.join(handDisplay))

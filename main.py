@@ -13,7 +13,7 @@ import random
 def commandLinePlayRound(requiredScore, save):
     deck = save.deck
     random.shuffle(deck)
-    hand = []
+    save.hand = []
     discardedCards = []
     playedCards = []
 
@@ -24,19 +24,13 @@ def commandLinePlayRound(requiredScore, save):
     playing = True
 
     while playing:
-        while len(hand) < 8:
-            hand.append(createCardFromDict(deck[0]))
+        while len(save.hand) < 8:
+            save.hand.append(createCardFromDict(deck[0]))
             del deck[0]
-        handDisplay = []
-
-        listNum = 1
-        for handCard in hand:
-            handDisplay.append(str(listNum) + ": " + handCard.toString())
-            listNum += 1
 
         print(f"{handsCount} hands left, {discardCount} discards")
         print(f"{score}/{requiredScore} chips")
-        print(f"Current hand:\n" + '\n'.join(handDisplay))
+        print(f"Current hand:\n" + CLDisplayHand(save.hand))
         # print(f"{len(deck) + len()} cards")
         selectionIsValid = False
         validResponses = ["play", "discard", "use", "inv"]
@@ -91,14 +85,14 @@ def commandLinePlayRound(requiredScore, save):
 
             selectedHand = []
             for index in selectedHandIndexes:
-                selectedHand.append(hand[index-1])
+                selectedHand.append(save.hand[index-1])
 
             # deletes in reverse order so it doesn't screw up the other indexes
             for index in sorted(selectedHandIndexes, reverse=True):
-                del hand[index-1]
+                del save.hand[index-1]
 
             if choice == "play":
-                points, affectedCards = calcPointsFromHand(selectedHand, findBestHand(selectedHand), hand, save)
+                points, affectedCards = calcPointsFromHand(selectedHand, findBestHand(selectedHand), save.hand, save)
                 # handles glass card breaking, same reverse order trick as before
                 for cardIndex in range(len(selectedHand) - 1, -1, -1):
                     playedCards.append(selectedHand[cardIndex])
@@ -115,7 +109,7 @@ def commandLinePlayRound(requiredScore, save):
                     print(f"Victory!\nScore:{score}")
                     # TODO: put blue seal stuff here
                     goldCardAmnt = 0
-                    for card in hand:
+                    for card in save.hand:
                         if card.enhancement == "gold":
                             goldCardAmnt += 1
                             save.money += 3
@@ -135,8 +129,9 @@ def commandLinePlayRound(requiredScore, save):
                         deck.append(card.toDict())
                     for card in playedCards:
                         deck.append(card.toDict())
-                    for card in hand:
+                    for card in save.hand:
                         deck.append(card.toDict())
+                        save.hand = []
 
                     return {"win": win, "handsLeft": handsCount}
             elif choice == "discard":

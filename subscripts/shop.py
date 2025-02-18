@@ -5,6 +5,9 @@ from subscripts.saveUtils import *
 from subscripts.consumableCards import *
 from subscripts.priceCalcLogic import calculatePrice
 from subscripts.packs import Pack, generatePackForSale
+from subscripts.cardUtils import Card, createCardFromDict, CLDisplayHand
+from subscripts.tarotCards import useTarotCard
+
 
 #TODO: add something for the voucher to remain the same until the Boss Blind is defeated
 class Shop:
@@ -132,7 +135,13 @@ def loadShop(save):
                         cardPickAmount = 2
                     cardsPicked = 1
                     openingPack = True
+                    print("Cards:")
                     while openingPack:
+                        if item.needsHandToUse():
+                            while len(save.hand) < 8:
+                                save.hand.append(createCardFromDict(save.deck[0]))
+                                del save.deck[0]
+                            print(f"Hand:\n{CLDisplayHand(save.hand)}")
                         iterator = 1
                         for card in possibleCards:
                             print(f"{iterator}: {card.toString()}")
@@ -144,12 +153,20 @@ def loadShop(save):
                         elif cardSelection.isdigit() and 0 < int(cardSelection) <= len(possibleCards):
                             chosenCard = possibleCards[int(cardSelection)-1]
                             # TODO: Move this to a separate function once I have all the other card stuff
-                            save.deck.append(chosenCard.toDict())
+                            if chosenCard.subset == "playing":
+                                save.deck.append(chosenCard.toDict())
+                                print(f"Added {chosenCard.toString()} to deck!")
+                            elif chosenCard.subset == "tarot":
+                                useTarotCard(chosenCard, save)
                             del possibleCards[int(cardSelection)-1]
-                            print(f"Added {chosenCard.toString()} to deck!")
                             cardsPicked += 1
                             if cardsPicked > cardPickAmount:
                                 openingPack = False
+                                if item.needsHandToUse():
+                                    for card in save.hand:
+                                        save.deck.append(card.toDict())
+                                    save.hand = []
+
                         else:
                             print(f"Invalid input: {cardSelection}")
 

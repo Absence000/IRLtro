@@ -1,0 +1,67 @@
+{
+    "The Fool (0)": {"description": "Creates the last Tarot or Planet card used during this run (The Fool excluded)",
+                     "type": "creator", "amnt": 1, "subset": "last"},
+
+    "The Magician (I)": {"description": "Enhances 2 selected cards to Lucky Cards",
+                         "type": "handModifier", "amnt": 2, "modifier": "enhancer", "enhancement": "lucky"},
+
+    "The High Priestess (II)": {"description": "Creates up to 2 random Planet cards (must have room)",
+                                "type": "creator", "amnt": 2, "subset": "planet"},
+
+    "The Empress (III)": {"description": "Enhances 2 selected cards to Mult Cards",
+                          "type": "handModifier", "amnt": 2, "modifier": "enhancer", "enhancement": "mult"},
+
+    "The Emperor (IV)": {"description": "Creates up to 2 random Tarot cards (must have room)",
+                         "type": "creator", "amnt": 2, "subset": "tarot"},
+
+    "The Hierophant (V)": {"description": "Enhances 2 selected cards to Bonus Cards",
+                           "type": "handModifier", "amnt": 2, "modifier": "enhancer", "enhancement": "bonus"},
+
+    "The Lovers (VI)": {"description": "Enhances 1 selected card into a Wild Card",
+                        "type": "handModifier", "amnt": 1, "modifier": "enhancer", "enhancement": "wild"},
+
+    "The Chariot (VII)": {"description": "Enhances 1 selected card into a Steel Card",
+                          "type": "handModifier", "amnt": 1, "modifier": "enhancer", "enhancement": "steel"},
+
+    "Justice (VIII)": {"description": "Enhances 1 selected card into a Glass Card",
+                       "type": "handModifier", "amnt": 1, "modifier": "enhancer", "enhancement": "glass"},
+
+    "The Hermit (IX)": {"description": "Doubles money (max of $20)",
+                        "type": "monetary", "modifier": "mult"},
+
+    "The Wheel Of Fortune (X)": {"description": "1 in 4 chance to add Foil, Holographic, or Polychrome edition to a random Joker",
+                                 "type": "meme"},
+
+    "Strength (XI)": {"description": "Increases rank up to 2 selected cards by 1 (for example, 4 to 5, 10 to Jack, King to Ace, Ace to 2)",
+                      "type": "handModifier", "amnt": 1, "modifier": "rank"},
+
+    "The Hanged Man (XII)": {"description": "Destroys up to 2 selected cards",
+                             "type": "handModifier", "amnt": 2, "modifier": "destroy"},
+
+    "Death (XIII)": {"description": "Select 2 cards, convert the left card into the right card",
+                     "type": "handModifier", "amnt": 2, "modifier": "convert"},
+
+    "Temperance (XIV)": {"description": "Gives the total sell value of all current Jokers (Max of $50)",
+                         "type": "monetary", "modifier": "jokerSellValue"},
+
+    "The Devil (XV)": {"description": "Enhances 1 selected card into a Gold Card",
+                       "type": "handModifier", "amnt": 1, "modifier": "enhancer", "enhancement": "gold"},
+
+    "The Tower (XVI)": {"description": "Enhaces 1 selected card into a Stone Card",
+                        "type": "handModifier", "amnt": 1, "modifier": "enhancer", "enhancement": "stone"},
+
+    "The Star (XVII)": {"description": "Converts up to 3 selected cards to Diamonds",
+                        "type": "handModifier", "amnt": 3, "modifier": "suit", "suit": "D"},
+
+    "The Moon (XVIII)": {"description": "Converts up to 3 selected cards to Clubs",
+                        "type": "handModifier", "amnt": 3, "modifier": "suit", "suit": "C"},
+
+    "The Sun (XIX)": {"description": "Converts up to 3 selected cards to Hearts",
+                        "type": "handModifier", "amnt": 3, "modifier": "suit", "suit": "H"},
+
+    "Judgement (XX)": {"description": "Creates a random Joker card (must have room)",
+                       "type": "creator", "subset": "joker"},
+
+    "The World (XXI)": {"description": "Converts up to 3 selected cards to Spades",
+                      "type": "handModifier", "amnt": 3, "modifier": "suit", "suit": "S"}
+}

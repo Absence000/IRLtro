@@ -26,7 +26,7 @@ def generateShuffledListOfUnlockedPlanetCards(save):
     return viablePlanetCards
 
 def usePlanetCard(card, save):
-    planetCardInfo = openjson("planetCards/planetCardsDict")[card.number]
+    planetCardInfo = openjson("consumables/planetDict")[card.number]
     upgradeHandLevel(planetCardInfo["hand"], 1, planetCardInfo["addition"][1], planetCardInfo["addition"][0], save)
 
 #TODO: make this work with downgrading as well
