@@ -7,13 +7,17 @@ class Pack():
         self.size = size
 
     # returns the proper amount of cards if opened
-    def open(self):
+    def open(self, save):
         cardList = []
         subset = self.subset
         if self.subset == "arcana":
             subset = "tarot"
+        elif self.subset == "celestial":
+            subset = "planet"
+        elif subset == "standard":
+            subset = "playing"
         for iterator in range(subsetDict[self.size]):
-            cardList.append(generateWeightedRandomCard(subset))
+            cardList.append(generateWeightedRandomCard(subset, save))
         return cardList
 
     def toString(self):
@@ -38,8 +42,14 @@ packWeightDict = {
     "spectral": [0.6, 0.3, 0.07]
 }
 
-# TODO: add support for all the other packs once their cards are done, right now this can only generate standard ones
+# TODO: add support for buffoon and spectral packs
 def generatePackForSale():
     sizes = ["normal", "jumbo", "mega"]
-    weights = packWeightDict["arcana"]
-    return Pack(subset="arcana", size=random.choices(sizes, weights)[0])
+    addedPacks = ["standard", "arcana", "celestial"]
+    packOptions = []
+    packWeights = []
+    for subset in addedPacks:
+        for size in sizes:
+            packOptions.append(Pack(subset=subset, size=size))
+            packWeights.append(packWeightDict[subset][sizes.index(size)])
+    return random.choices(packOptions, packWeights)[0]

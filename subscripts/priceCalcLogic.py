@@ -10,7 +10,7 @@ priceDict = {
 # TODO: add the sale voucher thing
 def calculatePrice(item, save):
     if type(item) == Card:
-        if item.subset == "planet":
+        if item.subset in ["planet", "tarot"]:
             return 3
     if type(item) == Pack:
         return priceDict["pack"][item.size]

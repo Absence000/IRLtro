@@ -1,6 +1,7 @@
 from subscripts.cardUtils import Card
 from subscripts.planetCards import usePlanetCard
 from subscripts.priceCalcLogic import calculatePrice
+from subscripts.tarotCards import useTarotCard
 import math
 
 #TODO: move the function for adding consumables to the player's hand here
@@ -9,6 +10,8 @@ import math
 def useConsumable(consumable, save):
     if consumable.subset == "planet":
         usePlanetCard(consumable, save)
+    if consumable.subset == "tarot":
+        useTarotCard(consumable, save)
 
 
 def getConsumableSellPrice(consumable, save):

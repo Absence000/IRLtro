@@ -149,7 +149,7 @@ anteBaseChipsList = [100, 300, 800, 2000, 5000, 11000, 20000, 35000, 50000, 1100
 
 blindIndexToBlindInfo = [("Small Blind", 1, 3), ("Big Blind", 1.5, 4), ("Boss Blind", 2, 5)]
 
-def play(fromSave):
+def play(fromSave, deck):
     if fromSave:
         save = createSaveFromDict(openjson("save"))
     else:
@@ -200,4 +200,4 @@ def play(fromSave):
 
 # commandLinePlayAnte(300, openjson("decks")["standard"])
 
-play(False)
+play(fromSave=False, deck="standard")

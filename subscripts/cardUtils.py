@@ -147,7 +147,7 @@ def binaryToPlayingCardNumber(binary):
         return str(number)
 
 # TODO: get this working with vouchers eventually
-def generateWeightedRandomCard(subset):
+def generateWeightedRandomCard(subset, save):
     if subset == "playing":
         # editions: 1.2% for poly, 2.8% for holo, 4% for foil
         editionOptions = ["polychrome", "holographic", "foil", None]
@@ -185,6 +185,8 @@ def generateWeightedRandomCard(subset):
                     seal=seal)
     elif subset == "tarot":
         return generateShuffledListOfFinishedTarotCards()[0]
+    elif subset == "planet":
+        return generateShuffledListOfUnlockedPlanetCards(save)[0]
 
 
 def generateShuffledListOfFinishedTarotCards():
@@ -198,6 +200,29 @@ def generateShuffledListOfFinishedTarotCards():
         viableTarotCards.append(Card(subset="tarot", number=tarot))
     random.shuffle(viableTarotCards)
     return viableTarotCards
+
+defaultplanetCards = [Card(subset="planet", number="Pluto"),
+                      Card(subset="planet", number="Mercury"),
+                      Card(subset="planet", number="Uranus"),
+                      Card(subset="planet", number="Venus"),
+                      Card(subset="planet", number="Saturn"),
+                      Card(subset="planet", number="Jupiter"),
+                      Card(subset="planet", number="Earth"),
+                      Card(subset="planet", number="Mars"),
+                      Card(subset="planet", number="Neptune")]
+
+secretPlanetCardDict = {"Five Of A Kind": Card(subset="planet", number="Planet X"),
+                        "Flush House": Card(subset="planet", number="Ceres"),
+                        "Flush Five": Card(subset="planet", number="Eris"),}
+
+
+def generateShuffledListOfUnlockedPlanetCards(save):
+    viablePlanetCards = defaultplanetCards
+    for illegalHand in save.illegalHandsDiscovered:
+        viablePlanetCards.append(secretPlanetCardDict[illegalHand])
+
+    random.shuffle(viablePlanetCards)
+    return viablePlanetCards
 
 def CLDisplayHand(hand):
     handDisplay = []

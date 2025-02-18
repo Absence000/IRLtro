@@ -5,7 +5,8 @@ from subscripts.saveUtils import *
 from subscripts.consumableCards import *
 from subscripts.priceCalcLogic import calculatePrice
 from subscripts.packs import Pack, generatePackForSale
-from subscripts.cardUtils import Card, createCardFromDict, CLDisplayHand
+from subscripts.cardUtils import Card, createCardFromDict, CLDisplayHand, generateShuffledListOfUnlockedPlanetCards, \
+    generateWeightedRandomCard
 from subscripts.tarotCards import useTarotCard
 
 
@@ -129,7 +130,7 @@ def loadShop(save):
                                 print(f"Unexpected response: {useImmediately}")
                 # pack
                 elif isinstance(item, Pack):
-                    possibleCards = item.open()
+                    possibleCards = item.open(save)
                     cardPickAmount = 1
                     if item.size == "mega":
                         cardPickAmount = 2
@@ -189,9 +190,13 @@ def loadShop(save):
 
 
 
-# TODO: only works with planet cards, add weighted choice: joker (20), tarot(4), planet(4)
+# TODO: add weighted choice: joker (20), tarot(4), planet(4)
 def generateCardForSale(save):
-    return generateShuffledListOfUnlockedPlanetCards(save)[0]
+    options = ["tarot", "planet"]
+    weights = [4, 4]
+
+    cardType = random.choices(options, weights)[0]
+    return generateWeightedRandomCard(cardType, save)
 
 # if the item is consumable it asks if the player wants to use it right away or not
 def newItemIsConsumable(item):
