@@ -20,7 +20,7 @@ def arucoBoardsToCard(lookupTable, image_path=None):
         """
         top_left, top_right, bottom_right, bottom_left = corners  # Extract relevant corner points
 
-        return (bottom_left[1] < top_left[1]) and (bottom_right[1] < top_right[1])
+        return (bottom_left[1] < top_left[1]) or (bottom_right[1] < top_right[1])
 
     def process_frame(frame):
         """Detects ArUco markers, groups them into valid 1×2 boards, and checks orientation."""
@@ -61,12 +61,12 @@ def arucoBoardsToCard(lookupTable, image_path=None):
 
                 # Check if they form a 1-row, 2-column structure
                 if distance_x < distance_y:  # More separated in X than in Y
-                    if rightSideUp(corners1) and rightSideUp(corners2):
-                        combinedID = int(f"{id1}{id2}")
-                    else:
-                        combinedID = int(f"{id2}{id1}")
+                    # if rightSideUp(corners1):
+                    #     combinedID = int(f"{id1}{id2}")
+                    # else:
+                    #     combinedID = int(f"{id2}{id1}")
                     if normalized_y_distance < 1.1:
-                        detected_boards.append({"id": combinedID, "rightSideUp": rightSideUp(corners1), "yDist": normalized_y_distance})
+                        detected_boards.append({"id": int(f"{id2}{id1}"), "rightSideUp": rightSideUp(corners1)})
                     i += 2  # Skip to the next possible pair
                 else:
                     i += 1  # Move to the next marker
@@ -75,9 +75,11 @@ def arucoBoardsToCard(lookupTable, image_path=None):
             for board in detected_boards:
                 try:
                     cardTest = createCardFromBinary(lookupTable[board['id']]).toString()
-                    print(f"={cardTest} ({board['id']}), {board['rightSideUp']}, {board['yDist']}")
-                except:
-                    print("Unrecognized card!")
+                    print(f"={cardTest} ({board['id']}), {board['rightSideUp']}")
+                except Exception as e:
+                    print(e)
+                    print(f"Unrecognized card! {board['id']}, {board['rightSideUp']}, {lookupTable[board['id']]}")
+                          #f"{createCardFromBinary(lookupTable[board['id']]).number}")
 
         return frame
 
@@ -141,8 +143,5 @@ def generateBoardForCard(num):
 
     # Save the board image
     cv2.imwrite("testBoard.png", boardImage)
-
-
-
 
 # generate_aruco_board_image(5678)

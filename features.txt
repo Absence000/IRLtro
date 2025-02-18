@@ -14,11 +14,12 @@ barebones
     - glass card destruction (done)
     - money (done)
     - lucky card money win chance (done)
-    - gold seal
-    - gold cards
+    - gold seal (done)
+    - gold cards (done)
 
 harder
     - planet cards (done)
+    - packs
     - blue seal
     - purple seal
     - rounds (done)

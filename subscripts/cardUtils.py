@@ -1,4 +1,5 @@
 from subscripts.spacesavers import *
+import random
 
 suitAbrToName = {
     "S": "♠",
@@ -37,6 +38,8 @@ class Card:
     def toString(self):
         if self.subset == "playing":
             descriptor = ""
+            if self.seal is not None:
+                descriptor += self.seal.capitalize() + "-Sealed "
             if self.edition is not None:
                 descriptor += self.edition.capitalize() + " "
             if self.enhancement is not None:
@@ -137,3 +140,43 @@ def binaryToPlayingCardNumber(binary):
     number = int(binary, 2)
     if number > 10:
         return binaryDict["nonNumericalNumber"][number-11]
+    else:
+        return str(number)
+
+# TODO: get this working with vouchers eventually
+def generateWeightedRandomCard(subset):
+    if subset == "playing":
+        # editions: 1.2% for poly, 2.8% for holo, 4% for foil
+        editionOptions = ["polychrome", "holographic", "foil", None]
+        editionProbabilities = [0.012, 0.028, 0.04, 0.92]
+        edition = random.choices(editionOptions, editionProbabilities)[0]
+
+        # 40% chance for an enhancement, equal weights for each
+        enhancementRoll = random.randint(1, 10)
+        enhancement = None
+        if enhancementRoll > 6:
+            enhancementList = ["bonus", "mult", "wild", "glass", "steel", "gold", "lucky", "stone"]
+            random.shuffle(enhancementList)
+            enhancement = enhancementList[0]
+
+        # 20% chance for a seal, also equal weights
+        sealRoll = random.randint(1, 5)
+        seal = None
+        if sealRoll == 1:
+            sealList = ["red", "blue", "gold", "purple"]
+            random.shuffle(sealList)
+            seal = sealList[0]
+
+        numList = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"]
+        random.shuffle(numList)
+
+        suitList = ["S", "C", "D", "H"]
+        random.shuffle(suitList)
+
+        # the card number and suit is completely random
+        return Card(subset=subset,
+                    number=numList[0],
+                    suit=suitList[0],
+                    edition=edition,
+                    enhancement=enhancement,
+                    seal=seal)

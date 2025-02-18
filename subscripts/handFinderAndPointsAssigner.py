@@ -171,6 +171,9 @@ def calcPointsFromHand(hand, handData, unselectedHand, save):
     for card in hand:
         if affectedCards == "all" or card.number in affectedCards or card.enhancement == "stone":
             triggerCard(card, save)
+            if card.seal == "gold":
+                save.money += 3
+                print("Earned $3 from a gold seal!")
 
     steelCardMult = 1
 

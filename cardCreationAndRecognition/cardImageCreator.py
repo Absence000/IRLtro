@@ -154,6 +154,7 @@ def generateCardPairingList():
                         pairList.append(card.toBinary())
     savejson("cardToArcuo.json", pairList, True)
 
-# createTaggedCardImage(Card(subset="playing", suit="S", number="A"), openjson("cardToArcuo.json", True))
-# print("created!")
-arucoBoardsToCard(openjson("cardToArcuo.json", True))
+createTaggedCardImage(Card(subset="playing", suit="C", number="2"),
+                      openjson("cardToArcuo.json", True))
+print("created!")
+arucoBoardsToCard(openjson("cardToArcuo.json", True))#, "multiple card test 2.png")

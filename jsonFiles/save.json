@@ -467,11 +467,29 @@
             "seal": null,
             "suit": "S",
             "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "9",
+            "enhancement": "glass",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggerCount": null
+        },
+        {
+            "subset": "playing",
+            "number": "8",
+            "enhancement": "mult",
+            "edition": null,
+            "seal": null,
+            "suit": "D",
+            "retriggerCount": null
         }
     ],
     "ante": 1,
     "blindIndex": 1,
-    "money": 12,
+    "money": 7,
     "handLevels": {
         "High Card": {
             "level": 1,
@@ -509,9 +527,9 @@
             "mult": 4
         },
         "Four Of A Kind": {
-            "level": 2,
-            "chips": 90,
-            "mult": 10
+            "level": 1,
+            "chips": 60,
+            "mult": 7
         },
         "Straight Flush": {
             "level": 1,

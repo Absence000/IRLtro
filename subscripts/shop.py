@@ -4,13 +4,14 @@ from subscripts.planetCards import *
 from subscripts.saveUtils import *
 from subscripts.consumableCards import *
 from subscripts.priceCalcLogic import calculatePrice
+from subscripts.packs import Pack, generatePackForSale
 
 #TODO: add something for the voucher to remain the same until the Boss Blind is defeated
 class Shop:
 
-    def __init__(self, cards, boosters, vouchers, rerollCost):
+    def __init__(self, cards, packs, vouchers, rerollCost):
         self.cards = cards
-        self.boosters = boosters
+        self.packs = packs
         self.vouchers = vouchers
         self.rerollCost = rerollCost
 
@@ -22,13 +23,22 @@ class Shop:
             cardList.append([cardForSale, price])
         self.cards = cardList
 
+    def rollPacks(self, save):
+        packList = []
+        for i in range(2):
+            packForSale =generatePackForSale()
+            price = calculatePrice(packForSale, save)
+            packList.append([packForSale, price])
+        self.packs = packList
+
+
     # returns a list of all the items in the shop without categories
     def toList(self):
         shopList = []
         for card in self.cards:
             shopList.append(card)
-        for booster in self.boosters:
-            shopList.append(booster)
+        for pack in self.packs:
+            shopList.append(pack)
         for voucher in self.vouchers:
             shopList.append(voucher)
         return shopList
@@ -50,7 +60,7 @@ class Shop:
     def buyItemByItemIndex(self, itemIndex, save):
         # I know this is a super shitty way to figure out which item it is by the index but this is just for the CLI
         currentIndex = 1
-        itemTypes = ["cards", "boosters", "vouchers"]
+        itemTypes = ["cards", "packs", "vouchers"]
         for itemType in itemTypes:
             trueIndex = 0
             for item in eval(f"self.{itemType}"):
@@ -74,8 +84,9 @@ class Shop:
         return "Slot is empty"
 
 def loadShop(save):
-    shop = Shop(cards=[None, None], boosters=[None, None], vouchers=[None], rerollCost=5)
+    shop = Shop(cards=[None, None], packs=[None, None], vouchers=[None], rerollCost=5)
     shop.rollCards(save)
+    shop.rollPacks(save)
     buying = True
     while buying:
         print("SHOP:")
@@ -113,6 +124,36 @@ def loadShop(save):
                                 askingAboutImmediateUse = False
                             else:
                                 print(f"Unexpected response: {useImmediately}")
+                # pack
+                elif isinstance(item, Pack):
+                    possibleCards = item.open()
+                    cardPickAmount = 1
+                    if item.size == "mega":
+                        cardPickAmount = 2
+                    cardsPicked = 1
+                    openingPack = True
+                    while openingPack:
+                        iterator = 1
+                        for card in possibleCards:
+                            print(f"{iterator}: {card.toString()}")
+                            iterator += 1
+                        cardSelection = input(f"Pick {cardsPicked}/{cardPickAmount} cards! Type \"skip\" to skip!")
+                        if cardSelection  == "skip":
+                            openingPack = False
+                            print("Pack skipped!")
+                        elif cardSelection.isdigit() and 0 < int(cardSelection) <= len(possibleCards):
+                            chosenCard = possibleCards[int(cardSelection)-1]
+                            # TODO: Move this to a separate function once I have all the other card stuff
+                            save.deck.append(chosenCard.toDict())
+                            del possibleCards[int(cardSelection)-1]
+                            print(f"Added {chosenCard.toString()} to deck!")
+                            cardsPicked += 1
+                            if cardsPicked > cardPickAmount:
+                                openingPack = False
+                        else:
+                            print(f"Invalid input: {cardSelection}")
+
+
                 print(f"New Balance: ${save.money}")
         elif buyChoice == "reroll":
             if save.money >= shop.rerollCost:

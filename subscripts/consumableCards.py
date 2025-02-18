@@ -24,7 +24,7 @@ def sellConsumable(consumableIndex, save):
 
 def printConsumables(save):
     consumablesAmnt = len(save.consumables)
-    if consumablesAmnt > 1:
+    if consumablesAmnt >= 1:
         print(f"Consumables ({consumablesAmnt}/{save.consumablesLimit}):")
         iterator = 1
         for consumable in save.consumables:

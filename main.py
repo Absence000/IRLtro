@@ -46,12 +46,12 @@ def commandLinePlayRound(requiredScore, save):
             if choice in validResponses:
                 if choice == "discard" and discardCount <= 0:
                     print("You have no discards left!")
-                if choice == "inv":
+                elif choice == "inv":
                     printConsumables(save)
+                elif choice == "use" and len(save.consumables) == 0:
+                    print("You have no consumables!")
                 else:
                     selectionIsValid = True
-                if choice == "use" and len(save.consumables) > 0:
-                    print("You have no consumables!")
             else:
                 print(f"Unrecognized action: {choice}")
 
@@ -60,10 +60,15 @@ def commandLinePlayRound(requiredScore, save):
             selectionIsValid = False
             while not selectionIsValid:
                 printConsumables(save)
-                consumableSelect = input("Type the number of the consumable you want to buy or sell! Type \"cancel\" "
+                consumableSelect = input("Type the number of the consumable you want to use or sell! Type \"cancel\" "
                                          " to cancel.")
                 if consumableSelect == "cancel":
                     print("Cancelled!")
+                    selectionIsValid = True
+                elif consumableSelect.isdigit() and 0 < int(consumableSelect) <= len(save.consumables):
+                    consumable = save.consumables[int(consumableSelect)-1]
+                    del save.consumables[int(consumableSelect)-1]
+                    useConsumable(consumable, save)
                     selectionIsValid = True
 
         # card selection logic handling
@@ -189,8 +194,6 @@ def play(fromSave):
 
                     #TODO: put in shop here
                     loadShop(save)
-
-
                     saveGame(save)
                 else:
                     break
