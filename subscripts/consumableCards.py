@@ -2,6 +2,7 @@ from subscripts.cardUtils import Card
 from subscripts.planetCards import usePlanetCard
 from subscripts.priceCalcLogic import calculatePrice
 from subscripts.tarotCards import useTarotCard
+from subscripts.spacesavers import *
 import math
 
 #TODO: move the function for adding consumables to the player's hand here
@@ -32,5 +33,6 @@ def printConsumables(save):
         iterator = 1
         for consumable in save.consumables:
             print(f"{iterator}: {consumable.toString()}")
+            iterator += 1
     else:
         print("You have no consumables!")

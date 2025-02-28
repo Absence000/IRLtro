@@ -1,5 +1,5 @@
-from operator import truediv
-
+from cardCreationAndRecognition.cardImageCreator import createTaggedCardImage
+from subscripts.inputHandling import *
 from subscripts.planetCards import *
 from subscripts.saveUtils import *
 from subscripts.consumableCards import *
@@ -115,7 +115,7 @@ def loadShop(save):
                             useConsumable(item, save)
                             askingAboutImmediateUse = False
                         else:
-                            askingAboutImmediateUse = True
+                            askingAboutImmediateUse = consumableCanBeUsedImmediately(item)
                         while askingAboutImmediateUse:
                             useImmediately = input("Do you want to use this immediately? Type \"y\" or \"n\".")
                             validResponses = ["y", "n"]
@@ -155,8 +155,17 @@ def loadShop(save):
                             chosenCard = possibleCards[int(cardSelection)-1]
                             # TODO: Move this to a separate function once I have all the other card stuff
                             if chosenCard.subset == "playing":
-                                save.deck.append(chosenCard.toDict())
-                                print(f"Added {chosenCard.toString()} to deck!")
+                                if not playingIRL(save):
+                                    save.deck.append(chosenCard.toDict())
+                                    print(f"Added {chosenCard.toString()} to deck!")
+                                else:
+                                    clearPrintFolder()
+                                    createTaggedCardImage(chosenCard,
+                                                          openjson(
+                                                              "cardCreationAndRecognition/cardToArcuo.json",
+                                                              True))
+                                    print(f"Print out your {chosenCard.toString()} in the \"print\" folder "
+                                          f"and add it to the deck!")
                             elif chosenCard.subset == "tarot":
                                 useTarotCard(chosenCard, save)
                             del possibleCards[int(cardSelection)-1]
@@ -206,6 +215,9 @@ def newItemIsConsumable(item):
     return False
 
 # consumables that need a hand to work can't be used immediately
-# TODO: make this work for non-planets
-def consumableCanBeUsedImmediately(item):
+# TODO: make this work for spectrals when they're added
+def consumableCanBeUsedImmediately(consumable):
+    if consumable.subset == "tarot":
+        if openjson("consumables/tarotDict")[consumable.number]["type"] == "handModifier":
+            return False
     return True

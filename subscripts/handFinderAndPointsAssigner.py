@@ -143,7 +143,6 @@ multmult = 1
 # now that we identified the hand and the cards that need to be assigned the points, we can figure out how many points
 # to add!
 # TODO: this is where most of the joker effects come in oh god
-# TODO: make illegal hand discovery work for planet cards
 def calcPointsFromHand(hand, handData, unselectedHand, save):
     # gets the base chips and mult
     handType = handData[0]
@@ -157,6 +156,11 @@ def calcPointsFromHand(hand, handData, unselectedHand, save):
     mult = 0
     multmult = 1
 
+    # royal and straight flushes are treated the same but they get displayed differently
+    displayHandType = handType
+    if handType == "Royal Flush":
+        handType = "Straight Flush"
+
     handInfo = save.handLevels
     baseChips = handInfo[handType]["chips"]
     baseMult = handInfo[handType]["mult"]
@@ -164,7 +168,7 @@ def calcPointsFromHand(hand, handData, unselectedHand, save):
     chips = baseChips
     mult = baseMult
 
-    print(f"{handType} lvl {save.handLevels[handType]['level']}")
+    print(f"{displayHandType} lvl {save.handLevels[handType]['level']}")
     print(f"Triggered cards: {affectedCards}")
 
 
@@ -240,6 +244,22 @@ def triggerCard(card, save):
             triggerCard(card)
     chips += baseCardChipAmount
     mult += baseCardMultAmount
+
+
+handContainerDict = {
+    "High Card": [],
+    "Pair": [],
+    "Two Pair": ["Pair"],
+    "Three Of A Kind": ["Pair"],
+    "Straight": [],
+    "Flush": [],
+    "Full House": ["Pair", "Two Pair", "Three Of A Kind"],
+    "Four Of A Kind": ["Pair", "Two Pair", "Three Of A Kind"],
+    "Straight Flush": ["Flush", "Straight"],
+    "Five Of A Kind": ["Pair", "Two Pair", "Three Of A Kind", "Four Of A Kind"],
+    "Flush House": ["Pair", "Two Pair", "Three Of A Kind", "Full House", "Flush"],
+    "Flush Five": ["Pair", "Two Pair", "Three Of A Kind", "Four Of A Kind", "Five Of A Kind", "Flush"],
+}
 
 
 def testPointSystem():

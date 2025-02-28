@@ -3,6 +3,7 @@ import json
 from subscripts.spacesavers import *
 from subscripts.cardUtils import Card
 
+
 # used to make decks
 # right now it just does the standard one
 def createDeck(name):

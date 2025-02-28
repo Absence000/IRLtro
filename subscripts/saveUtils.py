@@ -1,7 +1,8 @@
 from subscripts.spacesavers import *
 
 class Save:
-    def __init__(self, deck, ante, blindIndex, money, handLevels, illegalHandsDiscovered, consumables, consumablesLimit, hand):
+    def __init__(self, deck, ante, blindIndex, money, handLevels, illegalHandsDiscovered, consumables,
+                 consumablesLimit, hand, jokers, jokerLimit):
         self.deck = deck
         self.ante = ante
         self.blindIndex = blindIndex
@@ -11,6 +12,8 @@ class Save:
         self.consumables = consumables
         self.consumablesLimit = consumablesLimit
         self.hand = hand
+        self.jokers = jokers
+        self.jokerLimit = jokerLimit
 
     def toDict(self):
         # turns the jokers and consumables into dicts
@@ -26,14 +29,17 @@ class Save:
             "illegalHandsDiscovered": self.illegalHandsDiscovered,
             "consumables": consumables,
             "consumablesLimit": self.consumablesLimit,
-            "hand": self.hand
+            "hand": self.hand,
+            "jokers": self.jokers,
+            "jokerLimit": self.jokerLimit
         })
 
 def createSaveFromDict(saveDict):
     return Save(deck=saveDict["deck"], ante=saveDict["ante"], blindIndex=saveDict["blindIndex"],
                 money=saveDict["money"], handLevels=saveDict["handLevels"],
                 illegalHandsDiscovered=saveDict["illegalHandsDiscovered"], consumables=saveDict["consumables"],
-                consumablesLimit=saveDict["consumablesLimit"], hand=saveDict["hand"])
+                consumablesLimit=saveDict["consumablesLimit"], hand=saveDict["hand"],
+                jokers=saveDict["jokers"], jokerLimit=saveDict["jokerLimit"])
 
 def saveGame(save):
     savejson("save", save.toDict())
@@ -54,5 +60,7 @@ def createBlankSave(deck):
         "Flush House": {"level": 1, "chips": 140, "mult": 14},
         "Flush Five": {"level": 1, "chips": 160, "mult": 16}
     }
-    return Save(deck=openjson("decks")[deck], ante=1, blindIndex=0, money=0, handLevels=handLevels,
-                illegalHandsDiscovered=[], consumables=[], consumablesLimit=2, hand=[])
+    if deck != "irl":
+        deck = openjson("decks")[deck]
+    return Save(deck=deck, ante=1, blindIndex=0, money=0, handLevels=handLevels,
+                illegalHandsDiscovered=[], consumables=[], consumablesLimit=2, hand=[], jokers=[], jokerLimit=5)

@@ -120,8 +120,6 @@ def fixGlass(image):
 
     return baseImage
 
-    return
-
 def setOpacity(image, amnt):
     image.putalpha(image.split()[3].point(lambda x: int(x * amnt)))
     return image
@@ -137,7 +135,14 @@ def createTaggedCardImage(card, lookupTable):
     cardImage.paste(fiducialImage, (555, 50))
     fiducialImage = fiducialImage.rotate(180)
     cardImage.paste(fiducialImage, (30, 716))
-    cardImage.save("test.png")
+    background = Image.new("RGBA", (966, 966), (0, 0, 0, 0))
+
+    img_width, img_height = cardImage.size
+    paste_x = (966 - img_width) // 2
+    paste_y = (966 - img_height) // 2
+
+    background.paste(cardImage, (paste_x, paste_y), cardImage)
+    background.save(f"print/{card.toString()}.png")
 
 
 #TODO: Add tarot, joker, planet, spectral, and stone cards here
@@ -154,7 +159,15 @@ def generateCardPairingList():
                         pairList.append(card.toBinary())
     savejson("cardToArcuo.json", pairList, True)
 
-createTaggedCardImage(Card(subset="playing", suit="C", number="2"),
-                      openjson("cardToArcuo.json", True))
-print("created!")
-arucoBoardsToCard(openjson("cardToArcuo.json", True))#, "multiple card test 2.png")
+
+def makeStandardDeck():
+    suits = ["S", "C", "D", "H"]
+    values = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"]
+    for suit in suits:
+        for value in values:
+            createTaggedCardImage(Card(subset="playing", number=value, suit=suit), openjson("cardToArcuo.json", True))
+
+# createTaggedCardImage(Card(subset="playing", suit="C", number="2"),
+#                       openjson("cardToArcuo.json", True))
+# print("created!")
+# arucoBoardsToCard(openjson("cardToArcuo.json", True))

@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from subscripts.cardUtils import *
 
-def arucoBoardsToCard(lookupTable, image_path=None):
+def arucoBoardsToCard(lookupTable, image_path=None, debugging=None):
     """
     Detects ArUco markers and groups them into potential 1×2 ArUco GridBoards (4×4_100).
     Also checks if both markers in a board are upside down.
@@ -14,15 +14,11 @@ def arucoBoardsToCard(lookupTable, image_path=None):
     parameters = cv2.aruco.DetectorParameters()
 
     def rightSideUp(corners):
-        """
-        Computes the angle of an ArUco marker relative to the horizontal axis.
-        Returns the angle in degrees.
-        """
         top_left, top_right, bottom_right, bottom_left = corners  # Extract relevant corner points
 
-        return (bottom_left[1] < top_left[1]) or (bottom_right[1] < top_right[1])
+        return (bottom_left[1] < top_left[1]) and (bottom_right[1] < top_right[1])
 
-    def process_frame(frame):
+    def process_frame(frame, displayOnly=None):
         """Detects ArUco markers, groups them into valid 1×2 boards, and checks orientation."""
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
@@ -60,27 +56,56 @@ def arucoBoardsToCard(lookupTable, image_path=None):
                 normalized_y_distance = distance_y / marker_size if marker_size > 0 else 0
 
                 # Check if they form a 1-row, 2-column structure
-                if distance_x < distance_y:  # More separated in X than in Y
-                    # if rightSideUp(corners1):
-                    #     combinedID = int(f"{id1}{id2}")
-                    # else:
-                    #     combinedID = int(f"{id2}{id1}")
+                if distance_x < distance_y:
+                    if rightSideUp(corners1):
+                        if corners1[0][1] > corners2[0][1]:
+                            upwards = True
+                        else:
+                            upwards = False
+                    else:
+                        if corners1[0][1] > corners2[0][1]:
+                            upwards = False
+                        else:
+                            upwards = True
+                    # upwards = rightSideUp(corners1) and corners1[0][1] > corners2[0][1]
+
+                    id1 = correctID(id1)
+                    id2 = correctID(id2)
+
+                    # print(f"{id1} and {id2}: {upwards}")
+
+                    if upwards:
+                        combinedID = int(f"{id1}{id2}")
+                    else:
+                        combinedID = int(f"{id2}{id1}")
                     if normalized_y_distance < 1.1:
-                        detected_boards.append({"id": int(f"{id2}{id1}"), "rightSideUp": rightSideUp(corners1)})
+                        detected_boards.append({"id": combinedID, "rightSideUp": upwards})
                     i += 2  # Skip to the next possible pair
                 else:
                     i += 1  # Move to the next marker
 
-            # Print detected board IDs
-            for board in detected_boards:
-                try:
-                    cardTest = createCardFromBinary(lookupTable[board['id']]).toString()
-                    print(f"={cardTest} ({board['id']}), {board['rightSideUp']}")
-                except Exception as e:
-                    print(e)
-                    print(f"Unrecognized card! {board['id']}, {board['rightSideUp']}, {lookupTable[board['id']]}")
-                          #f"{createCardFromBinary(lookupTable[board['id']]).number}")
+            # remove cards that appear twice
+            unique_ids = {}
 
+            for item in detected_boards:
+                id_val = item["id"]
+                if id_val not in unique_ids or item["rightSideUp"]:
+                    unique_ids[id_val] = True
+
+            if displayOnly == None:
+                fixedCardIDs = list(unique_ids.keys())
+                finishedCardDetectionList = []
+                # Print detected board IDs
+                for id in fixedCardIDs:
+                    try:
+                        detectedCard = createCardFromBinary(lookupTable[id])
+                        print(f"{detectedCard.toString()}")
+                        finishedCardDetectionList.append(detectedCard)
+                    except Exception as e:
+                        print(e)
+                        print(f"Unrecognized card! {id}, {lookupTable[id]}")
+                              #f"{createCardFromBinary(lookupTable[board['id']]).number}")
+                return frame, finishedCardDetectionList
         return frame
 
     # If an image path is provided, process a single image
@@ -90,14 +115,15 @@ def arucoBoardsToCard(lookupTable, image_path=None):
             print(f"⚠️ Error: Could not read image '{image_path}'")
             return
 
+        # frame = cv2.resize(frame, (302*3, 403*3))
         processed_frame = process_frame(frame)
-        cv2.imshow("ArUco Board Detection", processed_frame)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-        return
+        # cv2.imshow("ArUco Board Detection", processed_frame[0])
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
+        return processed_frame[1]
 
     # Otherwise, use webcam feed
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(2)
     if not cap.isOpened():
         print("⚠️ Error: Could not open webcam.")
         return
@@ -108,12 +134,20 @@ def arucoBoardsToCard(lookupTable, image_path=None):
             print("⚠️ Error: Failed to capture frame.")
             break
 
-        processed_frame = process_frame(frame)
-        cv2.imshow("ArUco Board Detection", processed_frame)
-
-        # Exit on 'q' key
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        cv2.imshow("ArUco Board Detection", frame)
+        processed_frame = process_frame(frame, True)
+        cv2.imshow("Processed ArUco Board Detection", processed_frame)
+        cv2.waitKey(0)  # Wait until user presses a key
+        cv2.destroyWindow("Processed ArUco Board Detection")
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord('q'):
             break
+        elif key == ord(' '):  # Spacebar to capture and scan
+            print("Cards detected:")
+            return process_frame(frame.copy())[1]
+            cv2.imshow("Processed ArUco Board Detection", processed_frame)
+            cv2.waitKey(0)  # Wait until user presses a key
+            cv2.destroyWindow("Processed ArUco Board Detection")
 
     # Release resources
     cap.release()
@@ -144,4 +178,14 @@ def generateBoardForCard(num):
     # Save the board image
     cv2.imwrite("testBoard.png", boardImage)
 
+def correctID(id):
+    if id == 0:
+        return "00"
+    else:
+        return str(id).zfill(2)
+
 # generate_aruco_board_image(5678)
+
+# arucoBoardsToCard(openjson("cardToArcuo.json", True))
+
+# returnFoundCards(openjson("cardToArcuo.json", True))

@@ -4,6 +4,7 @@ from subscripts.spacesavers import *
 from subscripts.saveUtils import *
 from subscripts.planetCards import *
 from subscripts.shop import *
+from subscripts.inputHandling import *
 import random
 
 
@@ -11,8 +12,9 @@ import random
 # eventually all the input lines will be replaced with actual card reading
 #TODO: boss bind support
 def commandLinePlayRound(requiredScore, save):
-    deck = save.deck
-    random.shuffle(deck)
+    if not playingIRL(save):
+        deck = save.deck
+        random.shuffle(deck)
     save.hand = []
     discardedCards = []
     playedCards = []
@@ -24,13 +26,16 @@ def commandLinePlayRound(requiredScore, save):
     playing = True
 
     while playing:
-        while len(save.hand) < 8:
-            save.hand.append(createCardFromDict(deck[0]))
-            del deck[0]
+
+        if not playingIRL(save):
+            while len(save.hand) < 8:
+                save.hand.append(createCardFromDict(deck[0]))
+                del deck[0]
 
         print(f"{handsCount} hands left, {discardCount} discards")
         print(f"{score}/{requiredScore} chips")
-        print(f"Current hand:\n" + CLDisplayHand(save.hand))
+        if playingIRL(save):
+            print(f"Current hand:\n" + CLDisplayHand(save.hand))
         # print(f"{len(deck) + len()} cards")
         selectionIsValid = False
         validResponses = ["play", "discard", "use", "inv"]
@@ -67,29 +72,32 @@ def commandLinePlayRound(requiredScore, save):
 
         # card selection logic handling
         if choice in ["play", "discard"]:
-            selectionIsValid = False
-            while not selectionIsValid:
-                cardSelection = input(f"Type the card indexes that you want to {choice}, separated by commas and a space.")
-                try:
-                    selectedHandIndexes = [int(num) for num in cardSelection.split(", ")]
+            if not playingIRL(save):
+                selectionIsValid = False
+                while not selectionIsValid:
+                    cardSelection = input(f"Type the card indexes that you want to {choice}, separated by commas and a space.")
+                    try:
+                        selectedHandIndexes = [int(num) for num in cardSelection.split(", ")]
 
-                    # makes sure the indexes work, are <= 5 and each one is between 1 and 8 inclusive
-                    if len(selectedHandIndexes) > 5:
-                        print("You can't select more than 5 cards at once!")
-                    elif all(1 <= index <= 8 for index in selectedHandIndexes):
-                        selectionIsValid = True
-                    else:
-                        print("Numbers out of range!")
-                except:
-                    print(f"Unrecognized hand indexes: {cardSelection}")
+                        # makes sure the indexes work, are <= 5 and each one is between 1 and 8 inclusive
+                        if len(selectedHandIndexes) > 5:
+                            print("You can't select more than 5 cards at once!")
+                        elif all(1 <= index <= 8 for index in selectedHandIndexes):
+                            selectionIsValid = True
+                        else:
+                            print("Numbers out of range!")
+                    except:
+                        print(f"Unrecognized hand indexes: {cardSelection}")
 
-            selectedHand = []
-            for index in selectedHandIndexes:
-                selectedHand.append(save.hand[index-1])
+                selectedHand = []
+                for index in selectedHandIndexes:
+                    selectedHand.append(save.hand[index-1])
 
-            # deletes in reverse order so it doesn't screw up the other indexes
-            for index in sorted(selectedHandIndexes, reverse=True):
-                del save.hand[index-1]
+                # deletes in reverse order so it doesn't screw up the other indexes
+                for index in sorted(selectedHandIndexes, reverse=True):
+                    del save.hand[index-1]
+            else:
+                selectedHand = returnCardsFromImage()
 
             if choice == "play":
                 points, affectedCards = calcPointsFromHand(selectedHand, findBestHand(selectedHand), save.hand, save)
@@ -124,14 +132,15 @@ def commandLinePlayRound(requiredScore, save):
                     win = False
 
                 if not playing:
-                    # resets the deck
-                    for card in discardedCards:
-                        deck.append(card.toDict())
-                    for card in playedCards:
-                        deck.append(card.toDict())
-                    for card in save.hand:
-                        deck.append(card.toDict())
-                        save.hand = []
+                    if not playingIRL(save):
+                        # resets the deck
+                        for card in discardedCards:
+                            deck.append(card.toDict())
+                        for card in playedCards:
+                            deck.append(card.toDict())
+                        for card in save.hand:
+                            deck.append(card.toDict())
+                            save.hand = []
 
                     return {"win": win, "handsLeft": handsCount}
             elif choice == "discard":
@@ -153,7 +162,7 @@ def play(fromSave, deck):
     if fromSave:
         save = createSaveFromDict(openjson("save"))
     else:
-        save = createBlankSave(deck="gold test")
+        save = createBlankSave(deck=deck)
     alive = True
     while alive:
         # while state == "selectingAndPlayingBlind":
@@ -197,7 +206,24 @@ def play(fromSave, deck):
                 save.blindIndex += 1
                 saveGame(save)
 
+def updateJokers(attribute):
+    jokerDict = openjson("jokerDict")
+    for joker in jokerDict.items():
+        if "type" not in joker[1]:
+            typeDict = {
+                "c": "chip",
+                "m": "mult",
+                "xm": "multmult",
+                "+": "chipsAndMult",
+                "!": "effect",
+                "retrig": "retrig",
+                "$": "econ"
+            }
+            index = input(joker[0])
+            joker[1][attribute] = typeDict[index]
+            savejson("jokerDict", jokerDict)
+
 
 # commandLinePlayAnte(300, openjson("decks")["standard"])
 
-play(fromSave=False, deck="standard")
+play(fromSave=False, deck="irl")

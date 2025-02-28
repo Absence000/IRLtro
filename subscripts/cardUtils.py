@@ -7,6 +7,13 @@ suitAbrToName = {
     "D": "♦",
     "H": "♥"
 }
+
+fancySuitAbrToName = {
+    "S": " of Spades",
+    "C": " of Clubs",
+    "D": " of Diamonds",
+    "H": " of Hearts"
+}
 valueAbrToName = {
     "J": "Jack",
     "Q": "Queen",
@@ -35,7 +42,7 @@ class Card:
             "retriggerCount": self.retriggerCount
         }
 
-    def toString(self):
+    def toString(self, mode=None):
         if self.subset == "playing":
             descriptor = ""
             if self.seal is not None:
@@ -46,18 +53,30 @@ class Card:
                 descriptor += self.enhancement.capitalize() + " "
 
             #TODO: add fancy mode here for proper title
+            if mode == "fancy":
+                suit = fancySuitAbrToName[self.suit]
+            else:
+                suit = suitAbrToName[self.suit]
 
             # if self.number.isdigit():
             #     descriptor += self.number + " of "
             # else:
             #     descriptor += valueAbrToName[self.number] + " of "
 
-            return descriptor + self.number + suitAbrToName[self.suit]
+            return descriptor + self.number + suit
         if self.subset == "planet":
             return f"{self.number} (Upgrade {openjson('consumables/planetDict')[self.number]['hand']})"
 
         if self.subset == "tarot":
             return f"{self.number}: {openjson('consumables/tarotDict')[self.number]['description']}"
+
+        if self.subset == "Joker":
+            descriptor = self.number
+            if mode == "fancy":
+                jokerDict = openjson("jokerDict")
+                descriptor += f": {jokerDict[self.number]['description']}"
+
+            return descriptor
 
     # TODO: add a joker list and all the other card stuff here
     def toBinary(card):
@@ -147,6 +166,7 @@ def binaryToPlayingCardNumber(binary):
         return str(number)
 
 # TODO: get this working with vouchers eventually
+# TODO: consumable blocking!
 def generateWeightedRandomCard(subset, save):
     if subset == "playing":
         # editions: 1.2% for poly, 2.8% for holo, 4% for foil
@@ -223,6 +243,9 @@ def generateShuffledListOfUnlockedPlanetCards(save):
 
     random.shuffle(viablePlanetCards)
     return viablePlanetCards
+
+def generateShuffledListOfFinishedJokers(save):
+    return
 
 def CLDisplayHand(hand):
     handDisplay = []
