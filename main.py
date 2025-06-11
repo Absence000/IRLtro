@@ -34,7 +34,7 @@ def commandLinePlayRound(requiredScore, save):
 
         print(f"{handsCount} hands left, {discardCount} discards")
         print(f"{score}/{requiredScore} chips")
-        if playingIRL(save):
+        if not playingIRL(save):
             print(f"Current hand:\n" + CLDisplayHand(save.hand))
         # print(f"{len(deck) + len()} cards")
         selectionIsValid = False
@@ -226,4 +226,4 @@ def updateJokers(attribute):
 
 # commandLinePlayAnte(300, openjson("decks")["standard"])
 
-play(fromSave=False, deck="irl")
+play(fromSave=False, deck="standard")
