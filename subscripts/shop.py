@@ -180,7 +180,6 @@ def loadShop(save):
                         else:
                             print(f"Invalid input: {cardSelection}")
 
-
                 print(f"New Balance: ${save.money}")
         elif buyChoice == "reroll":
             if save.money >= shop.rerollCost:

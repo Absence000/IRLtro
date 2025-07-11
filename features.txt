@@ -29,4 +29,6 @@ final
     - tarot and spectral cards
     - antes
     - shop
+    - vouchers
+    - boss blinds
     - every single joker

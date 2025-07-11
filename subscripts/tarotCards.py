@@ -55,7 +55,6 @@ def useTarotCard(card, save):
                     else:
                         print(f"Select exactly {maxCardSelectAmount} cards!")
 
-
         # I know this is a really shitty way of handling irl vs command line playing but who cares lmao
 
         # suit converters (star, moon, sun, world)
@@ -120,6 +119,7 @@ def useTarotCard(card, save):
                 save.hand[selectedHandIndexes[0]] = save.hand[selectedHandIndexes[1]]
 
         print(f"Success! New hand:\n{CLDisplayHand(save.hand)}")
+
 
 def increaseCardVal(oldVal):
     face_cards = {"J": 11, "Q": 12, "K": 13, "A": 14}

@@ -34,6 +34,12 @@ class Save:
             "jokerLimit": self.jokerLimit
         })
 
+    def hasJoker(self, name):
+        for joker in self.jokers:
+            if name in joker:
+                return True
+        return False
+
 def createSaveFromDict(saveDict):
     return Save(deck=saveDict["deck"], ante=saveDict["ante"], blindIndex=saveDict["blindIndex"],
                 money=saveDict["money"], handLevels=saveDict["handLevels"],

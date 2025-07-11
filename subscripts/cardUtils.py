@@ -22,14 +22,17 @@ valueAbrToName = {
 }
 
 class Card:
-    def __init__(self, subset, number, suit=None, enhancement=None, edition=None, seal=None, retriggerCount=None):
+    def __init__(self, subset, number, suit=None, enhancement=None, edition=None, seal=None, retriggeredBy=None):
         self.subset = subset
         self.number = number
         self.enhancement = enhancement
         self.edition = edition
         self.seal = seal
         self.suit = suit
-        self.retriggerCount = retriggerCount
+        if retriggeredBy is None:
+            self.retriggeredBy = []
+        else:
+            self.retriggeredBy = retriggeredBy
 
     def toDict(self):
         return {
@@ -39,7 +42,7 @@ class Card:
             "edition": self.edition,
             "seal": self.seal,
             "suit": self.suit,
-            "retriggerCount": self.retriggerCount
+            "retriggeredBy": self.retriggeredBy
         }
 
     def toString(self, mode=None):
@@ -100,12 +103,16 @@ class Card:
         elif card.subset == "spectral":
             return
 
+    #TODO: fix this this is dumb
+    def getValue(self):
+        numList = [2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K", "A"]
+        return numList.index(self.number) + 2
 
 # takes in a dictionary of card values and returns a Card object
 def createCardFromDict(cardDict):
     return Card(subset=cardDict["subset"], number=cardDict["number"], suit=cardDict["suit"],
                 enhancement=cardDict["enhancement"], edition=cardDict["edition"],
-                seal=cardDict["seal"], retriggerCount=cardDict["retriggerCount"])
+                seal=cardDict["seal"], retriggerCount=cardDict["retriggeredBy"])
 
 
 binaryDict = {
@@ -221,6 +228,10 @@ def generateShuffledListOfFinishedTarotCards():
     random.shuffle(viableTarotCards)
     return viableTarotCards
 
+def addTarotCardIfRoom(save):
+    if len(save.consumables) <= save.consumablesLimit:
+        save.consumables.append(generateShuffledListOfFinishedTarotCards([0]))
+
 defaultplanetCards = [Card(subset="planet", number="Pluto"),
                       Card(subset="planet", number="Mercury"),
                       Card(subset="planet", number="Uranus"),
@@ -243,6 +254,14 @@ def generateShuffledListOfUnlockedPlanetCards(save):
 
     random.shuffle(viablePlanetCards)
     return viablePlanetCards
+
+
+def cardCountsAsFaceCard(card, save):
+    if save.hasJoker("Pareidolia"):
+        return True
+    elif isinstance(card.number, str):
+        return True
+    return False
 
 def generateShuffledListOfFinishedJokers(save):
     return

@@ -108,6 +108,7 @@ def commandLinePlayRound(requiredScore, save):
                         if selectedHand[cardIndex].number in affectedCards or affectedCards == "all":
                             if random.randint(1, 1) == 1:
                                 print(f"{selectedHand[cardIndex].toString()} broke!")
+                                # TODO: Glass joker stuff here
                                 del selectedHand[cardIndex]
 
                 print(f"+{points} points! \n")
@@ -116,6 +117,7 @@ def commandLinePlayRound(requiredScore, save):
                 if score >= requiredScore:
                     print(f"Victory!\nScore:{score}")
                     # TODO: put blue seal stuff here
+                    # TODO: put gold card/blue seal retriggering from mime in here
                     goldCardAmnt = 0
                     for card in save.hand:
                         if card.enhancement == "gold":

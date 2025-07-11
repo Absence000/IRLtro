@@ -1,0 +1,18 @@
+{
+  "Overstock": {
+    "description": "+1 card slot available in shop (to 3 slots)",
+    "upgrade": "Overstock Plus"
+  },
+  "Clearance Sale": {
+    "description": "All cards and packs in shop are 25% off",
+    "upgrade": "Liquidation"
+  },
+  "Hone": {
+    "description": "Foil, Holographic, and Polychrome cards appear 2x more often",
+    "upgrade": "Glow Up"
+  },
+  "Reroll Surplus": {
+    "description": "Rerolls cost $2 less",
+    "upgrade": "Reroll Glut"
+  }
+}
