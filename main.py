@@ -3,8 +3,9 @@ from subscripts.handFinderAndPointsAssigner import *
 from subscripts.saveUtils import *
 from subscripts.shop import *
 from subscripts.inputHandling import *
-from cardCreationAndRecognition.cardImageCreator import makeStandardDeck
+from cardCreationAndRecognition.cardImageCreator import makeStandardDeck, generateCardPairingList
 import random, pygame
+from subscripts.spectralCards import Spectral
 
 
 # play a specific ante in the command line
@@ -119,6 +120,8 @@ def commandLinePlayRound(save):
                         if selectedHand[cardIndex].number in affectedCards or affectedCards == "all":
                             if random.randint(1, 1) == 1:
                                 print(f"{selectedHand[cardIndex].toString()} broke!")
+                                if playingIRL(save):
+                                    print("Put it aside and don't use it for the rest of the game!")
                                 # TODO: Glass joker stuff here
                                 del selectedHand[cardIndex]
 
@@ -176,7 +179,8 @@ blindIndexToBlindInfo = [("Small Blind", 1, 3), ("Big Blind", 1.5, 4), ("Boss Bl
 
 # command line version for bugfixing
 def CLPlay(fromSave, deck):
-    if fromSave:
+    save = createSaveFromDict(openjson("save"))
+    if fromSave and save.state != "dead":
         save = createSaveFromDict(openjson("save"))
         if save.state != "selectingBlind":
             print(f"ANTE {save.ante}")
@@ -235,7 +239,9 @@ def CLPlay(fromSave, deck):
                 save.shop.rollPacks(save)
                 saveGame(save)
             else:
-                break
+                save.state = "dead"
+                saveGame(save)
+                alive = False
         # shopping
         while save.state == "shop":
             print(f"Money: ${save.money}")
@@ -272,11 +278,9 @@ def main(loadSave=False):
     # cap.release()
     pygame.quit()
 
-# CLPlay(fromSave=True, deck="gold test")
+CLPlay(fromSave=False, deck="standard")
 
-createTaggedCardImage(Card({
-    "number": "A",
-    "suit": "S",
-    "enhancement": "glass",
-    "edition": "polychrome"
-}), openjson("cardCreationAndRecognition/cardToArcuo.json", True))
+# jokerDict = openjson("jokerDict")
+# name = "Half Joker"
+# joker = Joker((name, jokerDict[name]), edition="polychrome")
+# createTaggedCardImage(joker, openjson("cardCreationAndRecognition/cardToArcuo.json", True))

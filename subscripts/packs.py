@@ -16,6 +16,8 @@ class Pack():
             subset = "planet"
         elif subset == "standard":
             subset = "playing"
+        elif subset == "buffoon":
+            subset = "joker"
         for iterator in range(subsetDict[self.size]):
             cardList.append(generateWeightedRandomCard(subset, save))
         return cardList
@@ -51,7 +53,7 @@ packWeightDict = {
 # TODO: add support for buffoon and spectral packs
 def generatePackForSale():
     sizes = ["normal", "jumbo", "mega"]
-    addedPacks = ["standard", "arcana", "celestial"]
+    addedPacks = ["standard", "arcana", "celestial", "buffoon"]
     packOptions = []
     packWeights = []
     for subset in addedPacks:

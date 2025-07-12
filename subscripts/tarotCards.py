@@ -7,8 +7,14 @@ class Tarot:
         self.name = name
         self.negative = negative
 
-    def toString(self):
-        return f"{self.name}: {openjson('consumables/tarotDict')[self.name]['description']}"
+    def toString(self, mode=None):
+        isNegative = ""
+        if self.negative:
+            isNegative = "Negative "
+        if mode is None:
+            return f"{isNegative}{self.name}: {openjson('consumables/tarotDict')[self.name]['description']}"
+        else:
+            return f"{isNegative}{self.name}"
 
     def toDict(self):
         return{
@@ -16,6 +22,14 @@ class Tarot:
             "negative": self.negative,
             "type": "tarot"
         }
+
+    def toBinary(self):
+        nameIndex = list(openjson('consumables/tarotDict').keys()).index(self.name)
+        negativeBit = "0"
+        if self.negative:
+            negativeBit = "1"
+        binaryEncoder = "011" + str(format(nameIndex, '05b')) + negativeBit + "00000000"
+        return int(binaryEncoder, 2)
 
 def generateShuffledListOfFinishedTarotCards():
     finishedTarots = ["The Magician (I)", "The Empress (III)", "The Hierophant (V)", "The Lovers (VI)",
@@ -69,19 +83,21 @@ def useTarotCard(card, save):
                 except:
                     print(f"Unrecognized hand indexes: {cardSelection}")
             else:
-                #TODO: fix the messages so the user has time to choose
-                print(f"Put {upTo}{maxCardSelectAmount}  cards in the center to select them!"
-                                      f"Type \"cancel\" to cancel.")
-                selectedHand = returnCardsFromImage()
-                if len(selectedHand) > maxCardSelectAmount:
-                    print(f"You can't select more than {maxCardSelectAmount} cards at once!")
-                elif canSelectLessThanMax:
-                    selectionIsValid = True
-                else:
-                    if len(selectedHand) == maxCardSelectAmount:
-                        selectionIsValid = True
-                    else:
-                        print(f"Select exactly {maxCardSelectAmount} cards!")
+                # TODO: fix the messages so the user has time to choose
+                while not selectionIsValid:
+                    cardSelection = input(f"Put {upTo}{maxCardSelectAmount}  cards in the center and type \"play\" "
+                                          f"to select them! Type \"cancel\" to cancel.")
+                    if cardSelection == "play":
+                        selectedHand = returnCardsFromImage()["middle"]
+                        if len(selectedHand) > maxCardSelectAmount:
+                            print(f"You can't select more than {maxCardSelectAmount} cards at once!")
+                        elif canSelectLessThanMax:
+                            selectionIsValid = True
+                        else:
+                            if len(selectedHand) == maxCardSelectAmount:
+                                selectionIsValid = True
+                            else:
+                                print(f"Select exactly {maxCardSelectAmount} cards!")
 
         # I know this is a really shitty way of handling irl vs command line playing but who cares lmao
 
@@ -89,10 +105,9 @@ def useTarotCard(card, save):
         if tarotCardInfo["modifier"] == "suit":
             if playingIRL(save):
                 clearPrintFolder()
-                lookupTable = openjson("cardCreationAndRecognition/cardToArcuo.json", True)
                 for card in selectedHand:
                     card.suit = tarotCardInfo["suit"]
-                    createTaggedCardImage(card, lookupTable)
+                    prepareCardForPrinting(card, keep=True)
                 print("Print out the cards in the \"print\" folder, and replace the current cards with them!")
 
             else:
@@ -103,10 +118,9 @@ def useTarotCard(card, save):
         elif tarotCardInfo["modifier"] == "enhancer":
             if playingIRL(save):
                 clearPrintFolder()
-                lookupTable = openjson("cardCreationAndRecognition/cardToArcuo.json", True)
                 for card in selectedHand:
                     card.enhancement = tarotCardInfo["enhancement"]
-                    createTaggedCardImage(card, lookupTable)
+                    prepareCardForPrinting(card, keep=True)
                 print("Print out the cards in the \"print\" folder, and replace the current cards with them!")
 
             else:
@@ -117,10 +131,9 @@ def useTarotCard(card, save):
         elif tarotCardInfo["modifier"] == "rank":
             if playingIRL(save):
                 clearPrintFolder()
-                lookupTable = openjson("cardCreationAndRecognition/cardToArcuo.json", True)
                 for card in selectedHand:
                     card.number = increaseCardVal(card.number)
-                    createTaggedCardImage(card, lookupTable)
+                    prepareCardForPrinting(card, keep=True)
                 print("Print out the cards in the \"print\" folder, and replace the current cards with them!")
 
             else:
@@ -138,9 +151,8 @@ def useTarotCard(card, save):
         # convert converter (death)
         elif tarotCardInfo["modifier"] == "convert":
             if playingIRL(save):
-                clearPrintFolder()
-                lookupTable = openjson("cardCreationAndRecognition/cardToArcuo.json", True)
-                createTaggedCardImage(selectedHand[1], lookupTable)
+                from cardCreationAndRecognition.cardImageCreator import createTaggedCardImage
+                prepareCardForPrinting(selectedHand[1])
                 print("Print out the card in the \"print\" folder, and replace the left card with it!")
 
             else:

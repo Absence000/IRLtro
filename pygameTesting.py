@@ -19,7 +19,7 @@ def showDetailedCamFeed():
     pygame.display.set_caption("IRLatro")
     font = pygame.font.SysFont(None, 30)
 
-    lookupTable = openjson("cardCreationAndRecognition/cardToArcuo.json", True)
+    lookupTable = openjson("cardCreationAndRecognition/cardToArcuo old.json", True)
 
     # Colors
     WHITE = (255, 255, 255)

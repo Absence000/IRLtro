@@ -213,10 +213,10 @@ def returnFoundCards():
     aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_100)
     parameters = cv2.aruco.DetectorParameters()
     detected_boards = get_detected_boards(frame, aruco_dict, parameters)
-    return arcuoToCard(detected_boards, openjson("cardCreationAndRecognition/cardToArcuo.json", True)
+    return arcuoToCard(detected_boards, openjson("cardCreationAndRecognition/cardToArcuo old.json", True)
 )
 
-# displayFoundCards(openjson("cardToArcuo.json", True))  # Display webcam feed with overlayed tracking info
+# displayFoundCards(openjson("cardToArcuo old.json", True))  # Display webcam feed with overlayed tracking info
 
 def pygameDisplayFoundCards(lookupTable, frame):
     # opens the webcam frame and draws all the cards and stuff

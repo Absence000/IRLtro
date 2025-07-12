@@ -1,5 +1,8 @@
 from subscripts.planetCards import Planet
-from subscripts.tarotCards import generateShuffledListOfFinishedTarotCards
+from subscripts.spectralCards import Spectral
+from subscripts.tarotCards import Tarot, generateShuffledListOfFinishedTarotCards
+from subscripts.jokers import Joker, generateRandomWeightedJoker
+from subscripts.spacesavers import *
 import random
 
 suitAbrToName = {
@@ -71,6 +74,8 @@ class Card:
         #         descriptor += f": {jokerDict[self.number]['description']}"
 
     # TODO: add a joker list and all the other card stuff here
+    # all cards are represented with 17 bits!
+    # first 3 are identity bits
     def toBinary(card):
         if card.enhancement != "stone":
             # regular playing cards can't be negative so I do 2 bits for editions instead of 3
@@ -81,7 +86,7 @@ class Card:
                              playingCardNumberToBinary(card.number))
         else:
             binaryEncoder = ("110" + attributeToBinary("edition", card.edition, 2) +
-                             attributeToBinary("seal", card.seal, 3))
+                             attributeToBinary("seal", card.seal, 3) + "000000000")
         return int(binaryEncoder, 2)
 
     #TODO: fix this this is dumb
@@ -108,19 +113,35 @@ def createCardFromBinary(binary):
     subset = binaryToAttribute("subset", binary[0:3])
     if subset == "playing":
         return Card({
-            "subset": subset,
             "edition": binaryToAttribute("edition", binary[3:5]),
             "enhancement": binaryToAttribute("enhancement", binary[5:8]),
             "seal": binaryToAttribute("seal", binary[8:11]),
             "suit": binaryToAttribute("suit", binary[11:13]),
             "number": binaryToPlayingCardNumber(binary[13:17])
         })
+
+    # TODO: Move these to a separate function for each
     elif subset == "tarot":
-        return
+        tarotDict = openjson("consumables/tarotDict")
+        nameIndex = int(binary[3:7], 2)
+        negative = True
+        if binary[8] == "0":
+            negative = False
+        return Tarot(name=list(tarotDict)[nameIndex], negative=negative)
     elif subset == "planet":
-        return
+        planetDict = openjson("consumables/planetDict")
+        nameIndex = int(binary[3:6], 2)
+        negative = True
+        if binary[7] == "0":
+            negative = False
+        return Planet(name=list(planetDict)[nameIndex], negative=negative)
     elif subset == "spectral":
-        return
+        spectralDict = openjson("consumables/spectralDict")
+        nameIndex = int(binary[3:7], 2)
+        negative = True
+        if binary[8] == "0":
+            negative = False
+        return Spectral(name=list(spectralDict)[nameIndex], negative=negative)
     elif subset == "stone":
         # since stone cards don't show their suit or number, I just init them as an ace of spades
         # if vampire removes the stone enhancement, the number and suit will be randomized
@@ -132,6 +153,13 @@ def createCardFromBinary(binary):
             "suit": "S",
             "number": "A"
         })
+    elif subset == "Joker":
+        jokerDict = openjson("jokerDict")
+        nameIndex = int(binary[3:10], 2)
+        editionIndex = int(binary[10:12], 2)
+        edition = [None, "foil", "holographic", "polychrome", "negative"][editionIndex]
+        data = list(jokerDict)[nameIndex]
+        return Joker(data, edition)
 
 
 def attributeToBinary(type, attribute, bits):
@@ -200,7 +228,7 @@ def generateWeightedRandomCard(subset, save):
     elif subset == "planet":
         return generateShuffledListOfUnlockedPlanetCards(save)[0]
     elif subset == "joker":
-        return generateShuffledListOfFinishedJokers(save)[0]
+        return generateRandomWeightedJoker(save)
 
 
 

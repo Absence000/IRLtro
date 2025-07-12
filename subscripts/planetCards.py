@@ -7,8 +7,14 @@ class Planet:
         self.name = name
         self.negative = negative
 
-    def toString(self):
-        return f"{self.name} (Upgrade {openjson('consumables/planetDict')[self.name]['hand']})"
+    def toString(self, mode=None):
+        isNegative = ""
+        if self.negative:
+            isNegative = "Negative "
+        if mode is None:
+            return f"{isNegative}{self.name} (Upgrade {openjson('consumables/planetDict')[self.name]['hand']})"
+        else:
+            return f"{isNegative}{self.name}"
 
     def toDict(self):
         return{
@@ -16,6 +22,14 @@ class Planet:
             "negative": self.negative,
             "type": "planet"
         }
+
+    def toBinary(self):
+        nameIndex = list(openjson('consumables/planetDict').keys()).index(self.name)
+        negativeBit = "0"
+        if self.negative:
+            negativeBit = "1"
+        binaryEncoder = "100" + str(format(nameIndex, '04b')) + negativeBit + "000000000"
+        return int(binaryEncoder, 2)
 
 
 def usePlanetCard(card, save):

@@ -1,4 +1,3 @@
-from cardCreationAndRecognition.cardImageCreator import createTaggedCardImage
 from subscripts.inputHandling import *
 from subscripts.planetCards import *
 from subscripts.consumableCards import *
@@ -7,7 +6,7 @@ from subscripts.packs import Pack, generatePackForSale
 from subscripts.cardUtils import Card, generateWeightedRandomCard
 from subscripts.tarotCards import useTarotCard, Tarot
 from subscripts.inputHandling import CLDisplayHand
-from subscripts.jokers import generateShuffledListOfFinishedJokersByRarity, Joker
+from subscripts.jokers import generateRandomWeightedJoker, generateShuffledListOfFinishedJokersByRarity, Joker
 
 # TODO: add something for the voucher to remain the same until the Boss Blind is defeated
 class Shop:
@@ -29,7 +28,7 @@ class Shop:
     def rollPacks(self, save):
         packList = []
         for i in range(2):
-            packForSale =generatePackForSale()
+            packForSale = generatePackForSale()
             price = calculatePrice(packForSale, save)
             packList.append([packForSale, price])
         self.packs = packList
@@ -179,19 +178,27 @@ def loadShop(save):
                             askingAboutImmediateUse = True
                         while askingAboutImmediateUse:
                             useImmediately = input("Do you want to use this immediately? Type \"y\" or \"n\".")
-                            validResponses = ["y", "n"]
                             if useImmediately == "y":
                                 useConsumable(item, save)
                                 askingAboutImmediateUse = False
                             elif useImmediately == "n":
-                                print("Putting your consumable into storage!")
-                                save.consumables.append(item)
-                                askingAboutImmediateUse = False
+                                if playingIRL(save):
+                                    prepareCardForPrinting(item)
+                                    print("Print out your card in the \"print\" folder and put it on the top third of the screen!")
+                                else:
+                                    print("Putting your consumable into storage!")
+                                    save.consumables.append(item)
+                                    askingAboutImmediateUse = False
                             else:
                                 print(f"Unexpected response: {useImmediately}")
                     else:
-                        print("Putting your consumable into storage!")
-                        save.consumables.append(item)
+                        if playingIRL(save):
+                            prepareCardForPrinting(item)
+                            print("Print out your card in the \"print\" folder "
+                                  "and put it on the top third of the screen!")
+                        else:
+                            print("Putting your consumable into storage!")
+                            save.consumables.append(item)
                 # pack
                 elif isinstance(item, Pack):
                     possibleCards = item.open(save)
@@ -226,7 +233,7 @@ def loadShop(save):
                                     clearPrintFolder()
                                     createTaggedCardImage(chosenCard,
                                                           openjson(
-                                                              "cardCreationAndRecognition/cardToArcuo.json",
+                                                              "cardCreationAndRecognition/cardToArcuo old.json",
                                                               True))
                                     print(f"Print out your {chosenCard.toString()} in the \"print\" folder "
                                           f"and add it to the deck!")
@@ -238,16 +245,20 @@ def loadShop(save):
                             cardsPicked += 1
                             if cardsPicked > cardPickAmount:
                                 openingPack = False
-                                if item.needsHandToUse():
-                                    for card in save.hand:
-                                        save.deck.append(card)
-                                    save.hand = []
-
+                                if not playingIRL(save):
+                                    if item.needsHandToUse():
+                                        for card in save.hand:
+                                            save.deck.append(card)
+                                        save.hand = []
                         else:
                             print(f"Invalid input: {cardSelection}")
                 elif isinstance(item, Joker):
                     # jokers are the easiest for logic since you just add them
-                    save.jokers.append(item)
+                    if playingIRL(save):
+                        prepareCardForPrinting(item)
+                        print("Print out the joker in the \"print\" folder and put it in the top third of the screen!")
+                    else:
+                        save.jokers.append(item)
 
                 print(f"New Balance: ${save.money}")
                 saveGame(save)
@@ -292,13 +303,7 @@ def generateCardForSale(save):
     weights = [4, 4, 20]
 
     cardType = random.choices(options, weights)[0]
-    if cardType == "joker":
-        rarities = ["Common", "Uncommon", "Rare"]
-        weights = [70, 25, 5]
-        rarity = random.choices(rarities, weights)[0]
-        return generateShuffledListOfFinishedJokersByRarity(rarity, save)[0]
-    else:
-        return generateWeightedRandomCard(cardType, save)
+    return generateWeightedRandomCard(cardType, save)
 
 # if the item is consumable it asks if the player wants to use it right away or not
 def newItemIsConsumable(item):

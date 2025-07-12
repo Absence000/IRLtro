@@ -1,5 +1,6 @@
 import cv2, os, shutil
 from subscripts.spacesavers import *
+from cardCreationAndRecognition.cardImageCreator import createTaggedCardImage
 
 
 def playingIRL(save):
@@ -29,7 +30,7 @@ def captureImage():
     cv2.destroyAllWindows()
 
 # def returnCardsFromImage():
-#     return returnFoundCards(openjson("cardCreationAndRecognition/cardToArcuo.json", True))
+#     return returnFoundCards(openjson("cardCreationAndRecognition/cardToArcuo old.json", True))
 
 
 def clearPrintFolder():
@@ -50,6 +51,11 @@ def clearPrintFolder():
         except Exception as e:
             print(f"Error deleting {file_path}: {e}")
 
+def prepareCardForPrinting(card, keep=None):
+    if keep is None:
+        clearPrintFolder()
+    lookupTable = openjson("cardCreationAndRecognition/cardToArcuo old.json", True)
+    createTaggedCardImage(card, lookupTable)
 
 def CLDisplayHand(hand):
     handDisplay = []

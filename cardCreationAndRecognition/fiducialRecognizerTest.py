@@ -200,6 +200,6 @@ def correctID(id):
 
 # generate_aruco_board_image(5678)
 
-# arucoBoardsToCard(openjson("cardToArcuo.json", True))
+# arucoBoardsToCard(openjson("cardToArcuo old.json", True))
 
-# returnFoundCards(openjson("cardToArcuo.json", True))
+# returnFoundCards(openjson("cardToArcuo old.json", True))

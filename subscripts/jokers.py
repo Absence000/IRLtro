@@ -3,7 +3,7 @@ from subscripts.spacesavers import *
 
 
 class Joker:
-    def __init__(self, jokerDict):
+    def __init__(self, jokerDict, edition=None):
         # this is dumb since I mistakenly put the stuff that's in every joker in with the other stuff that isn't
         self.name = jokerDict[0]
         unsortedData = jokerDict[1]
@@ -13,7 +13,7 @@ class Joker:
         self.rarity = unsortedData["rarity"]
         self.description = unsortedData["description"]
         self.additionalSellValue = unsortedData.get("additionalSellValue", 0)
-        self.edition = unsortedData.get("edition")
+        self.edition = edition
 
     def getSellValue(self):
         # yes I know the joker is stored as a dict and all the other cards are objects deal with it
@@ -21,12 +21,17 @@ class Joker:
         if self.name == "Egg":
             return self.data["sellValue"]
         sellCost = max(1, math.floor(self.data["cost"] / 2))
-        if "edition" in self.data:
-            sellCost += editionSellValueDict[self.data["edition"]]
+        sellCost += editionSellValueDict[self.data["edition"]]
         return sellCost
 
-    def toString(self):
-        return (f"{self.name}: {self.description}")
+    def toString(self, mode=None):
+        editionIndicator = ""
+        if self.edition is not None:
+            editionIndicator = f"{self.edition.capitalize()} "
+        if mode is None:
+            return (f"{editionIndicator}{self.name}: {self.description}")
+        else:
+            return f"{editionIndicator}{self.name}"
 
     def toDict(self):
         return (self.name, self.data | {
@@ -38,12 +43,21 @@ class Joker:
             "edition": self.edition
         })
 
+    def toBinary(self):
+        nameIndex = list(openjson('jokerDict').keys()).index(self.name)
+        editionIndex = editionBinaryDecodingList.index(self.edition)
+        binaryEncoder = "001" + str(format(nameIndex, '08b')) + str(format(editionIndex, '03b')) + "000"
+        return int(binaryEncoder, 2)
+
 editionSellValueDict = {
+    None: 0,
     "foil": 2,
     "holographic": 3,
     "polychrome": 5,
     "negative": 5
 }
+
+editionBinaryDecodingList = [None, "foil", "holographic", "polychrome", "negative"]
 
 def generateShuffledListOfFinishedJokersByRarity(rarity, save):
     # TODO: there's some jokers that can't be spawned under specific conditions
@@ -54,3 +68,17 @@ def generateShuffledListOfFinishedJokersByRarity(rarity, save):
             finishedJokers.append(Joker(joker))
     random.shuffle(finishedJokers)
     return finishedJokers
+
+def generateRandomWeightedJoker(save):
+    rarities = ["Common", "Uncommon", "Rare"]
+    weights = [70, 25, 5]
+    rarity = random.choices(rarities, weights)[0]
+    chosenJoker = generateShuffledListOfFinishedJokersByRarity(rarity, save)[0]
+
+    # edition chances:
+    # 0.3% negative, 0.3% polychrome, 1.4% holographic, 2% foil
+    # TODO: Put code for Hone and Glow Up here
+    editions = [None, "negative", "polychrome", "holographic", "foil"]
+    editionChances = [96, 0.3, 0.3, 1.4, 2]
+    chosenJoker.edition = random.choices(editions, editionChances)[0]
+    return chosenJoker
