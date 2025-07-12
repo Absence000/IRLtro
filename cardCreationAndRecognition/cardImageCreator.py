@@ -1,6 +1,6 @@
-from subscripts.cardUtils import *
+from subscripts.cardUtils import Card
 from PIL import Image, ImageChops
-from cardCreationAndRecognition.fiducialRecognizerTest import generateBoardForCard, arucoBoardsToCard
+from cardCreationAndRecognition.fiducialRecognizerTest import generateBoardForCard
 from subscripts.spacesavers import *
 
 enhancersWidth = 69
@@ -31,7 +31,7 @@ editionsCoordsDict = {
 }
 
 def createImageFromCard(card):
-    if card.subset == "playing":
+    if isinstance(card, Card):
         cardImage = selectPlayingCardBackground(card)
         if card.enhancement != "stone":
             cardValueImage = returnCroppedImageByName("playing", card.number, card.suit)
@@ -165,7 +165,11 @@ def makeStandardDeck():
     values = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"]
     for suit in suits:
         for value in values:
-            createTaggedCardImage(Card(subset="playing", number=value, suit=suit), openjson("cardToArcuo.json", True))
+            createTaggedCardImage(Card({
+                "number": value,
+                "suit": suit
+            }), openjson("cardCreationAndRecognition/cardToArcuo.json", True))
+    print("done")
 
 # createTaggedCardImage(Card(subset="playing", suit="C", number="2"),
 #                       openjson("cardToArcuo.json", True))

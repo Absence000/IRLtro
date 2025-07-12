@@ -1,8 +1,9 @@
 from collections import Counter
-from subscripts.cardUtils import Card, cardCountsAsFaceCard, generateShuffledListOfFinishedTarotCards, addTarotCardIfRoom
+from subscripts.cardUtils import cardCountsAsFaceCard, addTarotCardIfRoom
 from subscripts.planetCards import upgradeHandLevel
 from subscripts.spacesavers import *
-from subscripts.jokers import getJokerSellValue
+from subscripts.jokers import Joker
+from subscripts.saveUtils import getJokerByName
 import random
 
 
@@ -193,8 +194,8 @@ def calcPointsFromHand(hand, handData, unselectedHand, save):
 
     # here comes most of the joker logic in the game oh boy
     for joker in save.jokers:
-        jokerName = joker[0]
-        jokerData = joker[1]
+        jokerName = joker.name
+        jokerData = joker.data
 
         if "condition" in jokerData:
             condition = jokerData["condition"]
@@ -210,12 +211,12 @@ def calcPointsFromHand(hand, handData, unselectedHand, save):
                     mult += jokerData["mult"]
             elif jokerName == "Square Joker":
                 if len(hand) == 4:
-                    save.jokers["Square Joker"]["chip"] += 4
+                    getJokerByName(save, "Square Joker")["chip"] += 4
 
         # hand dependent end-of-hand check jokers (spare trousers)
         if jokerName == "Spare Trousers":
             if handType == jokerData["hand"] or jokerData["hand"] in handContainerDict[handType]:
-                save.jokers["Spare Trousers"]["mult"] += 2
+                getJokerByName(save, "Spare Trousers")["mult"] += 2
 
         # always active end-of-hand check jokers:
         # joker, misprint, gros michel, ice cream, cavendish, square joker, vampire, hologram, fortune teller,
@@ -239,7 +240,7 @@ def calcPointsFromHand(hand, handData, unselectedHand, save):
             elif jokerName == "Swashbuckler":
                 combinedSellVal = 0
                 for secondIterationJoker in save.jokers:
-                    combinedSellVal += getJokerSellValue(secondIterationJoker)
+                    combinedSellVal += secondIterationJoker.getSellValue
                 mult += combinedSellVal
 
             # simple(ish) ones
@@ -343,7 +344,7 @@ def calcPointsFromHand(hand, handData, unselectedHand, save):
         # end-of-hand remaining deck check (blue joker)
         if jokerName == "Blue Joker":
             cardsRemaining = len(save.deck)
-            chips += (jokerData["chips"] * cardsRemaining)
+            chips += (jokerData["chip"] * cardsRemaining)
 
         # TODO: Planet card use check (constellation)
 
@@ -479,7 +480,7 @@ def triggerCard(card, save):
             luckyCardTriggered = True
         # On lucky card trigger (lucky cat)
         if luckyCardTriggered and save.hasJoker("Lucky Cat"):
-            save.jokers["Lucky Cat"]["multmult"] += 0.25
+            getJokerByName(save, "Lucky Cat")["multmult"] += 0.25
     elif card.enhancement == "glass":
         multmult = multmult * 2
 
@@ -492,8 +493,9 @@ def triggerCard(card, save):
 
     # card scoring check jokers
     for joker in save.jokers:
-        jokerName = joker[0]
-        jokerData = joker[1]
+        #TODO: fix the joker formatting this is dumb
+        jokerName = joker.name
+        jokerData = joker.data
         if "condition" in jokerData:
             condition = jokerData["condition"]
         else:
@@ -519,7 +521,7 @@ def triggerCard(card, save):
         if condition == "numbers":
             if card.number in jokerData["numbers"]:
                 if jokerName == "Wee Joker":
-                    save.jokers["Wee Joker"]["chip"] += 8
+                    getJokerByName(save, "Wee Joker")["chip"] += 8
                 else:
                     # can't use elif bc of walkie talkie
                     if "mult" in jokerData:
@@ -567,7 +569,7 @@ def triggerCard(card, save):
                     card.suit = random.choice(["H", "D", "S", "C"])
                     card.number = random.choice([2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K", "A"])
                 card.enhancement = None
-                save.jokers["Vampire"]["multmult"] += 0.1
+                getJokerByName(save, "Vampire")["multmult"] += 0.1
 
         # Face Cards turn to gold (Midas)
         if jokerName == "Midas Mask":
@@ -621,16 +623,14 @@ handContainerDict = {
 }
 
 
-def testPointSystem():
-    hand = [Card(subset="playing", number="A", suit="S", seal="red", enhancement="wild"),
-            Card(subset="playing", number="J", suit="S", seal="red", enhancement="wild"),
-            Card(subset="playing", number="Q", suit="D", seal="red", enhancement="wild", edition="polychrome"),
-            Card(subset="playing", number="A", suit="S", seal="red", enhancement="wild"),
-            Card(subset="playing", number="A", suit="S", seal="red", enhancement="wild")]
-
-    unselectedHand = [Card(subset="playing", number="A", suit="S", seal="red", enhancement="steel")]
-
-
-    print(calcPointsFromHand(hand, findBestHand(hand), unselectedHand))
-
-
+# def testPointSystem():
+#     hand = [Card(subset="playing", number="A", suit="S", seal="red", enhancement="wild"),
+#             Card(subset="playing", number="J", suit="S", seal="red", enhancement="wild"),
+#             Card(subset="playing", number="Q", suit="D", seal="red", enhancement="wild", edition="polychrome"),
+#             Card(subset="playing", number="A", suit="S", seal="red", enhancement="wild"),
+#             Card(subset="playing", number="A", suit="S", seal="red", enhancement="wild")]
+#
+#     unselectedHand = [Card(subset="playing", number="A", suit="S", seal="red", enhancement="steel")]
+#
+#
+#     print(calcPointsFromHand(hand, findBestHand(hand), unselectedHand))

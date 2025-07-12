@@ -6,7 +6,8 @@
         "description": "+4 Mult",
         "type": "mult",
         "mult": 4,
-        "condition": "active"
+        "condition": "active",
+        "finished": true
     },
     "Greedy Joker": {
         "id": 2,
@@ -16,7 +17,8 @@
         "type": "mult",
         "condition": "suit",
         "suit": "D",
-        "mult": 3
+        "mult": 3,
+        "finished": true
     },
     "Lusty Joker": {
         "id": 3,
@@ -26,7 +28,8 @@
         "type": "mult",
         "condition": "suit",
         "suit": "H",
-        "mult": 3
+        "mult": 3,
+        "finished": true
     },
     "Wrathful Joker": {
         "id": 4,
@@ -36,7 +39,8 @@
         "type": "mult",
         "condition": "suit",
         "suit": "S",
-        "mult": 3
+        "mult": 3,
+        "finished": true
     },
     "Gluttonous Joker": {
         "id": 5,
@@ -46,7 +50,8 @@
         "type": "mult",
         "condition": "suit",
         "suit": "C",
-        "mult": 3
+        "mult": 3,
+        "finished": true
     },
     "Jolly Joker": {
         "id": 6,
@@ -56,7 +61,8 @@
         "type": "mult",
         "condition": "hand",
         "hand": "Pair",
-        "mult": 8
+        "mult": 8,
+        "finished": true
     },
     "Zany Joker": {
         "id": 7,
@@ -66,7 +72,8 @@
         "type": "mult",
         "condition": "hand",
         "hand": "Three Of A Kind",
-        "mult": 12
+        "mult": 12,
+        "finished": true
     },
     "Mad Joker": {
         "id": 8,
@@ -76,7 +83,8 @@
         "type": "mult",
         "condition": "hand",
         "hand": "Two Pair",
-        "mult": 10
+        "mult": 10,
+        "finished": true
     },
     "Crazy Joker": {
         "id": 9,
@@ -86,7 +94,8 @@
         "type": "mult",
         "condition": "hand",
         "hand": "Straight",
-        "mult": 12
+        "mult": 12,
+        "finished": true
     },
     "Droll Joker": {
         "id": 10,
@@ -96,7 +105,8 @@
         "type": "mult",
         "condition": "hand",
         "hand": "Flush",
-        "mult": 10
+        "mult": 10,
+        "finished": true
     },
     "Sly Joker": {
         "id": 11,
@@ -106,7 +116,8 @@
         "type": "chip",
         "condition": "hand",
         "hand": "Pair",
-        "chip": 50
+        "chip": 50,
+        "finished": true
     },
     "Wily Joker": {
         "id": 12,
@@ -116,7 +127,8 @@
         "type": "chip",
         "condition": "hand",
         "hand": "Three Of A Kind",
-        "chip": 100
+        "chip": 100,
+        "finished": true
     },
     "Clever Joker": {
         "id": 13,
@@ -126,7 +138,8 @@
         "type": "chip",
         "condition": "hand",
         "hand": "Two Pair",
-        "chip": 80
+        "chip": 80,
+        "finished": true
     },
     "Devious Joker": {
         "id": 14,
@@ -136,7 +149,8 @@
         "type": "chip",
         "condition": "hand",
         "hand": "Straight",
-        "chip": 100
+        "chip": 100,
+        "finished": true
     },
     "Crafty Joker": {
         "id": 15,
@@ -146,7 +160,8 @@
         "type": "chip",
         "condition": "hand",
         "hand": "Flush",
-        "chip": 80
+        "chip": 80,
+        "finished": true
     },
     "Half Joker": {
         "id": 16,
@@ -156,7 +171,8 @@
         "type": "mult",
         "condition": "cardCount",
         "cardCount": "<3",
-        "mult": 20
+        "mult": 20,
+        "finished": true
     },
     "Joker Stencil": {
         "id": 17,
@@ -164,7 +180,8 @@
         "rarity": "Uncommon",
         "description": "x1 Mult for each empty Joker Slot. Joker Stencil included",
         "type": "multmult",
-        "condition": "jokerSlot"
+        "condition": "jokerSlot",
+        "finished": true
     },
     "Four Fingers": {
         "id": 18,
@@ -232,7 +249,8 @@
         "cost": 5,
         "rarity": "Common",
         "description": "1 in 4 chance for each played 8 to create a Tarot card when scored (Must have room)",
-        "type": "effect"
+        "type": "effect",
+        "finished": true
     },
     "Misprint": {
         "id": 27,
@@ -240,7 +258,8 @@
         "rarity": "Common",
         "description": "+0-23 Mult",
         "type": "mult",
-        "condition": "active"
+        "condition": "active",
+        "finished": true
     },
     "Dusk": {
         "id": 28,
@@ -256,7 +275,8 @@
         "rarity": "Common",
         "description": "Adds double the rank of lowest ranked card held in hand to Mult",
         "type": "mult",
-        "condition": "lowestRankDoubled"
+        "condition": "lowestRankDoubled",
+        "finished": true
     },
     "Chaos the Clown": {
         "id": 30,
@@ -273,7 +293,8 @@
         "type": "mult",
         "condition": "numbers",
         "numbers": ["A", "2", "3", "5", "8"],
-        "mult": 8
+        "mult": 8,
+        "finished": true
     },
     "Steel Joker": {
         "id": 32,
@@ -282,7 +303,8 @@
         "description": "Gives x0.2 Mult for each Steel Card in your full deck",
         "type": "multmult",
         "condition": "steelCard",
-        "mult": 0.2
+        "mult": 0.2,
+        "finished": true
     },
     "Scary Face": {
         "id": 33,
@@ -291,7 +313,8 @@
         "description": "Played face cards give +30 Chips when scored",
         "condition": "face",
         "type": "chip",
-        "chip": 30
+        "chip": 30,
+        "finished": true
     },
     "Abstract Joker": {
         "id": 34,
@@ -299,7 +322,8 @@
         "rarity": "Common",
         "description": "+3 Mult for each Joker card",
         "type": "mult",
-        "mult": 3
+        "mult": 3,
+        "finished": true
     },
     "Delayed Gratification": {
         "id": 35,
@@ -313,16 +337,18 @@
         "cost": 6,
         "rarity": "Uncommon",
         "description": "Retrigger each played 2, 3, 4, 5",
-        "numbers": [2, 3, 4, 5],
+        "numbers": ["2", "3", "4", "5"],
         "type": "retrig",
-        "condition": "numbers"
+        "condition": "numbers",
+        "finished": true
     },
     "Pareidolia": {
         "id": 37,
         "cost": 5,
         "rarity": "Uncommon",
         "description": "All cards are considered face cards",
-        "type": "effect"
+        "type": "effect",
+        "finished": true
     },
     "Gros Michel": {
         "id": 38,
@@ -341,7 +367,8 @@
         "type": "mult",
         "mult": 4,
         "condition": "numbers",
-        "numbers": [2, 4, 6, 8, 10]
+        "numbers": ["2", "4", "6", "8", "10"],
+        "finished": true
     },
     "Odd Todd": {
         "id": 40,
@@ -351,7 +378,8 @@
         "type": "chip",
         "chip": 31,
         "condition": "numbers",
-        "numbers": [3, 5, 7, 9, "A"]
+        "numbers": ["3", "5", "7", "9", "A"],
+        "finished": true
     },
     "Scholar": {
         "id": 41,
@@ -362,7 +390,8 @@
         "condition": "numbers",
         "numbers": ["A"],
         "chip": 20,
-        "mult": 4
+        "mult": 4,
+        "finished": true
     },
     "Business Card": {
         "id": 42,
@@ -370,7 +399,8 @@
         "rarity": "Common",
         "description": "Played face cards have a 1 in 2 chance to give $2 when scored",
         "type": "economy",
-        "money": 2
+        "money": 2,
+        "finished": true
     },
     "Supernova": {
         "id": 43,
@@ -391,7 +421,8 @@
         "cost": 5,
         "rarity": "Uncommon",
         "description": "1 in 4 chance to upgrade level of played poker hand",
-        "type": "effect"
+        "type": "effect",
+        "finished": true
     },
     "Egg": {
         "id": 46,
@@ -412,7 +443,8 @@
         "cost": 6,
         "rarity": "Uncommon",
         "description": "x3 Mult if all cards held in hand are Spades or Clubs",
-        "type": "multmult"
+        "type": "multmult",
+        "finished": true
     },
     "Runner": {
         "id": 49,
@@ -422,7 +454,8 @@
         "condition": "hand",
         "hand": "Straight",
         "type": "chip",
-        "chip": 15
+        "chip": 15,
+        "finished": true
     },
     "Ice Cream": {
         "id": 50,
@@ -454,7 +487,8 @@
         "rarity": "Common",
         "description": "+2 chips for each remaining card in deck",
         "type": "chip",
-        "chip": 2
+        "chip": 2,
+        "finished": true
     },
     "Sixth Sense": {
         "id": 54,
@@ -497,7 +531,8 @@
         "cost": 4,
         "rarity": "Common",
         "description": "Create a Tarot card if poker hand contains an Ace and a Straight (Must have room)",
-        "type": "effect"
+        "type": "effect",
+        "finished": true
     },
     "To Do List": {
         "id": 60,
@@ -545,7 +580,8 @@
         "description": "This Joker gains +4 Chips if played hand has exactly 4 cards",
         "type": "chip",
         "chip": 0,
-        "condition": "active"
+        "condition": "active",
+        "finished": true
     },
     "Seance": {
         "id": 66,
@@ -570,7 +606,8 @@
         "description": "This Joker gains x0.1 Mult per scoring Enhanced card played, removes card Enhancement",
         "condition": "active",
         "type": "multmult",
-        "multmult": 1
+        "multmult": 1,
+        "finished": true
     },
     "Shortcut": {
         "id": 69,
@@ -593,14 +630,16 @@
         "cost": 8,
         "rarity": "Rare",
         "description": "Create a Tarot card if hand is played with $4 or less",
-        "type": "effect"
+        "type": "effect",
+        "finished": true
     },
     "Baron": {
         "id": 72,
         "cost": 8,
         "rarity": "Rare",
         "description": "Each King held in hand gives x1.5 Mult",
-        "type": "multmult"
+        "type": "multmult",
+        "finished": true
     },
     "Cloud 9": {
         "id": 73,
@@ -628,7 +667,8 @@
         "cost": 7,
         "rarity": "Uncommon",
         "description": "All played face cards become Gold cards when scored",
-        "type": "effect"
+        "type": "effect",
+        "finished": true
     },
     "Luchador": {
         "id": 77,
@@ -670,7 +710,8 @@
         "cost": 6,
         "rarity": "Common",
         "description": "Each face card held in hand has a 1 in 2 chance to give $1",
-        "type": "econ"
+        "type": "econ",
+        "finished": true
     },
     "Mail-In Rebate": {
         "id": 83,
@@ -722,7 +763,8 @@
         "rarity": "Uncommon",
         "description": "Gives +25 Chips for each Stone Card in your full deck",
         "type": "chip",
-        "chip": 25
+        "chip": 25,
+        "finished": true
     },
     "Golden Joker": {
         "id": 90,
@@ -738,7 +780,8 @@
         "description": "This Joker gains x0.25 Mult every time a Lucky card successfully triggers (currently x1 Mult)",
         "type": "multmult",
         "multmult": 1,
-        "condition": "active"
+        "condition": "active",
+        "finished": true
     },
     "Baseball Card": {
         "id": 92,
@@ -746,7 +789,8 @@
         "rarity": "Rare",
         "description": "Uncommon Jokers each give x1.5 Mult",
         "type": "multmult",
-        "multmult": 1.5
+        "multmult": 1.5,
+        "finished": true
     },
     "Bull": {
         "id": 93,
@@ -755,7 +799,8 @@
         "description": "+2 Chips for each $1 you have",
         "type": "chip",
         "chip": 2,
-        "conditon": "active"
+        "condition": "active",
+        "finished": true
     },
     "Diet Cola": {
         "id": 94,
@@ -797,7 +842,8 @@
         "type": "mult",
         "mult": 0,
         "condition": "active",
-        "hand": "Two Pair"
+        "hand": "Two Pair",
+        "finished": true
     },
     "Ancient Joker": {
         "id": 99,
@@ -827,7 +873,8 @@
         "chip": 10,
         "mult": 4,
         "condition": "numbers",
-        "numbers": [10, 4]
+        "numbers": ["10", "4"],
+        "finished": true
     },
     "Seltzer": {
         "id": 102,
@@ -853,7 +900,8 @@
         "description": "Played face cards give +5 Mult when scored",
         "type": "mult",
         "mult": 5,
-        "condition": "face"
+        "condition": "face",
+        "finished": true
     },
     "Campfire": {
         "id": 105,
@@ -869,7 +917,8 @@
         "cost": 5,
         "rarity": "Common",
         "description": "Played Gold cards earn $4 when scored",
-        "type": "econ"
+        "type": "econ",
+        "finished": true
     },
     "Mr. Bones": {
         "id": 107,
@@ -890,7 +939,8 @@
         "cost": 6,
         "rarity": "Uncommon",
         "description": "Retrigger all played face cards",
-        "type": "retrig"
+        "type": "retrig",
+        "finished": true
     },
     "Swashbuckler": {
         "id": 110,
@@ -898,7 +948,8 @@
         "rarity": "Common",
         "description": "Adds the sell value of all other owned Jokers to Mult",
         "type": "mult",
-        "condition": "active"
+        "condition": "active",
+        "finished": true
     },
     "Troubadour": {
         "id": 111,
@@ -944,7 +995,8 @@
         "description": "Played cards with Diamond suit earn $1 when scored",
         "type": "econ",
         "condition": "suit",
-        "suit": "D"
+        "suit": "D",
+        "finished": true
     },
     "Bloodstone": {
         "id": 117,
@@ -952,7 +1004,8 @@
         "rarity": "Uncommon",
         "description": "1 in 2 chance for played cards with Heart suit to give x1.5 Mult when scored",
         "condition": "suit",
-        "suit": "D"
+        "suit": "D",
+        "finished": true
     },
     "Arrowhead": {
         "id": 118,
@@ -962,7 +1015,8 @@
         "type": "chip",
         "chip": 50,
         "condition": "suit",
-        "suit": "S"
+        "suit": "S",
+        "finished": true
     },
     "Onyx Agate": {
         "id": 119,
@@ -972,7 +1026,8 @@
         "type": "mult",
         "mult": 7,
         "condition": "suit",
-        "suit": "C"
+        "suit": "C",
+        "finished": true
     },
     "Glass Joker": {
         "id": 120,
@@ -996,7 +1051,8 @@
         "rarity": "Uncommon",
         "description": "x3 Mult if poker hand contains a Diamond card, a Club card, Heart card, and Spade Card",
         "type": "multmult",
-        "multmult": 3
+        "multmult": 3,
+        "finished": true
     },
     "Blueprint": {
         "id": 123,
@@ -1012,7 +1068,8 @@
         "description": "This Joker gains +8 Chips when each played 2 is scored",
         "type": "chip",
         "chip": 0,
-        "condition": "active"
+        "condition": "active",
+        "finished": true
     },
     "Merry Andy": {
         "id": 125,
@@ -1067,7 +1124,8 @@
         "type": "multmult",
         "multmult": 2,
         "condition": "hand",
-        "hand": "Pair"
+        "hand": "Pair",
+        "finished": true
     },
     "The Trio": {
         "id": 132,
@@ -1077,7 +1135,8 @@
         "type": "multmult",
         "multmult": 3,
         "condition": "hand",
-        "hand": "Three Of A Kind"
+        "hand": "Three Of A Kind",
+        "finished": true
     },
     "The Family": {
         "id": 133,
@@ -1087,7 +1146,8 @@
         "type": "multmult",
         "multmult": 4,
         "condition": "hand",
-        "hand": "Four Of A Kind"
+        "hand": "Four Of A Kind",
+        "finished": true
     },
     "The Order": {
         "id": 134,
@@ -1097,7 +1157,8 @@
         "type": "multmult",
         "multmult": 3,
         "condition": "hand",
-        "hand": "Straight"
+        "hand": "Straight",
+        "finished": true
     },
     "The Tribe": {
         "id": 135,
@@ -1107,7 +1168,8 @@
         "type": "multmult",
         "multmult": 2,
         "condition": "hand",
-        "hand": "Flush"
+        "hand": "Flush",
+        "finished": true
     },
     "Stuntman": {
         "id": 136,
@@ -1145,7 +1207,8 @@
         "rarity": "Common",
         "description": "Each Queen held in hand gives +13 Mult",
         "type": "mult",
-        "mult": 13
+        "mult": 13,
+        "finished": true
     },
     "Driver's License": {
         "id": 141,
@@ -1153,7 +1216,8 @@
         "rarity": "Rare",
         "description": "x3 Mult if you have at least 16 Enhanced cards in your full deck",
         "type": "multmult",
-        "multmult": 3
+        "multmult": 3,
+        "finished": true
     },
     "Cartomancer": {
         "id": 142,
@@ -1182,7 +1246,8 @@
         "rarity": "Uncommon",
         "description": "+2 Mult for every $5 you have",
         "type": "mult",
-        "condition": "active"
+        "condition": "active",
+        "finished": true
     },
     "Canio": {
         "id": 146,
@@ -1199,7 +1264,8 @@
         "rarity": "Legendary",
         "description": "Played Kings and Queens each give x2 Mult when scored",
         "type": "multmult",
-        "multmult": 2
+        "multmult": 2,
+        "finished": true
     },
     "Yorick": {
         "id": 148,

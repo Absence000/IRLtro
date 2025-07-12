@@ -1,51 +1,121 @@
 from subscripts.spacesavers import *
+from subscripts.jokers import Joker
+from subscripts.cardUtils import Card
+from subscripts.planetCards import Planet
+from subscripts.tarotCards import Tarot
+from subscripts.shop import Shop, createShopFromDict
 
 class Save:
-    def __init__(self, deck, ante, blindIndex, money, handLevels, illegalHandsDiscovered, consumables,
-                 consumablesLimit, hand, jokers, jokerLimit):
-        self.deck = deck
-        self.ante = ante
-        self.blindIndex = blindIndex
-        self.money = money
-        self.handLevels = handLevels
-        self.illegalHandsDiscovered = illegalHandsDiscovered
+    def __init__(self, saveDict):
+        if saveDict["deck"] != "irl":
+            deck = []
+            for card in saveDict["deck"]:
+                deck.append(Card(card))
+            self.deck = deck
+        else:
+            self.deck = "irl"
+        self.ante = saveDict["ante"]
+        self.blindIndex = saveDict["blindIndex"]
+        self.state = saveDict["state"]
+        self.hands = saveDict["hands"]
+        self.discards = saveDict["discards"]
+        self.shop = createShopFromDict(saveDict["shop"])
+        self.money = saveDict["money"]
+        self.handLevels = saveDict["handLevels"]
+        self.illegalHandsDiscovered = saveDict["illegalHandsDiscovered"]
+        consumables = []
+        for consumable in saveDict["consumables"]:
+            if consumable["type"] == "planet":
+                consumables.append(Planet(consumable["name"], consumable["negative"]))
+            if consumable["type"] == "tarot":
+                consumables.append(Tarot(consumable["name"], consumable["negative"]))
         self.consumables = consumables
-        self.consumablesLimit = consumablesLimit
-        self.hand = hand
+        self.consumablesLimit = saveDict["consumablesLimit"]
+        self.hand = saveDict["hand"]
+        jokers = []
+        for joker in saveDict["jokers"]:
+            jokers.append(Joker(joker))
         self.jokers = jokers
-        self.jokerLimit = jokerLimit
+        self.jokerLimit = saveDict["jokerLimit"]
+        self.requiredScore = saveDict["requiredScore"]
+        self.blindInfo = saveDict["blindInfo"]
+
+        discardedCards = []
+        for card in saveDict["discardedCards"]:
+            discardedCards.append(Card(card))
+        self.discardedCards = discardedCards
+
+        playedCards = []
+        for card in saveDict["playedCards"]:
+            playedCards.append(Card(card))
+        self.playedCards = playedCards
+        self.score = saveDict["score"]
+
 
     def toDict(self):
-        # turns the jokers and consumables into dicts
+        # turns the jokers, consumables, and deck into dicts
         consumables = []
         for consumable in self.consumables:
             consumables.append(consumable.toDict())
-        return({
-            "deck": self.deck,
+        jokers = []
+        for joker in self.jokers:
+            jokers.append(joker.toDict())
+
+        deck = []
+        for card in self.deck:
+            deck.append(card.toDict())
+
+        consumables = []
+        for consumable in self.consumables:
+            if isinstance(consumable, Planet):
+                consumables.append(consumable.toDict())
+            elif isinstance(consumable, Tarot):
+                consumables.append(consumable.toDict())
+
+        hand = []
+        for card in self.hand:
+            hand.append(card.toDict())
+
+        discardedCards = []
+        for card in self.discardedCards:
+            discardedCards.append(card.toDict())
+
+        playedCards = []
+        for card in self.playedCards:
+            playedCards.append(card.toDict())
+
+        saveDict = {
+            "deck": deck,
             "ante": self.ante,
             "blindIndex": self.blindIndex,
+            "state": self.state,
+            "hands": self.hands,
+            "discards": self.discards,
+            "shop": self.shop.toDict(),
             "money": self.money,
             "handLevels": self.handLevels,
             "illegalHandsDiscovered": self.illegalHandsDiscovered,
             "consumables": consumables,
             "consumablesLimit": self.consumablesLimit,
-            "hand": self.hand,
-            "jokers": self.jokers,
-            "jokerLimit": self.jokerLimit
-        })
+            "hand": hand,
+            "jokers": jokers,
+            "jokerLimit": self.jokerLimit,
+            "requiredScore": self.requiredScore,
+            "blindInfo": self.blindInfo,
+            "discardedCards": discardedCards,
+            "playedCards": playedCards,
+            "score": self.score
+        }
+        return saveDict
 
     def hasJoker(self, name):
         for joker in self.jokers:
-            if name in joker:
+            if joker.name == name:
                 return True
         return False
 
 def createSaveFromDict(saveDict):
-    return Save(deck=saveDict["deck"], ante=saveDict["ante"], blindIndex=saveDict["blindIndex"],
-                money=saveDict["money"], handLevels=saveDict["handLevels"],
-                illegalHandsDiscovered=saveDict["illegalHandsDiscovered"], consumables=saveDict["consumables"],
-                consumablesLimit=saveDict["consumablesLimit"], hand=saveDict["hand"],
-                jokers=saveDict["jokers"], jokerLimit=saveDict["jokerLimit"])
+    return Save(saveDict)
 
 def saveGame(save):
     savejson("save", save.toDict())
@@ -68,5 +138,36 @@ def createBlankSave(deck):
     }
     if deck != "irl":
         deck = openjson("decks")[deck]
-    return Save(deck=deck, ante=1, blindIndex=0, money=0, handLevels=handLevels,
-                illegalHandsDiscovered=[], consumables=[], consumablesLimit=2, hand=[], jokers=[], jokerLimit=5)
+    return Save({
+        "deck": deck,
+        "ante": 1,
+        "blindIndex": 0,
+        "state": "selectingBlind",
+        "hands": 4,
+        "discards": 4,
+        "shop": {
+            "cards": [[None, None], [None, None]],
+            "packs": [[None, None], [None, None]],
+            "vouchers": [None],
+            "rerollCost": 0
+        },
+        "money": 0,
+        "handLevels": handLevels,
+        "illegalHandsDiscovered": [],
+        "consumables": [],
+        "consumablesLimit": 2,
+        "hand": [],
+        "jokers": [],
+        "jokerLimit": 5,
+        "requiredScore": 0,
+        "blindInfo": 0,
+        "discardedCards": [],
+        "playedCards": [],
+        "score": 0
+    })
+
+def getJokerByName(save, name):
+    for joker_name, joker_data in save.jokers:
+        if joker_name == name:
+            return joker_data
+    return None

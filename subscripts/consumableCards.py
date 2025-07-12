@@ -1,17 +1,26 @@
 from subscripts.cardUtils import Card
-from subscripts.planetCards import usePlanetCard
+from subscripts.planetCards import usePlanetCard, Planet
 from subscripts.priceCalcLogic import calculatePrice
-from subscripts.tarotCards import useTarotCard
+from subscripts.tarotCards import useTarotCard, Tarot
 from subscripts.spacesavers import *
 import math
 
-#TODO: move the function for adding consumables to the player's hand here
 
-#TODO: get tarots and spectrals working here too
+# once the user makes a selection for the consumable, this asks them whether they want to use or sell it
+# and also checks if it can be used right now
+
+# TODO: Finish this once the save system is working with the shop
+def CLUseOrSellConsumables(consumable, save):
+    if consumableCanBeUsedImmediately(consumable):
+        return
+
+# TODO: move the function for adding consumables to the player's hand here
+
+# TODO: get tarots and spectrals working here too
 def useConsumable(consumable, save):
-    if consumable.subset == "planet":
+    if isinstance(consumable, Planet):
         usePlanetCard(consumable, save)
-    if consumable.subset == "tarot":
+    if isinstance(consumable, Tarot):
         useTarotCard(consumable, save)
 
 

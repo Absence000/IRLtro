@@ -1,39 +1,35 @@
-from subscripts.cardUtils import *
+from cardCreationAndRecognition.finalArcuoTracking import returnFoundCards
 from subscripts.handFinderAndPointsAssigner import *
-from subscripts.spacesavers import *
 from subscripts.saveUtils import *
-from subscripts.planetCards import *
 from subscripts.shop import *
 from subscripts.inputHandling import *
-import random
+from cardCreationAndRecognition.cardImageCreator import makeStandardDeck
+import random, pygame
 
 
 # play a specific ante in the command line
 # eventually all the input lines will be replaced with actual card reading
 #TODO: boss bind support
-def commandLinePlayRound(requiredScore, save):
+def commandLinePlayRound(save):
     if not playingIRL(save):
         deck = save.deck
         random.shuffle(deck)
     save.hand = []
-    discardedCards = []
-    playedCards = []
 
-    discardCount = 4
-    handsCount = 4
-
-    score = 0
     playing = True
 
     while playing:
 
         if not playingIRL(save):
             while len(save.hand) < 8:
-                save.hand.append(createCardFromDict(deck[0]))
+                save.hand.append(deck[0])
                 del deck[0]
+            # automatically sorts the deck numerically
+            save.hand.sort(key=lambda card: card.getValue())
 
-        print(f"{handsCount} hands left, {discardCount} discards")
-        print(f"{score}/{requiredScore} chips")
+        # TODO: Add the ability to resort the deck here somewhere
+        print(f"{save.hands} hands left, {save.discards} discards")
+        print(f"{save.score}/{save.requiredScore} chips")
         if not playingIRL(save):
             print(f"Current hand:\n" + CLDisplayHand(save.hand))
         # print(f"{len(deck) + len()} cards")
@@ -43,7 +39,7 @@ def commandLinePlayRound(requiredScore, save):
             choice = input("what do you want to do now? Type \"play\" to play, \"discard\" to discard, \"use\" to use/sell "
                            "a consumable, and \"inv\" to see your consumables.")
             if choice in validResponses:
-                if choice == "discard" and discardCount <= 0:
+                if choice == "discard" and save.discards <= 0:
                     print("You have no discards left!")
                 elif choice == "inv":
                     printConsumables(save)
@@ -97,13 +93,28 @@ def commandLinePlayRound(requiredScore, save):
                 for index in sorted(selectedHandIndexes, reverse=True):
                     del save.hand[index-1]
             else:
-                selectedHand = returnCardsFromImage()
+                inputCardsDict = openjson("sortedDetectedCards")
+                inputCards = {
+                    key: [Card(cardDict) for cardDict in cardList]
+                    for key, cardList in inputCardsDict.items()
+                }
+                selectedHand = inputCards["middle"]
+                save.hand = inputCards["lower"]
+                jokers = []
+                consumables = []
+                for card in inputCards["upper"]:
+                    if isinstance(card, Joker):
+                        jokers.append(card)
+                    else:
+                        consumables.append(card)
+                save.jokers = jokers
+                save.consumables = consumables
 
             if choice == "play":
                 points, affectedCards = calcPointsFromHand(selectedHand, findBestHand(selectedHand), save.hand, save)
                 # handles glass card breaking, same reverse order trick as before
                 for cardIndex in range(len(selectedHand) - 1, -1, -1):
-                    playedCards.append(selectedHand[cardIndex])
+                    save.playedCards.append(selectedHand[cardIndex])
                     if selectedHand[cardIndex].enhancement == "glass":
                         if selectedHand[cardIndex].number in affectedCards or affectedCards == "all":
                             if random.randint(1, 1) == 1:
@@ -112,10 +123,10 @@ def commandLinePlayRound(requiredScore, save):
                                 del selectedHand[cardIndex]
 
                 print(f"+{points} points! \n")
-                score += points
-                handsCount -= 1
-                if score >= requiredScore:
-                    print(f"Victory!\nScore:{score}")
+                save.score += points
+                save.hands -= 1
+                if save.score >= save.requiredScore:
+                    print(f"Victory!\nScore:{save.score}")
                     # TODO: put blue seal stuff here
                     # TODO: put gold card/blue seal retriggering from mime in here
                     goldCardAmnt = 0
@@ -128,28 +139,31 @@ def commandLinePlayRound(requiredScore, save):
                     playing = False
                     win = True
 
-                elif handsCount <= 0:
-                    print(f"Defeat!\nScore:{score}")
+                elif save.hands <= 0:
+                    print(f"Defeat!\nScore:{save.score}")
                     playing = False
                     win = False
+                else:
+                    saveGame(save)
 
                 if not playing:
                     if not playingIRL(save):
                         # resets the deck
-                        for card in discardedCards:
-                            deck.append(card.toDict())
-                        for card in playedCards:
-                            deck.append(card.toDict())
+                        for card in save.discardedCards:
+                            deck.append(card)
+                        for card in save.playedCards:
+                            deck.append(card)
                         for card in save.hand:
-                            deck.append(card.toDict())
-                            save.hand = []
-
-                    return {"win": win, "handsLeft": handsCount}
+                            deck.append(card)
+                        save.hand = []
+                        save.playedCards = []
+                        save.discardedCards = []
+                    return {"win": win, "handsLeft": save.hands}
             elif choice == "discard":
                 for discardedCard in selectedHand:
-                    discardedCards.append(discardedCard)
+                    save.discardedCards.append(discardedCard)
                 print("discarded!")
-                discardCount -= 1
+                save.discards -= 1
 
 
 
@@ -160,23 +174,27 @@ anteBaseChipsList = [100, 300, 800, 2000, 5000, 11000, 20000, 35000, 50000, 1100
 
 blindIndexToBlindInfo = [("Small Blind", 1, 3), ("Big Blind", 1.5, 4), ("Boss Blind", 2, 5)]
 
-def play(fromSave, deck):
+# command line version for bugfixing
+def CLPlay(fromSave, deck):
     if fromSave:
         save = createSaveFromDict(openjson("save"))
+        if save.state != "selectingBlind":
+            print(f"ANTE {save.ante}")
     else:
         save = createBlankSave(deck=deck)
     alive = True
     while alive:
-        # while state == "selectingAndPlayingBlind":
-            blindInfo = blindIndexToBlindInfo[save.blindIndex]
-            requiredScore = anteBaseChipsList[save.ante]*blindInfo[1]
-            print(f"ANTE {save.ante}\n{blindInfo[0]}: {requiredScore} CHIPS")
+        # blind select
+        while save.state == "selectingBlind":
+            save.blindInfo = blindIndexToBlindInfo[save.blindIndex]
+            save.requiredScore = anteBaseChipsList[save.ante]*save.blindInfo[1]
+            print(f"ANTE {save.ante}\n{save.blindInfo[0]}: {save.requiredScore} CHIPS")
             selectionIsValid = False
             validResponses = ["play", "skip"]
             while not selectionIsValid:
                 choice = input("play or skip?")
                 if choice in validResponses:
-                    if choice == "skip" and blindInfo[0] == "Boss Blind":
+                    if choice == "skip" and save.blindInfo[0] == "Boss Blind":
                         print("You can't skip the Boss Blind!")
                     else:
                         selectionIsValid = True
@@ -184,48 +202,81 @@ def play(fromSave, deck):
                     print(f"Unrecognized action: {choice}\nType \"play\" or \"skip\"!")
 
             if choice == "play":
-                roundInfo = commandLinePlayRound(requiredScore, save)
-                if roundInfo["win"]:
-                    # advances to the next round
-                    if save.blindIndex == 2:
-                        save.ante += 1
-                        save.blindIndex = 0
-                    else:
-                        save.blindIndex += 1
-                    baseReward = blindInfo[2]
-                    totalReward = baseReward + roundInfo['handsLeft']
-                    save.money += totalReward
-                    print(f"Rewards: ${baseReward} + {roundInfo['handsLeft']} hands left = +${totalReward}\n"
-                          f"Money: ${save.money}")
+                save.state = "playing"
+                save.discardedCards = []
+                save.playedCards = []
+                save.discards = 4
+                save.hands = 4
+                save.score = 0
 
-                    #TODO: put in shop here
-                    loadShop(save)
-                    saveGame(save)
-                else:
-                    break
+                saveGame(save)
             if choice == "skip":
                 print("skipped!")
                 save.blindIndex += 1
                 saveGame(save)
 
-def updateJokers(attribute):
-    jokerDict = openjson("jokerDict")
-    for joker in jokerDict.items():
-        if "type" not in joker[1]:
-            typeDict = {
-                "c": "chip",
-                "m": "mult",
-                "xm": "multmult",
-                "+": "chipsAndMult",
-                "!": "effect",
-                "retrig": "retrig",
-                "$": "econ"
-            }
-            index = input(joker[0])
-            joker[1][attribute] = typeDict[index]
-            savejson("jokerDict", jokerDict)
+        # playing
+        while save.state == "playing":
+            roundInfo = commandLinePlayRound(save)
+            if roundInfo["win"]:
+                # advances to the next round
+                if save.blindIndex == 2:
+                    save.ante += 1
+                    save.blindIndex = 0
+                else:
+                    save.blindIndex += 1
+                baseReward = save.blindInfo[2]
+                totalReward = baseReward + roundInfo['handsLeft']
+                save.money += totalReward
+                print(f"Rewards: ${baseReward} + {roundInfo['handsLeft']} hands left = +${totalReward}\n")
+                save.state = "shop"
+                save.shop = Shop(cards=[None, None], packs=[None, None], vouchers=[None], rerollCost=5)
+                save.shop.rollCards(save)
+                save.shop.rollPacks(save)
+                saveGame(save)
+            else:
+                break
+        # shopping
+        while save.state == "shop":
+            print(f"Money: ${save.money}")
+            loadShop(save)
+            save.state = "selectingBlind"
+            saveGame(save)
 
 
-# commandLinePlayAnte(300, openjson("decks")["standard"])
+def main(loadSave=False):
+    # startup
+    pygame.init()
+    screen = pygame.display.set_mode((1280, 720))
+    pygame.display.set_caption("IRLatro")
+    font = pygame.font.SysFont(None, 30)
 
-play(fromSave=False, deck="standard")
+    running = True
+
+    if not loadSave:
+        gameState = "blindSelect"
+
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+        # shows the 3 blinds with the options to play or skip
+        if gameState == "blindSelect":
+            return
+
+        elif gameState == "round":
+            return
+
+    # Cleanup
+    # cap.release()
+    pygame.quit()
+
+# CLPlay(fromSave=True, deck="gold test")
+
+createTaggedCardImage(Card({
+    "number": "A",
+    "suit": "S",
+    "enhancement": "glass",
+    "edition": "polychrome"
+}), openjson("cardCreationAndRecognition/cardToArcuo.json", True))

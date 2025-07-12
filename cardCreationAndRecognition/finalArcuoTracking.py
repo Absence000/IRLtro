@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
-from subscripts.cardUtils import *
+from subscripts.cardUtils import createCardFromBinary
+from subscripts.spacesavers import *
+
 
 def is_marker_upside_down(corners):
     """
@@ -14,6 +16,7 @@ def is_marker_upside_down(corners):
 def get_detected_boards(frame, aruco_dict, parameters):
     """Detects ArUco markers, groups them into valid 1×2 boards, and checks orientation."""
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    thirdOfFrameHeight = frame.shape[0]/3
 
     # Detect markers
     detector = cv2.aruco.ArucoDetector(aruco_dict, parameters)
@@ -67,8 +70,18 @@ def get_detected_boards(frame, aruco_dict, parameters):
                     combinedID = int(f"{id2}{id1}")
 
                 if normalized_y_distance < 1.1:
+                    # I could do this more accurately but it's way more math so no
+                    boardYCenter = corners1[0][1]
+
+                    if boardYCenter < thirdOfFrameHeight:
+                        verticalPos = "upper"
+                    elif boardYCenter < 2 * thirdOfFrameHeight:
+                        verticalPos = "middle"
+                    else:
+                        verticalPos = "lower"
+
                     detected_boards.append(
-                        {"id": combinedID, "rightSideUp": upwards})
+                        {"id": combinedID, "rightSideUp": upwards, "verticalPos": verticalPos})
                 i += 2  # Skip to the next possible pair
             else:
                 i += 1  # Move to the next marker
@@ -151,30 +164,37 @@ def correctID(id):
 
 def arcuoToCard(detected_boards, lookupTable):
     unique_ids = {}
+    id_to_position = {}
 
     for item in detected_boards:
         id_val = item["id"]
+        position = item["verticalPos"]
+
+        # Prefer rightSideUp cards if duplicates exist
         if id_val not in unique_ids or item["rightSideUp"]:
             unique_ids[id_val] = True
+            id_to_position[id_val] = position
 
-    fixedCardIDs = list(unique_ids.keys())
-    finishedCardDetectionList = []
-    # Print detected board IDs
-    for id in fixedCardIDs:
+    categorized_cards = {
+        "upper": [],
+        "middle": [],
+        "lower": []
+    }
+
+    for id in unique_ids:
         try:
             detectedCard = createCardFromBinary(lookupTable[id])
-            # print(f"{detectedCard.toString()}")
-            finishedCardDetectionList.append(detectedCard)
+            position = id_to_position[id]
+            categorized_cards[position].append(detectedCard)
         except Exception as e:
             print(e)
             print(f"Unrecognized card! {id}, {lookupTable[id]}")
+    return categorized_cards
 
-    return finishedCardDetectionList
 
-
-def returnFoundCards(lookupTable):
+def returnFoundCards():
     """Captures a single frame from the webcam and returns detected card objects."""
-    cap = cv2.VideoCapture(2)
+    cap = cv2.VideoCapture(1)
     if not cap.isOpened():
         print("⚠️ Error: Could not open webcam.")
         return []
@@ -186,10 +206,39 @@ def returnFoundCards(lookupTable):
         print("⚠️ Error: Failed to capture frame.")
         return []
 
+    frame = np.rot90(frame, k=1)
+    frame = np.ascontiguousarray(frame)  # idk why but I need this or it'll break the aruco detector when it rotates
+
     # Detect ArUco boards
     aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_100)
     parameters = cv2.aruco.DetectorParameters()
     detected_boards = get_detected_boards(frame, aruco_dict, parameters)
-    return arcuoToCard(detected_boards, lookupTable)
+    return arcuoToCard(detected_boards, openjson("cardCreationAndRecognition/cardToArcuo.json", True)
+)
 
 # displayFoundCards(openjson("cardToArcuo.json", True))  # Display webcam feed with overlayed tracking info
+
+def pygameDisplayFoundCards(lookupTable, frame):
+    # opens the webcam frame and draws all the cards and stuff
+    # Load ArUco dictionary and detector parameters
+    aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_100)
+    parameters = cv2.aruco.DetectorParameters()
+
+    detected_boards = get_detected_boards(frame, aruco_dict, parameters)
+
+    # Detect markers and draw detected squares
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    detector = cv2.aruco.ArucoDetector(aruco_dict, parameters)
+    corners, ids, _ = detector.detectMarkers(gray)
+
+    if ids is not None:
+        cv2.aruco.drawDetectedMarkers(frame, corners, ids)
+
+    sortedDetectedCards = arcuoToCard(detected_boards, lookupTable)
+
+    # Draw detected boards on the frame
+    # for card in finishedCardDetectionList:
+    #     ids_text = card.toString(mode="fancy")
+    #     position = (50, 50 + finishedCardDetectionList.index(card) * 60)
+    #     cv2.putText(frame, ids_text, position, cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 255), 4)
+    return frame, sortedDetectedCards

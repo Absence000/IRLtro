@@ -38,3 +38,20 @@ personDict = {'name': 'dave', 'age': 24, 'profession': 'doctor'}
 dave = personFromDict(personDict)
 
 print(dave.toString())
+
+def updateJokers(attribute):
+    jokerDict = openjson("jokerDict")
+    for joker in jokerDict.items():
+        if "type" not in joker[1]:
+            typeDict = {
+                "c": "chip",
+                "m": "mult",
+                "xm": "multmult",
+                "+": "chipsAndMult",
+                "!": "effect",
+                "retrig": "retrig",
+                "$": "econ"
+            }
+            index = input(joker[0])
+            joker[1][attribute] = typeDict[index]
+            savejson("jokerDict", jokerDict)

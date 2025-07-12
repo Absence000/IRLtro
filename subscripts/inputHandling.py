@@ -1,5 +1,4 @@
 import cv2, os, shutil
-from cardCreationAndRecognition.finalArcuoTracking import returnFoundCards
 from subscripts.spacesavers import *
 
 
@@ -29,8 +28,8 @@ def captureImage():
     cap.release()
     cv2.destroyAllWindows()
 
-def returnCardsFromImage():
-    return returnFoundCards(openjson("cardCreationAndRecognition/cardToArcuo.json", True))
+# def returnCardsFromImage():
+#     return returnFoundCards(openjson("cardCreationAndRecognition/cardToArcuo.json", True))
 
 
 def clearPrintFolder():
@@ -50,3 +49,13 @@ def clearPrintFolder():
                 shutil.rmtree(file_path)  # Deletes subdirectories and their contents
         except Exception as e:
             print(f"Error deleting {file_path}: {e}")
+
+
+def CLDisplayHand(hand):
+    handDisplay = []
+    listNum = 1
+    for handCard in hand:
+        handDisplay.append(str(listNum) + ": " + handCard.toString())
+        listNum += 1
+
+    return('\n'.join(handDisplay))

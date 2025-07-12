@@ -28,6 +28,12 @@ class Pack():
             return True
         return False
 
+    def toDict(self):
+        return {
+            "subset": self.subset,
+            "size": self.size
+        }
+
 subsetDict = {
     "normal": 3,
     "jumbo": 5,

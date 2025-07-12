@@ -1,10 +1,37 @@
-from subscripts.cardUtils import Card, CLDisplayHand
-from subscripts.spacesavers import *
 from subscripts.inputHandling import *
-from cardCreationAndRecognition.cardImageCreator import createTaggedCardImage
+import random
 
+
+class Tarot:
+    def __init__(self, name, negative=None):
+        self.name = name
+        self.negative = negative
+
+    def toString(self):
+        return f"{self.name}: {openjson('consumables/tarotDict')[self.name]['description']}"
+
+    def toDict(self):
+        return{
+            "name": self.name,
+            "negative": self.negative,
+            "type": "tarot"
+        }
+
+def generateShuffledListOfFinishedTarotCards():
+    finishedTarots = ["The Magician (I)", "The Empress (III)", "The Hierophant (V)", "The Lovers (VI)",
+                      "The Chariot (VII)", "Justice (VIII)", "Strength (XI)", "The Hanged Man (XII)",
+                      "Death (XIII)", "The Devil (XV)", "The Tower (XVI)", "The Star (XVII)", "The Moon (XVIII)",
+                      "The Sun (XIX)", "The World (XXI)"]
+
+    viableTarotCards = []
+    for tarot in finishedTarots:
+        viableTarotCards.append(Tarot(tarot))
+    random.shuffle(viableTarotCards)
+    return viableTarotCards
 def useTarotCard(card, save):
-    tarotCardInfo = openjson("consumables/tarotDict")[card.number]
+    # unlike cards or jokers I can get away with using tarot card dictionaries since all this stuff is immutable for
+    # all of them
+    tarotCardInfo = openjson("consumables/tarotDict")[card.name]
     print(f"{card.toString()}")
 
     # if the tarot card needs you to select cards from your hand (most of them)
@@ -13,7 +40,7 @@ def useTarotCard(card, save):
         # death is the only one that needs exactly two cards picked
         canSelectLessThanMax = True
         upTo = "up to "
-        if card.number == "Death (XIII)":
+        if card.name == "Death (XIII)":
             canSelectLessThanMax = False
             upTo = "exactly "
 
@@ -42,7 +69,8 @@ def useTarotCard(card, save):
                 except:
                     print(f"Unrecognized hand indexes: {cardSelection}")
             else:
-                print(f"Select {upTo}{maxCardSelectAmount} cards, separated by commas and spaces! "
+                #TODO: fix the messages so the user has time to choose
+                print(f"Put {upTo}{maxCardSelectAmount}  cards in the center to select them!"
                                       f"Type \"cancel\" to cancel.")
                 selectedHand = returnCardsFromImage()
                 if len(selectedHand) > maxCardSelectAmount:

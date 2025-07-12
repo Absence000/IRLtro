@@ -170,10 +170,24 @@ def generateBoardForCard(num):
 
 
     # Create a blank white image for the board
-    board_size = (100, 200)  # Width × Height in pixels
+    board_size = (400, 900)  # Width × Height in pixels
 
     # Draw the board
-    boardImage = board.generateImage(outSize=board_size, marginSize=5)
+    boardImage = board.generateImage(outSize=board_size, marginSize=0)
+
+    # the margins are being annoying so I just made them have a margin size of 0 and added the border manually
+    borderSize = 40
+    boardImage = cv2.copyMakeBorder(
+        boardImage,
+        top=borderSize,
+        bottom=borderSize,
+        left=borderSize,
+        right=borderSize,
+        borderType=cv2.BORDER_CONSTANT,
+        value=(255, 255, 255)
+    )
+
+    boardImage = cv2.resize(boardImage, (96, 196))
 
     # Save the board image
     cv2.imwrite("testBoard.png", boardImage)

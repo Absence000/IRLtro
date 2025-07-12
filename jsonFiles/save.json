@@ -1,13 +1,490 @@
 {
-    "deck": "irl",
+    "deck": [
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "bonus",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "bonus",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "mult",
+            "edition": null,
+            "seal": "purple",
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "lucky",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "lucky",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": "gold",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        }
+    ],
     "ante": 2,
-    "blindIndex": 1,
-    "money": 1,
+    "blindIndex": 2,
+    "state": "shop",
+    "hands": 3,
+    "discards": 4,
+    "shop": {
+        "cards": [
+            [
+                {
+                    "name": "The Magician (I)",
+                    "negative": null,
+                    "type": "tarot"
+                },
+                3
+            ],
+            [
+                [
+                    "Blue Joker",
+                    {
+                        "type": "chip",
+                        "chip": 2,
+                        "finished": true,
+                        "id": 53,
+                        "cost": 5,
+                        "rarity": "Common",
+                        "description": "+2 chips for each remaining card in deck",
+                        "additionalSellValue": 0,
+                        "edition": null
+                    }
+                ],
+                5
+            ]
+        ],
+        "packs": [
+            [
+                {
+                    "subset": "standard",
+                    "size": "normal"
+                },
+                4
+            ],
+            [
+                {
+                    "subset": "celestial",
+                    "size": "jumbo"
+                },
+                6
+            ]
+        ],
+        "vouchers": [
+            null
+        ],
+        "rerollCost": 5
+    },
+    "money": 53,
     "handLevels": {
         "High Card": {
-            "level": 2,
-            "chips": 10,
-            "mult": 2
+            "level": 1,
+            "chips": 5,
+            "mult": 1
         },
         "Pair": {
             "level": 1,
@@ -35,14 +512,14 @@
             "mult": 4
         },
         "Full House": {
-            "level": 2,
-            "chips": 65,
-            "mult": 6
+            "level": 1,
+            "chips": 40,
+            "mult": 4
         },
         "Four Of A Kind": {
-            "level": 1,
-            "chips": 60,
-            "mult": 7
+            "level": 2,
+            "chips": 90,
+            "mult": 10
         },
         "Straight Flush": {
             "level": 1,
@@ -70,10 +547,100 @@
             "mult": 16
         }
     },
-    "illegalHandsDiscovered": [],
+    "illegalHandsDiscovered": [
+        "Flush Five"
+    ],
     "consumables": [],
     "consumablesLimit": 2,
     "hand": [],
-    "jokers": [],
-    "jokerLimit": 5
+    "jokers": [
+        [
+            "Zany Joker",
+            {
+                "type": "mult",
+                "condition": "hand",
+                "hand": "Three Of A Kind",
+                "mult": 12,
+                "finished": true,
+                "additionalSellValue": 0,
+                "edition": null,
+                "id": 7,
+                "cost": 4,
+                "rarity": "Common",
+                "description": "+12 Mult if played hand contains a Three Of A Kind"
+            }
+        ],
+        [
+            "Gluttonous Joker",
+            {
+                "type": "mult",
+                "condition": "suit",
+                "suit": "C",
+                "mult": 3,
+                "finished": true,
+                "additionalSellValue": 0,
+                "edition": null,
+                "id": 5,
+                "cost": 5,
+                "rarity": "Common",
+                "description": "Played cards with Club suit give +3 Mult when scored"
+            }
+        ],
+        [
+            "Devious Joker",
+            {
+                "type": "chip",
+                "condition": "hand",
+                "hand": "Straight",
+                "chip": 100,
+                "finished": true,
+                "additionalSellValue": 0,
+                "edition": null,
+                "id": 14,
+                "cost": 4,
+                "rarity": "Common",
+                "description": "+100 Chips if a played hand contains a Straight"
+            }
+        ],
+        [
+            "Wily Joker",
+            {
+                "type": "chip",
+                "condition": "hand",
+                "hand": "Three Of A Kind",
+                "chip": 100,
+                "finished": true,
+                "additionalSellValue": 0,
+                "edition": null,
+                "id": 12,
+                "cost": 4,
+                "rarity": "Common",
+                "description": "+100 Chips if a played hand contains a Three Of A Kind"
+            }
+        ],
+        [
+            "Business Card",
+            {
+                "type": "economy",
+                "money": 2,
+                "finished": true,
+                "additionalSellValue": 0,
+                "edition": null,
+                "id": 42,
+                "cost": 4,
+                "rarity": "Common",
+                "description": "Played face cards have a 1 in 2 chance to give $2 when scored"
+            }
+        ]
+    ],
+    "jokerLimit": 5,
+    "requiredScore": 1200.0,
+    "blindInfo": [
+        "Big Blind",
+        1.5,
+        4
+    ],
+    "discardedCards": [],
+    "playedCards": [],
+    "score": 8820
 }

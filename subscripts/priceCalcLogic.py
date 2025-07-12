@@ -1,5 +1,7 @@
-from subscripts.cardUtils import Card
+from subscripts.tarotCards import Tarot
+from subscripts.planetCards import Planet
 from subscripts.packs import Pack
+from subscripts.jokers import Joker
 
 
 priceDict = {
@@ -9,9 +11,9 @@ priceDict = {
 # TODO: add cost for joker rarities, playing cards, tarot, spectral, and vouchers
 # TODO: add the sale voucher thing
 def calculatePrice(item, save):
-    if type(item) == Card:
-        if item.subset in ["planet", "tarot"]:
-            return 3
-    if type(item) == Pack:
+    if type(item) in [Planet, Tarot]:
+        return 3
+    elif type(item) == Pack:
         return priceDict["pack"][item.size]
-
+    elif type(item) == Joker:
+        return item.cost
