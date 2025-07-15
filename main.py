@@ -1,19 +1,18 @@
-from cardCreationAndRecognition.finalArcuoTracking import returnFoundCards
+# from cardCreationAndRecognition.finalArcuoTracking import returnFoundCards
+from subscripts.cardUtils import createCardFromBinary
 from subscripts.handFinderAndPointsAssigner import *
 from subscripts.saveUtils import *
 from subscripts.shop import *
 from subscripts.inputHandling import *
-from cardCreationAndRecognition.cardImageCreator import makeStandardDeck, generateCardPairingList
-import random, pygame
-from subscripts.spectralCards import Spectral
+import random
 
 
 # play a specific ante in the command line
 # eventually all the input lines will be replaced with actual card reading
 #TODO: boss bind support
 def commandLinePlayRound(save):
-    if not playingIRL(save):
-        deck = save.deck
+    deck = save.deck
+    if not save.irl:
         random.shuffle(deck)
     save.hand = []
 
@@ -21,7 +20,7 @@ def commandLinePlayRound(save):
 
     while playing:
 
-        if not playingIRL(save):
+        if not save.irl:
             while len(save.hand) < 8:
                 save.hand.append(deck[0])
                 del deck[0]
@@ -31,7 +30,7 @@ def commandLinePlayRound(save):
         # TODO: Add the ability to resort the deck here somewhere
         print(f"{save.hands} hands left, {save.discards} discards")
         print(f"{save.score}/{save.requiredScore} chips")
-        if not playingIRL(save):
+        if not save.irl:
             print(f"Current hand:\n" + CLDisplayHand(save.hand))
         # print(f"{len(deck) + len()} cards")
         selectionIsValid = False
@@ -69,7 +68,7 @@ def commandLinePlayRound(save):
 
         # card selection logic handling
         if choice in ["play", "discard"]:
-            if not playingIRL(save):
+            if not save.irl:
                 selectionIsValid = False
                 while not selectionIsValid:
                     cardSelection = input(f"Type the card indexes that you want to {choice}, separated by commas and a space.")
@@ -94,22 +93,9 @@ def commandLinePlayRound(save):
                 for index in sorted(selectedHandIndexes, reverse=True):
                     del save.hand[index-1]
             else:
-                inputCardsDict = openjson("sortedDetectedCards")
-                inputCards = {
-                    key: [Card(cardDict) for cardDict in cardList]
-                    for key, cardList in inputCardsDict.items()
-                }
-                selectedHand = inputCards["middle"]
-                save.hand = inputCards["lower"]
-                jokers = []
-                consumables = []
-                for card in inputCards["upper"]:
-                    if isinstance(card, Joker):
-                        jokers.append(card)
-                    else:
-                        consumables.append(card)
-                save.jokers = jokers
-                save.consumables = consumables
+                selectedHand = pushIRLInputIntoSave(save)
+                # finds the selected hand in the deck and takes it out
+                deck = [card for card in deck if card not in selectedHand + save.hand]
 
             if choice == "play":
                 points, affectedCards = calcPointsFromHand(selectedHand, findBestHand(selectedHand), save.hand, save)
@@ -118,9 +104,9 @@ def commandLinePlayRound(save):
                     save.playedCards.append(selectedHand[cardIndex])
                     if selectedHand[cardIndex].enhancement == "glass":
                         if selectedHand[cardIndex].number in affectedCards or affectedCards == "all":
-                            if random.randint(1, 1) == 1:
+                            if random.randint(1, 4) == 1:
                                 print(f"{selectedHand[cardIndex].toString()} broke!")
-                                if playingIRL(save):
+                                if save.irl:
                                     print("Put it aside and don't use it for the rest of the game!")
                                 # TODO: Glass joker stuff here
                                 del selectedHand[cardIndex]
@@ -150,7 +136,7 @@ def commandLinePlayRound(save):
                     saveGame(save)
 
                 if not playing:
-                    if not playingIRL(save):
+                    if not save.irl:
                         # resets the deck
                         for card in save.discardedCards:
                             deck.append(card)
@@ -178,14 +164,14 @@ anteBaseChipsList = [100, 300, 800, 2000, 5000, 11000, 20000, 35000, 50000, 1100
 blindIndexToBlindInfo = [("Small Blind", 1, 3), ("Big Blind", 1.5, 4), ("Boss Blind", 2, 5)]
 
 # command line version for bugfixing
-def CLPlay(fromSave, deck):
-    save = createSaveFromDict(openjson("save"))
-    if fromSave and save.state != "dead":
+def CLPlay(fromSave, deck, irl):
+    oldSaveDict = openjson("save")
+    if fromSave and oldSaveDict['state'] != "dead":
         save = createSaveFromDict(openjson("save"))
         if save.state != "selectingBlind":
             print(f"ANTE {save.ante}")
     else:
-        save = createBlankSave(deck=deck)
+        save = createBlankSave(deck=deck, irl=irl)
     alive = True
     while alive:
         # blind select
@@ -278,9 +264,15 @@ def main(loadSave=False):
     # cap.release()
     pygame.quit()
 
-CLPlay(fromSave=False, deck="standard")
+CLPlay(fromSave=False, deck="standard", irl=True)
 
 # jokerDict = openjson("jokerDict")
-# name = "Half Joker"
-# joker = Joker((name, jokerDict[name]), edition="polychrome")
+# name = "Crazy Joker"
+# joker = Joker((name, jokerDict[name]))
+# card = createCardFromBinary(joker.toBinary())
+# card = Card(cardDict={"number": "3", "suit": "S", "seal": "purple"})
+# print(card.toString())
+# print(card.toBinary())
+# lookupTable = openjson("cardCreationAndRecognition/cardToArcuo.json", True)
+# print(lookupTable.index(card.toBinary()))
 # createTaggedCardImage(joker, openjson("cardCreationAndRecognition/cardToArcuo.json", True))

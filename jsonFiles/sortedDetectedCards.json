@@ -1,5 +1,67 @@
 {
-    "upper": [],
-    "middle": [],
+    "upper": [
+        [
+            "Crazy Joker",
+            {
+                "type": "mult",
+                "condition": "hand",
+                "hand": "Straight",
+                "mult": 12,
+                "finished": true,
+                "position": [
+                    5,
+                    0
+                ],
+                "id": 9,
+                "cost": 4,
+                "rarity": "Common",
+                "description": "+12 Mult if played hand contains a Straight",
+                "additionalSellValue": 0,
+                "edition": null
+            }
+        ]
+    ],
+    "middle": [
+        {
+            "number": "J",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "D",
+            "retriggeredBy": []
+        },
+        {
+            "number": "10",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "D",
+            "retriggeredBy": []
+        },
+        {
+            "number": "Q",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "H",
+            "retriggeredBy": []
+        },
+        {
+            "number": "K",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "C",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "C",
+            "retriggeredBy": []
+        }
+    ],
     "lower": []
 }

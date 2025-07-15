@@ -2,13 +2,6 @@ import cv2, os, shutil
 from subscripts.spacesavers import *
 from cardCreationAndRecognition.cardImageCreator import createTaggedCardImage
 
-
-def playingIRL(save):
-    if save.deck == "irl":
-        return True
-    else:
-        return False
-
 def captureImage():
     cap = cv2.VideoCapture(2)
 
@@ -54,7 +47,7 @@ def clearPrintFolder():
 def prepareCardForPrinting(card, keep=None):
     if keep is None:
         clearPrintFolder()
-    lookupTable = openjson("cardCreationAndRecognition/cardToArcuo old.json", True)
+    lookupTable = openjson("cardCreationAndRecognition/cardToArcuo.json", True)
     createTaggedCardImage(card, lookupTable)
 
 def CLDisplayHand(hand):
@@ -65,3 +58,45 @@ def CLDisplayHand(hand):
         listNum += 1
 
     return('\n'.join(handDisplay))
+
+
+
+def pushIRLInputIntoSave(save):
+    from subscripts.cardUtils import Card
+    from subscripts.jokers import Joker
+    from subscripts.planetCards import Planet
+    from subscripts.tarotCards import Tarot
+    from subscripts.spectralCards import Spectral
+    inputCardsDict = openjson("sortedDetectedCards")
+    inputCards = {
+        "upper": [],
+        "middle": [],
+        "lower": []
+    }
+    for key, cardList in inputCardsDict.items():
+        for cardDict in cardList:
+            if len(cardDict) == 2:
+                inputCards[key].append(Joker(cardDict))
+            elif "suit" in cardDict.keys():
+                inputCards[key].append(Card(cardDict))
+            elif "type" in cardDict.keys():
+                type = cardDict["type"]
+                name = cardDict["name"]
+                negative = cardDict["negative"]
+                inputCards[key].append(eval(type)(name, negative))
+    # inputCards = {
+    #     key: [Card(cardDict) for cardDict in cardList]
+    #     for key, cardList in inputCardsDict.items()
+    # }
+    selectedHand = inputCards["middle"]
+    save.hand = inputCards["lower"]
+    jokers = []
+    consumables = []
+    for card in inputCards["upper"]:
+        if isinstance(card, Joker):
+            jokers.append(card)
+        else:
+            consumables.append(card)
+    save.jokers = jokers
+    save.consumables = consumables
+    return selectedHand

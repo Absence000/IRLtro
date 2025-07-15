@@ -9,6 +9,7 @@ from subscripts.inputHandling import CLDisplayHand
 from subscripts.jokers import generateRandomWeightedJoker, generateShuffledListOfFinishedJokersByRarity, Joker
 
 # TODO: add something for the voucher to remain the same until the Boss Blind is defeated
+# TODO: Make a subobject for stuff in the shop instead of making a list with them and the price
 class Shop:
 
     def __init__(self, cards, packs, vouchers, rerollCost):
@@ -26,6 +27,7 @@ class Shop:
         self.cards = cardList
 
     def rollPacks(self, save):
+        # TODO: First shop has a guaranteed buffoon pack
         packList = []
         for i in range(2):
             packForSale = generatePackForSale()
@@ -93,7 +95,7 @@ class Shop:
                 trueIndex += 1
 
     # returns the item, removes it from the shop, and subtracts the money if the user can afford it
-    # returns False and does nothing if it can't afford it
+    # returns an error message and does nothing if it can't afford it
     def buyItem(self, type, trueIndex, save):
         listing = eval(f"self.{type}")[trueIndex]
         if listing is not None:
@@ -130,9 +132,9 @@ def createShopFromDict(shopDict):
             cardData = subCardList[0]
             if "type" not in cardData:
                 newCard = Joker(cardData)
-            elif cardData["type"] == "planet":
+            elif cardData["type"] == "Planet":
                 newCard = Planet(cardData["name"], cardData["negative"])
-            elif cardData["type"] == "tarot":
+            elif cardData["type"] == "Tarot":
                 newCard = Tarot(cardData["name"], cardData["negative"])
             cardList.append([newCard, subCardList[1]])
         else:
@@ -182,7 +184,7 @@ def loadShop(save):
                                 useConsumable(item, save)
                                 askingAboutImmediateUse = False
                             elif useImmediately == "n":
-                                if playingIRL(save):
+                                if save.irl:
                                     prepareCardForPrinting(item)
                                     print("Print out your card in the \"print\" folder and put it on the top third of the screen!")
                                 else:
@@ -192,7 +194,7 @@ def loadShop(save):
                             else:
                                 print(f"Unexpected response: {useImmediately}")
                     else:
-                        if playingIRL(save):
+                        if save.irl:
                             prepareCardForPrinting(item)
                             print("Print out your card in the \"print\" folder "
                                   "and put it on the top third of the screen!")
@@ -209,6 +211,7 @@ def loadShop(save):
                     openingPack = True
                     print("Cards:")
                     while openingPack:
+                        # card selection logic
                         if item.needsHandToUse():
                             while len(save.hand) < 8:
                                 save.hand.append(save.deck[0])
@@ -226,26 +229,23 @@ def loadShop(save):
                             chosenCard = possibleCards[int(cardSelection)-1]
                             # TODO: Move this to a separate function once I have all the other card stuff
                             if isinstance(chosenCard, Card):
-                                if not playingIRL(save):
+                                if not save.irl:
                                     save.deck.append(chosenCard)
                                     print(f"Added {chosenCard.toString()} to deck!")
                                 else:
-                                    clearPrintFolder()
-                                    createTaggedCardImage(chosenCard,
-                                                          openjson(
-                                                              "cardCreationAndRecognition/cardToArcuo old.json",
-                                                              True))
+                                    prepareCardForPrinting(chosenCard)
                                     print(f"Print out your {chosenCard.toString()} in the \"print\" folder "
                                           f"and add it to the deck!")
                             elif isinstance(chosenCard, Tarot):
                                 useTarotCard(chosenCard, save)
                             elif isinstance(chosenCard, Planet):
                                 usePlanetCard(chosenCard, save)
+                            # TODO: Joker stuff for buffoon packs
                             del possibleCards[int(cardSelection)-1]
                             cardsPicked += 1
                             if cardsPicked > cardPickAmount:
                                 openingPack = False
-                                if not playingIRL(save):
+                                if not save.irl:
                                     if item.needsHandToUse():
                                         for card in save.hand:
                                             save.deck.append(card)
@@ -254,7 +254,7 @@ def loadShop(save):
                             print(f"Invalid input: {cardSelection}")
                 elif isinstance(item, Joker):
                     # jokers are the easiest for logic since you just add them
-                    if playingIRL(save):
+                    if save.irl:
                         prepareCardForPrinting(item)
                         print("Print out the joker in the \"print\" folder and put it in the top third of the screen!")
                     else:
@@ -312,11 +312,3 @@ def newItemIsConsumable(item):
     if isinstance(item, Planet) or isinstance(item, Tarot): # TODO: When spectrals are added put them here
         return True
     return False
-
-# consumables that need a hand to work can't be used immediately
-# TODO: make this work for spectrals when they're added
-def consumableCanBeUsedImmediately(consumable):
-    if isinstance(consumable, Tarot):
-        if openjson("consumables/tarotDict")[consumable.name]["type"] == "handModifier":
-            return False
-    return True

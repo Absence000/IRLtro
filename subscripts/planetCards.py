@@ -20,7 +20,7 @@ class Planet:
         return{
             "name": self.name,
             "negative": self.negative,
-            "type": "planet"
+            "type": "Planet"
         }
 
     def toBinary(self):
@@ -48,3 +48,26 @@ def upgradeHandLevel(hand, level, chipUpgrade, multUpgrade, save):
     if level > 1:
         plural = "s"
     print(f'{hand} upgraded {level} level{plural} (now at level {save.handLevels[hand]["level"]})!')
+
+defaultplanetCards = [Planet("Pluto"),
+                      Planet("Mercury"),
+                      Planet("Uranus"),
+                      Planet("Venus"),
+                      Planet("Saturn"),
+                      Planet("Jupiter"),
+                      Planet("Earth"),
+                      Planet("Mars"),
+                      Planet("Neptune")]
+
+secretPlanetCardDict = {"Five Of A Kind": Planet("Planet X"),
+                        "Flush House": Planet("Ceres"),
+                        "Flush Five": Planet("Eris"),}
+
+
+def generateShuffledListOfUnlockedPlanetCards(save):
+    viablePlanetCards = defaultplanetCards
+    for illegalHand in save.illegalHandsDiscovered:
+        viablePlanetCards.append(secretPlanetCardDict[illegalHand])
+
+    random.shuffle(viablePlanetCards)
+    return viablePlanetCards

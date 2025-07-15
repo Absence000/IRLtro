@@ -1,9 +1,11 @@
-import pygame
-import cv2
+import pygame, time, cv2
 import numpy as np
 from cardCreationAndRecognition.finalArcuoTracking import pygameDisplayFoundCards
 from subscripts.spacesavers import *
 from subscripts.handFinderAndPointsAssigner import findBestHand
+
+# TODO: once you figure out pygame replace the input system with this, right now it's a separate program that talks
+#  to the main one by reading the save and outputting the card read info as json which is really stupid
 
 def showDetailedCamFeed():
     # Constants
@@ -19,7 +21,7 @@ def showDetailedCamFeed():
     pygame.display.set_caption("IRLatro")
     font = pygame.font.SysFont(None, 30)
 
-    lookupTable = openjson("cardCreationAndRecognition/cardToArcuo old.json", True)
+    lookupTable = openjson("cardCreationAndRecognition/cardToArcuo.json", True)
 
     # Colors
     WHITE = (255, 255, 255)
@@ -34,8 +36,9 @@ def showDetailedCamFeed():
 
     def open_camera(index):
         cap = cv2.VideoCapture(index)
-        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 2160)
-        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 3840)
+        # right now it does 1080p but I might change this idk
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
         return cap
 
     # Button positions (vertical layout in sidebar)
@@ -51,10 +54,13 @@ def showDetailedCamFeed():
 
     # State
     camera_index = 1
-    rotation = 90  # 0, 90, 180, 270 degrees
+    rotation = 0  # 0, 90, 180, 270 degrees
     cap = open_camera(camera_index)
 
+    # sorry matlab teacher in engineering school who said it was bad practice to not use input flags
     oldSortedDetectedCards = {}
+    sortedDetectedCards = {}
+    lastArucoTime = 0
 
     # Main loop
     running = True
@@ -95,6 +101,12 @@ def showDetailedCamFeed():
         frame = np.ascontiguousarray(frame) # idk why but I need this or it'll break the aruco detector when it rotates
 
         frame, sortedDetectedCards = pygameDisplayFoundCards(lookupTable, frame)
+
+        # only checks the cards once a second or it tanks performance
+        # currentTime = time.time()
+        # if currentTime - lastArucoTime >= 1:
+        #     lastArucoTime = currentTime
+
         if oldSortedDetectedCards != sortedDetectedCards:
             sortedDetectedCardsDict = {
                 key: [card.toDict() for card in cards]
@@ -149,12 +161,23 @@ def showDetailedCamFeed():
         jokersAndConsumables = sortedDetectedCards["upper"]
 
         # hand display (left)
-        handType = findBestHand(handCards)[0]
-        handInfo = openjson("save")["handLevels"][handType]
-        handMessage = f"{handType} lvl {handInfo['level']}:\n{handInfo['chips']} x {handInfo['mult']}"
+        mode = "handFinder"
+        for card in handCards:
+            cardType = type(card).__name__
+            if cardType != "Card":
+                mode = "analysis"
+
+        if mode == "handFinder":
+                handType = findBestHand(handCards)[0]
+                handInfo = openjson("save")["handLevels"][handType]
+                handMessage = f"{handType} lvl {handInfo['level']}:\n{handInfo['chips']} x {handInfo['mult']}"
+        elif mode == "analysis":
+            cardToAnalyze = handCards[0]
+            handMessage = cardToAnalyze.toString()
 
         handText = font.render(handMessage, True, BLACK)
-        handRect = handText.get_rect(center=(SIDEBAR_WIDTH // 2, 300))
+        handRect = handText.get_rect()
+        handRect.midleft = (20, 300)
         screen.blit(handText, handRect)
 
         # specific hand card display

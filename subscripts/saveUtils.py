@@ -7,13 +7,10 @@ from subscripts.shop import Shop, createShopFromDict
 
 class Save:
     def __init__(self, saveDict):
-        if saveDict["deck"] != "irl":
-            deck = []
-            for card in saveDict["deck"]:
-                deck.append(Card(card))
-            self.deck = deck
-        else:
-            self.deck = "irl"
+        deck = []
+        for card in saveDict["deck"]:
+            deck.append(Card(card))
+        self.deck = deck
         self.ante = saveDict["ante"]
         self.blindIndex = saveDict["blindIndex"]
         self.state = saveDict["state"]
@@ -50,6 +47,7 @@ class Save:
             playedCards.append(Card(card))
         self.playedCards = playedCards
         self.score = saveDict["score"]
+        self.irl = saveDict["irl"]
 
 
     def toDict(self):
@@ -104,7 +102,8 @@ class Save:
             "blindInfo": self.blindInfo,
             "discardedCards": discardedCards,
             "playedCards": playedCards,
-            "score": self.score
+            "score": self.score,
+            "irl": self.irl
         }
         return saveDict
 
@@ -120,7 +119,7 @@ def createSaveFromDict(saveDict):
 def saveGame(save):
     savejson("save", save.toDict())
 
-def createBlankSave(deck):
+def createBlankSave(deck, irl):
     handLevels = {
         "High Card": {"level": 1, "chips": 5, "mult": 1},
         "Pair": {"level": 1, "chips": 10, "mult": 2},
@@ -136,8 +135,7 @@ def createBlankSave(deck):
         "Flush House": {"level": 1, "chips": 140, "mult": 14},
         "Flush Five": {"level": 1, "chips": 160, "mult": 16}
     }
-    if deck != "irl":
-        deck = openjson("decks")[deck]
+    deck = openjson("decks")[deck]
     return Save({
         "deck": deck,
         "ante": 1,
@@ -163,7 +161,8 @@ def createBlankSave(deck):
         "blindInfo": 0,
         "discardedCards": [],
         "playedCards": [],
-        "score": 0
+        "score": 0,
+        "irl": irl
     })
 
 def getJokerByName(save, name):

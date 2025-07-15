@@ -1,8 +1,3 @@
-from subscripts.cardUtils import Card
-from subscripts.tarotCards import Tarot
-from subscripts.planetCards import Planet
-from subscripts.spectralCards import Spectral
-from subscripts.jokers import Joker
 from PIL import Image, ImageChops, ImageFilter, ImageEnhance
 from cardCreationAndRecognition.fiducialRecognizerTest import generateBoardForCard
 from subscripts.spacesavers import *
@@ -36,7 +31,9 @@ editionsCoordsDict = {
 }
 
 def createImageFromCard(card):
-    if isinstance(card, Card):
+    # stupid circular imports making me do this instead of isinstance()
+    cardType = type(card).__name__
+    if cardType == "Card":
         cardImage = selectPlayingCardBackground(card)
         if card.enhancement != "stone":
             cardValueImage = returnCroppedImageByName("playing", card.number, card.suit)
@@ -59,7 +56,7 @@ def createImageFromCard(card):
             cardImage.paste(sealImage, (0, 0), sealImage)
         return cardImage
 
-    elif isinstance(card, Tarot):
+    elif cardType == "Tarot":
         # tarots are in order on a 10 wide image
         tarotDict = openjson("consumables/tarotDict")
         tarotIndex = list(tarotDict.keys()).index(card.name)
@@ -67,7 +64,7 @@ def createImageFromCard(card):
         y = tarotIndex // 10
         return getConsumableImageByCoords(x, y, card)
 
-    elif isinstance(card, Planet):
+    elif cardType == "Planet":
         # the secret ones are in weird spots but the others are all on the same row in order
         regularOrder = ["Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto"]
         secretPosDict = {
@@ -83,7 +80,7 @@ def createImageFromCard(card):
             y = 2
         return getConsumableImageByCoords(x, y, card)
 
-    elif isinstance(card, Spectral):
+    elif cardType == "Spectral":
         regularOrder = ["Black Hole", "Familiar", "Grim", "Incantation", "Talisman", "Aura", "Wraith", "Sigil",
                         "Ouija", "Ectoplasm", "Immolate", "Ankh", "Deja Vu", "Hex", "Trance", "Medium", "Cryptid"]
         if card.name in regularOrder:
@@ -102,7 +99,7 @@ def createImageFromCard(card):
             crop = baseImage.crop((topLeftX, topLeftY, topLeftX + enhancersWidth, topLeftY + enhancersHeight))
             baseSoulImage.paste(crop, (0, 0), crop)
             return baseSoulImage
-    elif isinstance(card, Joker):
+    elif cardType == "Joker":
         jokerDict = openjson("jokerDict")
         x, y = jokerDict[card.name]["position"]
         jokerImage = getConsumableImageByCoords(x, y, card)
@@ -137,11 +134,12 @@ def createImageFromCard(card):
             secondaryImage = getConsumableImageByCoords(x2, y2, card, "secondary")
             jokerImage.paste(secondaryImage, (0, 0), secondaryImage)
 
-        # wee joker needs to be shrunk (add that after it's resized)
         return jokerImage
 
 def getConsumableImageByCoords(x, y, card, secondary=None):
-    if isinstance(card, Joker):
+    # stupid circular imports making me do this instead of isinstance()
+    cardType = type(card).__name__
+    if cardType == "Joker":
         imagePath = "cardSprites/jokers.png"
     else:
         imagePath = "cardSprites/consumables.png"
@@ -151,7 +149,7 @@ def getConsumableImageByCoords(x, y, card, secondary=None):
     crop = baseImage.crop((topLeftX, topLeftY, topLeftX + enhancersWidth, topLeftY + enhancersHeight))
 
     # enhancement handling
-    if isinstance(card, Joker):
+    if cardType == "Joker":
         if secondary is None:
             if card.edition == "negative":
                 crop = turnNegative(crop)
@@ -323,7 +321,7 @@ def createTaggedCardImage(card, lookupTable):
     fiducialImage = Image.open("testBoard.png")
     cardImage = cardImage.resize((690, 966), Image.Resampling.NEAREST)
     # I have to handle the wee joker stuff here bc if I resized it earlier it would have messed up the scaling
-    if card.name == "Wee Joker":
+    if hasattr(card, "name") and card.name == "Wee Joker":
         resize = cardImage.resize((345, 483), Image.Resampling.NEAREST)
         canvas = Image.new("RGBA", (690, 966), (0, 0, 0, 0))
         # this is half a pixel out of center but who cares lmao
@@ -344,19 +342,22 @@ def createTaggedCardImage(card, lookupTable):
     paste_y = (966 - img_height) // 2
 
     # the tarots and some of the jokers have some gaps so this fills them in without painting the invisible sides black too
-    if not isinstance(card, Card):
+    cardType = type(card).__name__
+    if cardType != "Card":
         gapFillerImage = Image.new("RGBA", (690, 966), (0, 0, 0, 255))
         background.paste(gapFillerImage, (paste_x, paste_y), gapFillerImage)
+        cardName = card.toString(mode="name")
+    else:
+        cardName = card.toString()
 
     background.paste(cardImage, (paste_x, paste_y), cardImage)
-    if isinstance(card, Card):
-        cardName = card.toString()
-    else:
-        cardName = card.toString(mode="name")
     background.save(f"print/{cardName}.png")
 
 
 #TODO: Add tarot, joker, planet, spectral, and stone cards here
+
+# these things don't work rn bc  of circular imports but I only needed to run them once so who cares
+
 def generateCardPairingList():
     iterator = 0
     # pairList = openjson("cardToArcuo old.json", True)

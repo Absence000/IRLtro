@@ -4,6 +4,7 @@ from subscripts.planetCards import upgradeHandLevel
 from subscripts.spacesavers import *
 from subscripts.jokers import Joker
 from subscripts.saveUtils import getJokerByName
+from subscripts.eventChainManagement import *
 import random
 
 
@@ -142,7 +143,6 @@ def turnNumberBackIntoPlayingCardValue(number):
 
 chips = 0
 mult = 0
-multmult = 1
 
 # now that we identified the hand and the cards that need to be assigned the points, we can figure out how many points
 # to add!
@@ -154,11 +154,9 @@ def calcPointsFromHand(hand, handData, unselectedHand, save):
 
     global chips
     global mult
-    global multmult
 
     chips = 0
     mult = 0
-    multmult = 1
 
     # royal and straight flushes are treated the same but they get displayed differently
     displayHandType = handType
@@ -171,6 +169,8 @@ def calcPointsFromHand(hand, handData, unselectedHand, save):
 
     chips = baseChips
     mult = baseMult
+
+    chain = EventChain()
 
     print(f"{displayHandType} lvl {save.handLevels[handType]['level']}")
     print(f"Triggered cards: {affectedCards}")
@@ -185,12 +185,12 @@ def calcPointsFromHand(hand, handData, unselectedHand, save):
     # iterates through each card in the hand to award points
     for card in hand:
         if affectedCards == "all" or card.number in affectedCards or card.enhancement == "stone":
-            triggerCard(card, save)
+            triggerCard(card, save, chain)
             if card.seal == "gold":
                 save.money += 3
+                chain.add("visual", "+$3", card, chips, mult)
                 print("Earned $3 from a gold seal!")
 
-    steelCardMult = 1
 
     # here comes most of the joker logic in the game oh boy
     for joker in save.jokers:
@@ -208,15 +208,19 @@ def calcPointsFromHand(hand, handData, unselectedHand, save):
         if condition == "cardCount":
             if jokerName == "Half Joker":
                 if len(hand) >= 3:
-                    mult += jokerData["mult"]
+                    jokerMult = jokerData["mult"]
+                    mult += jokerMult
+                    chain.add("mult", jokerMult, joker, chips, mult)
             elif jokerName == "Square Joker":
                 if len(hand) == 4:
                     getJokerByName(save, "Square Joker")["chip"] += 4
+                    chain.add("visual", "+4", joker, chips, mult)
 
         # hand dependent end-of-hand check jokers (spare trousers)
         if jokerName == "Spare Trousers":
             if handType == jokerData["hand"] or jokerData["hand"] in handContainerDict[handType]:
                 getJokerByName(save, "Spare Trousers")["mult"] += 2
+                chain.add("visual", "+2", joker, chips, mult)
 
         # always active end-of-hand check jokers:
         # joker, misprint, gros michel, ice cream, cavendish, square joker, vampire, hologram, fortune teller,
@@ -225,32 +229,46 @@ def calcPointsFromHand(hand, handData, unselectedHand, save):
         if condition == "active":
             # weird ones
             if jokerName == "Misprint":
-                mult += random.randint(0, 23)
+                jokerMult = random.randint(0, 23)
+                mult += jokerMult
+                chain.add("mult", jokerMult, joker, chips, mult)
             elif jokerName == "Bull":
                 # does nothing if you have 0 or less money
                 money = save.money
                 if money > 0:
-                    chips += (jokerData["chip"] * money)
+                    jokerChips = jokerData["chip"] * money
+                    chips += jokerChips
+                    chain.add("chip", jokerChips, joker, chips, mult)
             # TODO: Combine bull and bootstraps at some point so code reviewers online don't yell at you
             elif jokerName == "Bootstraps":
                 money = save.money
                 if money > 0:
-                    mult += ((money // 5) * 2)
+                    jokerMult = (money // 5) * 2
+                    mult += jokerMult
+                    chain.add("mult", jokerMult, joker, chips, mult)
 
             elif jokerName == "Swashbuckler":
                 combinedSellVal = 0
                 for secondIterationJoker in save.jokers:
                     combinedSellVal += secondIterationJoker.getSellValue
+
                 mult += combinedSellVal
+                chain.add("mult", combinedSellVal, joker, chips, mult)
 
             # simple(ish) ones
             else:
                 if "mult" in jokerData:
-                    mult += jokerData["mult"]
+                    jokerMult = jokerData["mult"]
+                    mult += jokerMult
+                    chain.add("mult", jokerMult, joker, chips, mult)
                 if "chip" in jokerData:
-                    chips += jokerData["chip"]
+                    jokerChips = jokerData["chip"]
+                    chips += jokerChips
+                    chain.add("chip", jokerChips, joker, chips, mult)
                 if "multmult" in jokerData:
-                    mult *= jokerData["multmult"]
+                    jokerMultMult = jokerData["multmult"]
+                    mult *= jokerMultMult
+                    chain.add("multmult", jokerMultMult, joker, chips, mult)
                 # TODO: Remember to make Gros Michel and Cavendish possibly go extinct at the end of the round
                 # TODO: Add a card entering deck check for Hologram
                 # TODO: Remember to make Ice Cream and Popcorn decrease at the end of every round
@@ -271,11 +289,17 @@ def calcPointsFromHand(hand, handData, unselectedHand, save):
         if condition == "hand":
             if handType == jokerData["hand"] or jokerData["hand"] in handContainerDict[handType]:
                 if jokerData["type"] == "mult":
-                    mult += jokerData["mult"]
+                    jokerMult = jokerData["mult"]
+                    mult += jokerMult
+                    chain.add("mult", jokerMult, joker, chips, mult)
                 elif jokerData["type"] == "chip":
-                    chips += jokerData["chip"]
+                    jokerChips = jokerData["chip"]
+                    chips += jokerChips
+                    chain.add("chip", jokerChips, joker, chips, mult)
                 elif jokerData["type"] == "multmult":
-                    mult *= jokerData["multmult"]
+                    jokerMultMult = jokerData["multmult"]
+                    mult *= jokerMultMult
+                    chain.add("multmult", jokerMultMult, joker, chips, mult)
                 # elif jokerName == "Seance":
                     # TODO: Add seance functionality here once spectrals are added
 
@@ -286,15 +310,19 @@ def calcPointsFromHand(hand, handData, unselectedHand, save):
                 emptySlots = save.jokerLimit - len(save.jokers) + 1
                 # TODO: Figure out if this is added to the multmult or it executes immediately
                 mult *= emptySlots
+                chain.add("multmult", emptySlots, joker, chips, mult)
             elif jokerName == "Abstract Joker":
-                mult += (len(save.jokers) * 3)
+                jokerMult = (len(save.jokers) * 3)
+                mult += jokerMult
+                chain.add("mult", jokerMult, joker, chips, mult)
 
         # end-of-hand check hand retrigerrer (mime)
         # the blue seal and gold card retriggering is done in the end of round check, this just handles steel cards
-        if jokerName == "Mime":
-            for card in unselectedHand:
-                if card.enhancement == "steel":
-                    steelCardMult *= triggerSteelCard(card)
+        # TODO: Make Mime work with the other jokers and stuff, and add the chain once it's finished
+        # if jokerName == "Mime":
+        #     for card in unselectedHand:
+        #         if card.enhancement == "steel":
+        #             steelCardMult *= triggerSteelCard(card)
 
         # TODO: end-of-hand check discard/hand amount jokers (banner, mythic summit, green),
         #  make the save to update per hand so I can track it
@@ -307,12 +335,16 @@ def calcPointsFromHand(hand, handData, unselectedHand, save):
 
         # end-of-hand check lowest rank (raised fist)
         if jokerName == "Raised Fist":
-            lowestRank = 13
-            for card in unselectedHand:
-                realValue = card.getValue()
-                if realValue < lowestRank:
-                    lowestRank = realValue
-            mult += (lowestRank * 2)
+            # if there's no cards in your unselected hand it does nothing
+            if len(unselectedHand) != 0:
+                lowestRank = 13
+                for card in unselectedHand:
+                    realValue = card.getValue()
+                    if realValue < lowestRank:
+                        lowestRank = realValue
+                jokerMult = lowestRank * 2
+                mult += jokerMult
+                chain.add("mult", jokerMult, joker, chips, mult)
 
         # TODO: # of times poker hand has been played tracking (Supernova)
 
@@ -326,11 +358,12 @@ def calcPointsFromHand(hand, handData, unselectedHand, save):
                 for planet, info in planetDict.items():
                     if info["hand"] == handType:
                         additionInfo = info["addition"]
-                upgradeHandLevel(handType, 1, additionInfo[1], additionInfo[0])
+                upgradeHandLevel(handType, 1, additionInfo[1], additionInfo[0], save)
+                chain.add("visual", f"+1 lvl!", joker, chips, mult)
 
         # end-of-hand check unselected hand suit checker (blackboard)
         # this is weird bc it's actually only if there's no hearts or diamonds contrary to the description
-        # TODO: Figure out how this works with wild cards
+        # also wild cards work with this apparently
         if jokerName == "Blackboard":
             blackboardActive = True
             for card in unselectedHand:
@@ -338,13 +371,16 @@ def calcPointsFromHand(hand, handData, unselectedHand, save):
                     blackboardActive = False
             if blackboardActive:
                 mult *= 3
+                chain.add("multmult", 3, joker, chips, mult)
 
         # TODO: end-of-hand first round single card check (DNA, sixth sense)
 
         # end-of-hand remaining deck check (blue joker)
         if jokerName == "Blue Joker":
             cardsRemaining = len(save.deck)
-            chips += (jokerData["chip"] * cardsRemaining)
+            jokerChips = jokerData["chip"] * cardsRemaining
+            chips += jokerChips
+            chain.add("chips", jokerChips, joker, chips, mult)
 
         # TODO: Planet card use check (constellation)
 
@@ -358,26 +394,33 @@ def calcPointsFromHand(hand, handData, unselectedHand, save):
                 if card.number == "A":
                     hasAce = True
             if hasAce and handType == "Straight":
-                addTarotCardIfRoom(save)
+                tarotCardAdded = addTarotCardIfRoom(save)
+                if tarotCardAdded:
+                    chain.add("visual", "+1 tarot", joker, chips, mult)
 
         # end-of-hand exclusive hand dependent jokers (to do list)
         # TODO: make to do list's hand change at the end of the round
         if jokerName == "To Do List":
             if handType == jokerData["hand"]:
-                save.money += jokerData["money"]
+                jokerMoney = jokerData["money"]
+                save.money += jokerMoney
+                chain.add("visual", f"+${jokerMoney}", joker, chips, mult)
 
         # TODO: Check if poker hand has been played this round (Card Sharp, Obelisk)
 
         # end-of-hand money check (vagabond)
         if jokerName == "Vagabond":
             if save.money <= 4:
-                addTarotCardIfRoom(save)
+                tarotCardAdded = addTarotCardIfRoom(save)
+                if tarotCardAdded:
+                    chain.add("visual", "+1 tarot", joker, chips, mult)
 
         # end-of-hand king check (baron)
         if jokerName == "Baron":
             for card in unselectedHand:
                 if card.number == "K":
                     mult *= 1.5
+                    chain.add("multmult", 1.5, joker, chips, mult)
 
         # end-of-hand face cards in hand check (reserved parking)
         if jokerName == "Reserved Parking":
@@ -385,19 +428,27 @@ def calcPointsFromHand(hand, handData, unselectedHand, save):
                 if cardCountsAsFaceCard(card, save):
                     if random.randint(1, 2) == 1:
                         save.money += 1
+                        chain.add("visual", "Triggered!", joker, chips, mult)
+                        chain.add("visual", "+$1", card, chips, mult)
 
         # end-of-hand stone card checking throughout the deck (stone joker)
         # this is dumb but idk how else to do it
         if jokerName == "Stone Joker":
+            jokerChips = 0
             for card in hand + unselectedHand + save.deck:
                 if card.enhancement == "stone":
-                    chips += jokerData["chips"]
+                    jokerChips += jokerData["chips"]
+            if jokerChips > 0:
+                chips += jokerChips
+                chain.add("chip", jokerChips, joker, chips, mult)
 
         # end-of-hand uncommon joker check (baseball card)
         if jokerName == "Baseball Card":
             for secondaryJoker in save.jokers:
                 if secondaryJoker[1]["rarity"] == "Uncommon":
-                    mult *= jokerData["multmult"]
+                    jokerMultMult = jokerData["multmult"]
+                    mult *= jokerMultMult
+                    chain.add("multmult", jokerMultMult, joker, chips, mult)
 
         # end-of-hand all suits check (flower pot)
         # TODO: how does this work with wild cards? Idk
@@ -405,7 +456,9 @@ def calcPointsFromHand(hand, handData, unselectedHand, save):
             requiredSuits = {"H", "D", "C", "S"}
             suitsInHand = [card.suit for card in hand]
             if requiredSuits.issubset(suitsInHand):
-                mult *= jokerData["multmult"]
+                jokerMultMult = jokerData["multmult"]
+                mult *= jokerMultMult
+                chain.add("multmult", jokerMultMult, joker, chips, mult)
 
         # TODO: Figure out how to check for a scoring club card + another scoring suit card for seeing double
 
@@ -414,7 +467,10 @@ def calcPointsFromHand(hand, handData, unselectedHand, save):
         if jokerName == "Shoot The Moon":
             for card in unselectedHand:
                 if card.number == "Q":
-                    mult += jokerData["mult"]
+                    jokerMult = jokerData["mult"]
+                    mult += jokerMult
+                    chain.add("visual", "Triggered!", joker, chips, mult)
+                    chain.add("mult", jokerMult, card, chips, mult)
 
         # end-of-hand enhanced cards in deck checks (driver's license)
         if jokerName == "Driver's License":
@@ -423,36 +479,37 @@ def calcPointsFromHand(hand, handData, unselectedHand, save):
                 if card.enhancement is not None:
                     enhancedCardCount += 1
             if enhancedCardCount >= 16:
-                mult *= jokerData["multmult"]
+                jokerMultMult = jokerData["multmult"]
+                mult *= jokerMultMult
+                chain.add("multmult", jokerMultMult, joker, chips, mult)
 
 
 
     # now does the same for steel cards in the unselected hand to multiply the multiplier independently of the multmult
 
     for card in unselectedHand:
+        # TODO: Mime stuff here
         if card.enhancement == "steel":
-            steelCardMult *= triggerSteelCard(card)
+            triggerTimes = 1
+            if card.seal == "red":
+                triggerTimes = 2
+            for i in range(triggerTimes):
+                mult *= 1.5
+                chain.add("multmult", 1.5, card, chips, mult)
 
     # resets all the retrig checks for each card
-    for card in hand:
+    for card in hand + unselectedHand + save.deck:
         card.retriggeredBy = []
 
-    print(f"{chips} X {mult * multmult * steelCardMult}")
-    return(chips * mult * multmult * steelCardMult, affectedCards)
+    print(f"{chips} X {mult}")
+    chain.save()
+    return(chips * mult, affectedCards)
 
 
-def triggerSteelCard(card):
-    steelCardMultMult = 1
-    if card.seal == "red":
-        steelCardMultMult * 1.5
-    steelCardMultMult * 1.5
-    return steelCardMultMult
-
-def triggerCard(card, save):
+def triggerCard(card, save, chain):
     # A = 11 chips, face cards = 10 chips, all numbered cards are = their value
     global chips
     global mult
-    global multmult
     try:
         baseCardChipAmount = int(card.number)
     except:
@@ -462,34 +519,51 @@ def triggerCard(card, save):
             baseCardChipAmount = 50
         else:
             baseCardChipAmount = 10
-    baseCardMultAmount = 0
+
+
+    chips += baseCardChipAmount
+    chain.add("chip", baseCardChipAmount, card, chips, mult)
+
+    enhancementBonusChips = 0
+    enhancementBonusMult = 0
     # TODO: put all the card effect stuff here
     if card.enhancement == "bonus":
-        baseCardChipAmount += 30
+        enhancementBonusChips = 30
     elif card.enhancement == "mult":
-        baseCardMultAmount += 4
+        enhancementBonusMult = 4
     elif card.enhancement == "lucky":
         luckyCardTriggered = False
         if random.randint(1, 5) == 1:
-            baseCardMultAmount += 20
+            enhancementBonusMult = 20
             print("+20 mult from lucky card!")
             luckyCardTriggered = True
         if random.randint(1, 15) == 1:
             save.money += 20
             print("Won $20 with a lucky card!")
+            chain.add("visual", "+$20", card, chips, mult)
             luckyCardTriggered = True
         # On lucky card trigger (lucky cat)
         if luckyCardTriggered and save.hasJoker("Lucky Cat"):
             getJokerByName(save, "Lucky Cat")["multmult"] += 0.25
     elif card.enhancement == "glass":
-        multmult = multmult * 2
+        mult = mult * 2
+        chain.add("multmult", 2, card, chips, mult)
 
+    if enhancementBonusChips > 0:
+        chain.add("chip", enhancementBonusChips, card, chips, mult)
+    if enhancementBonusMult > 0:
+        chain.add("mult", enhancementBonusMult, card, chips, mult)
+
+    # edition checks
     if card.edition == "foil":
-        baseCardChipAmount += 50
+        chips += 50
+        chain.add("chip", 50, card, chips, mult)
     elif card.edition == "holographic":
-        baseCardMultAmount += 10
+        mult += 10
+        chain.add("mult", 10, card, chips, mult)
     elif card.edition == "polychrome":
-        multmult = multmult * 1.5
+        mult = mult * 1.5
+        chain.add("multmult", 1.5, card, chips, mult)
 
     # card scoring check jokers
     for joker in save.jokers:
@@ -508,57 +582,79 @@ def triggerCard(card, save):
                 if jokerName == "Bloodstone":
                     if random.randint(1, 2) == 1:
                         mult *= 1.5
+                        chain.add("multmult", 1.5, joker, chips, mult)
                 elif jokerName == "Rough Gem":
                     save.money += 1
+                    chain.add("visual", "+$1", joker, chips, mult)
                 elif "mult" in jokerData:
-                    mult += jokerData["mult"]
+                    multToAdd = jokerData["mult"]
+                    mult += multToAdd
+                    chain.add("mult", multToAdd, joker, chips, mult)
                 elif "multmult" in jokerData:
-                    mult *= jokerData["multmult"]
+                    jokerMultMult = jokerData["multmult"]
+                    mult *= jokerMultMult
+                    chain.add("multmult", jokerMultMult, joker, chips, mult)
                 elif "chip" in jokerData:
-                    chips += jokerData["chip"]
+                    chipsToAdd = jokerData["chip"]
+                    chips += chipsToAdd
+                    chain.add("chip", chipsToAdd, joker, chips, mult)
 
         # number check (fibonacci, even steven, odd todd, scholar, walkie talkie, hack, wee joker)
         if condition == "numbers":
             if card.number in jokerData["numbers"]:
                 if jokerName == "Wee Joker":
                     getJokerByName(save, "Wee Joker")["chip"] += 8
+                    chain.add("visual", "+8", joker, chips, mult)
                 else:
                     # can't use elif bc of walkie talkie
                     if "mult" in jokerData:
-                        mult += jokerData["mult"]
+                        multToAdd = jokerData["mult"]
+                        mult += multToAdd
+                        chain.add("mult", multToAdd, joker, chips, mult)
                     if "chip" in jokerData:
-                        chips += jokerData["chip"]
+                        chipsToAdd = jokerData["chip"]
+                        chips += chipsToAdd
+                        chain.add("chip", chipsToAdd, joker, chips, mult)
                     # hack is weird since it retrigs
                     if jokerData["type"] == "retrig":
                         if "hack" not in card.retriggeredBy:
                             card.retriggeredBy.append("hack")
-                            triggerCard(card, save)
+                            chain.add("visual", "Retriggered!", joker, chips, mult)
+                            triggerCard(card, save, chain)
 
         # face check (scary face, business, smiley face)
         if condition == "face":
             if cardCountsAsFaceCard(card, save):
                 if jokerName == "Business Card":
                     if random.randint(1, 2) == 1:
-                        save.money += jokerData["money"]
+                        moneyToAdd = jokerData["money"]
+                        save.money += moneyToAdd
+                        chain.add("visual", f"+${moneyToAdd}", joker, chips, mult)
                 else:
                     if "chip" in jokerData:
-                        chips += jokerData["chip"]
+                        chipsToAdd = jokerData["chip"]
+                        chips += chipsToAdd
+                        chain.add("chip", chipsToAdd, joker, chips, mult)
                     if "mult" in jokerData:
-                        mult += jokerData["mult"]
+                        multToAdd = jokerData["mult"]
+                        mult += multToAdd
+                        chain.add("mult", multToAdd, joker, chips, mult)
 
         # retrig check (seltzer)
         #TODO: make Seltzer destroy itself after 10 rounds
         if jokerName == "Seltzer":
             if "seltzer" not in card.retriggeredBy:
                 card.retriggeredBy.append("seltzer")
-                triggerCard(card, save)
+                chain.add("visual", "Retriggered!", joker, chips, mult)
+                triggerCard(card, save, chain)
 
         # I could combine seltzer and sock and buskin but whatever
         if jokerName == "Sock and Buskin":
             if cardCountsAsFaceCard(card, save):
                 if "sockAndBuskin" not in card.retriggeredBy:
                     card.retriggeredBy.append("sockAndBuskin")
-                    triggerCard(card, save)
+                    chain.add("visual", "Retriggered!", joker, chips, mult)
+                    triggerCard(card, save, chain)
 
         # enhancement check/remover (vampire)
         # unlike regular balatro stone card values aren't tracked so when it removes a stone card enhancement it gives
@@ -569,12 +665,17 @@ def triggerCard(card, save):
                     card.suit = random.choice(["H", "D", "S", "C"])
                     card.number = random.choice([2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K", "A"])
                 card.enhancement = None
+                chain.add("visual", "Unenhanced!", card, chips, mult)
                 getJokerByName(save, "Vampire")["multmult"] += 0.1
+                chain.add("visual", "+0.1", joker, chips, mult)
 
         # Face Cards turn to gold (Midas)
         if jokerName == "Midas Mask":
             if cardCountsAsFaceCard(card, save):
                 card.enhancement = "gold"
+                chain.add("visual", "Triggered!", joker, chips, mult)
+                chain.add("visual", "Gold!", card, chips, mult)
+
 
         # TODO: Put some sort of first face card indicator in the save for photograph and similar for hanging chad
 
@@ -583,28 +684,31 @@ def triggerCard(card, save):
         if jokerName == "Golden Ticket":
             if card.enhancement == "gold":
                 save.money += 4
+                chain.add("visual", "+$4", joker, chips, mult)
 
         # specific suit and number check (idol)
         # TODO: Make the idol change every round
         if jokerName == "The Idol":
             if card.suit == jokerData["suit"] and card.number == jokerData["number"]:
-                mult *= jokerData["multmult"]
+                jokerMultMult = jokerData["multmult"]
+                mult *= jokerMultMult
+                chain.add("multmult", jokerMultMult, joker, chips, mult)
 
         # I could combine these but nah
 
         # kings and queens check (triboulet)
         if jokerName == "Triboulet":
             if card.number in ["K", "Q"]:
-                mult *= jokerData["multmult"]
-
+                jokerMultMult = jokerData["multmult"]
+                mult *= jokerMultMult
+                chain.add("multmult", jokerMultMult, joker, chips, mult)
 
     if card.seal == "red":
         if "red seal" not in card.retriggeredBy:
             card.retriggeredBy.append("red seal")
             print(f"Retriggering {card.number}!")
-            triggerCard(card)
-    chips += baseCardChipAmount
-    mult += baseCardMultAmount
+            chain.add("visual", "Retriggered!", card, chips, mult)
+            triggerCard(card, save, chain)
 
 
 handContainerDict = {
@@ -621,16 +725,3 @@ handContainerDict = {
     "Flush House": ["Pair", "Two Pair", "Three Of A Kind", "Full House", "Flush"],
     "Flush Five": ["Pair", "Two Pair", "Three Of A Kind", "Four Of A Kind", "Five Of A Kind", "Flush"],
 }
-
-
-# def testPointSystem():
-#     hand = [Card(subset="playing", number="A", suit="S", seal="red", enhancement="wild"),
-#             Card(subset="playing", number="J", suit="S", seal="red", enhancement="wild"),
-#             Card(subset="playing", number="Q", suit="D", seal="red", enhancement="wild", edition="polychrome"),
-#             Card(subset="playing", number="A", suit="S", seal="red", enhancement="wild"),
-#             Card(subset="playing", number="A", suit="S", seal="red", enhancement="wild")]
-#
-#     unselectedHand = [Card(subset="playing", number="A", suit="S", seal="red", enhancement="steel")]
-#
-#
-#     print(calcPointsFromHand(hand, findBestHand(hand), unselectedHand))

@@ -1,4 +1,5 @@
-from subscripts.inputHandling import *
+from subscripts.spacesavers import *
+from subscripts.inputHandling import CLDisplayHand, clearPrintFolder, prepareCardForPrinting, pushIRLInputIntoSave
 import random
 
 
@@ -20,7 +21,7 @@ class Tarot:
         return{
             "name": self.name,
             "negative": self.negative,
-            "type": "tarot"
+            "type": "Tarot"
         }
 
     def toBinary(self):
@@ -62,7 +63,7 @@ def useTarotCard(card, save):
         selectedHandIndexes = []
         selectionIsValid = False
         while not selectionIsValid:
-            if not playingIRL(save):
+            if not save.irl:
                 print(f"Your hand:\n{CLDisplayHand(save.hand)}")
                 cardSelection = input(f"Select {upTo}{maxCardSelectAmount} cards, separated by commas and spaces! "
                                       f"Type \"cancel\" to cancel.")
@@ -88,7 +89,8 @@ def useTarotCard(card, save):
                     cardSelection = input(f"Put {upTo}{maxCardSelectAmount}  cards in the center and type \"play\" "
                                           f"to select them! Type \"cancel\" to cancel.")
                     if cardSelection == "play":
-                        selectedHand = returnCardsFromImage()["middle"]
+
+                        selectedHand = pushIRLInputIntoSave(save)
                         if len(selectedHand) > maxCardSelectAmount:
                             print(f"You can't select more than {maxCardSelectAmount} cards at once!")
                         elif canSelectLessThanMax:
@@ -103,7 +105,7 @@ def useTarotCard(card, save):
 
         # suit converters (star, moon, sun, world)
         if tarotCardInfo["modifier"] == "suit":
-            if playingIRL(save):
+            if save.irl:
                 clearPrintFolder()
                 for card in selectedHand:
                     card.suit = tarotCardInfo["suit"]
@@ -116,7 +118,7 @@ def useTarotCard(card, save):
 
         # enhancer converters (magician, empress, hierophant, lovers, chariot, justice, devil, tower)
         elif tarotCardInfo["modifier"] == "enhancer":
-            if playingIRL(save):
+            if save.irl:
                 clearPrintFolder()
                 for card in selectedHand:
                     card.enhancement = tarotCardInfo["enhancement"]
@@ -129,7 +131,7 @@ def useTarotCard(card, save):
 
         # rank converter (strength)
         elif tarotCardInfo["modifier"] == "rank":
-            if playingIRL(save):
+            if save.irl:
                 clearPrintFolder()
                 for card in selectedHand:
                     card.number = increaseCardVal(card.number)
@@ -142,7 +144,7 @@ def useTarotCard(card, save):
 
         # destroy converter (hanged man)
         elif tarotCardInfo["modifier"] == "destroy":
-            if playingIRL(save):
+            if save.irl:
                 print("Put the selected cards off to the side and don't use them for the rest of the game!")
             else:
                 for index in selectedHandIndexes:
@@ -150,8 +152,7 @@ def useTarotCard(card, save):
 
         # convert converter (death)
         elif tarotCardInfo["modifier"] == "convert":
-            if playingIRL(save):
-                from cardCreationAndRecognition.cardImageCreator import createTaggedCardImage
+            if save.irl:
                 prepareCardForPrinting(selectedHand[1])
                 print("Print out the card in the \"print\" folder, and replace the left card with it!")
 

@@ -1,4 +1,4 @@
-from subscripts.planetCards import Planet
+from subscripts.planetCards import Planet, generateShuffledListOfUnlockedPlanetCards
 from subscripts.spectralCards import Spectral
 from subscripts.tarotCards import Tarot, generateShuffledListOfFinishedTarotCards
 from subscripts.jokers import Joker, generateRandomWeightedJoker
@@ -67,12 +67,6 @@ class Card:
 
         return descriptor + self.number + suit
 
-        # if self.subset == "Joker":
-        #     descriptor = self.number
-        #     if mode == "fancy":
-        #         jokerDict = openjson("jokerDict")
-        #         descriptor += f": {jokerDict[self.number]['description']}"
-
     # TODO: add a joker list and all the other card stuff here
     # all cards are represented with 17 bits!
     # first 3 are identity bits
@@ -100,7 +94,7 @@ def createCardFromDict(cardDict):
 
 
 binaryDict = {
-    "subset": [None, "joker", "playing", "tarot", "planet", "spectral", "stone"],
+    "subset": [None, "Joker", "Card", "Tarot", "Planet", "Spectral", "stone"],
     "edition": [None, "foil", "holographic", "polychrome", "negative"],
     "enhancement": [None, "bonus", "mult", "wild", "glass", "steel", "gold", "lucky"],
     "seal": [None, "gold", "red", "blue", "purple"],
@@ -111,7 +105,7 @@ binaryDict = {
 def createCardFromBinary(binary):
     binary = str(bin(binary)[2:]).zfill(17)
     subset = binaryToAttribute("subset", binary[0:3])
-    if subset == "playing":
+    if subset == "Card":
         return Card({
             "edition": binaryToAttribute("edition", binary[3:5]),
             "enhancement": binaryToAttribute("enhancement", binary[5:8]),
@@ -119,29 +113,6 @@ def createCardFromBinary(binary):
             "suit": binaryToAttribute("suit", binary[11:13]),
             "number": binaryToPlayingCardNumber(binary[13:17])
         })
-
-    # TODO: Move these to a separate function for each
-    elif subset == "tarot":
-        tarotDict = openjson("consumables/tarotDict")
-        nameIndex = int(binary[3:7], 2)
-        negative = True
-        if binary[8] == "0":
-            negative = False
-        return Tarot(name=list(tarotDict)[nameIndex], negative=negative)
-    elif subset == "planet":
-        planetDict = openjson("consumables/planetDict")
-        nameIndex = int(binary[3:6], 2)
-        negative = True
-        if binary[7] == "0":
-            negative = False
-        return Planet(name=list(planetDict)[nameIndex], negative=negative)
-    elif subset == "spectral":
-        spectralDict = openjson("consumables/spectralDict")
-        nameIndex = int(binary[3:7], 2)
-        negative = True
-        if binary[8] == "0":
-            negative = False
-        return Spectral(name=list(spectralDict)[nameIndex], negative=negative)
     elif subset == "stone":
         # since stone cards don't show their suit or number, I just init them as an ace of spades
         # if vampire removes the stone enhancement, the number and suit will be randomized
@@ -153,13 +124,45 @@ def createCardFromBinary(binary):
             "suit": "S",
             "number": "A"
         })
-    elif subset == "Joker":
-        jokerDict = openjson("jokerDict")
-        nameIndex = int(binary[3:10], 2)
-        editionIndex = int(binary[10:12], 2)
+
+    else:
+        return returnNonPlayingCardFromBinary(binary, subset)
+
+
+NonPlayingCardTypeToBinaryIndexes = {
+    "Tarot": {
+        "index": [3, 7],
+        "jsonPath": "consumables/tarotDict"
+    },
+    "Planet": {
+        "index": [3, 6],
+        "jsonPath": "consumables/planetDict"
+    },
+    "Spectral": {
+        "index": [3, 7],
+        "jsonPath": "consumables/spectralDict"
+    },
+    "Joker": {
+        "index": [3, 11],
+        "jsonPath": "jokerDict"
+    },
+}
+
+def returnNonPlayingCardFromBinary(binary, subset):
+    cardData = NonPlayingCardTypeToBinaryIndexes[subset]
+    cardDict = openjson(cardData["jsonPath"])
+    nameStartBit, nameEndBit = cardData["index"]
+    nameIndex = int(binary[nameStartBit:nameEndBit], 2)
+    if subset == "Joker":
+        editionIndex = int(binary[11:13], 2)
         edition = [None, "foil", "holographic", "polychrome", "negative"][editionIndex]
-        data = list(jokerDict)[nameIndex]
+        data = list(cardDict.items())[nameIndex]
         return Joker(data, edition)
+    else:
+        negative = True
+        if binary[nameEndBit + 1] == "0":
+            negative = False
+        return eval(subset)(name=list(cardDict)[nameIndex], negative=negative)
 
 
 def attributeToBinary(type, attribute, bits):
@@ -231,33 +234,20 @@ def generateWeightedRandomCard(subset, save):
         return generateRandomWeightedJoker(save)
 
 
+# I have pointers to differentiate the consumable types but I don't need them for cards or jokers since they have
+# unique keys
+# ik it's good practice to have them anyway but whatever
+# I won't need this once the visual component is integrated into the program instead of its own thing
+def unsortedDictToCard(cardDict):
+    cardName, cardItems = cardDict
+    if ["suit"] in cardDict:
+        return Card()
 
 def addTarotCardIfRoom(save):
     if len(save.consumables) <= save.consumablesLimit:
         save.consumables.append(generateShuffledListOfFinishedTarotCards([0]))
-
-defaultplanetCards = [Planet("Pluto"),
-                      Planet("Mercury"),
-                      Planet("Uranus"),
-                      Planet("Venus"),
-                      Planet("Saturn"),
-                      Planet("Jupiter"),
-                      Planet("Earth"),
-                      Planet("Mars"),
-                      Planet("Neptune")]
-
-secretPlanetCardDict = {"Five Of A Kind": Planet("Planet X"),
-                        "Flush House": Planet("Ceres"),
-                        "Flush Five": Planet("Eris"),}
-
-
-def generateShuffledListOfUnlockedPlanetCards(save):
-    viablePlanetCards = defaultplanetCards
-    for illegalHand in save.illegalHandsDiscovered:
-        viablePlanetCards.append(secretPlanetCardDict[illegalHand])
-
-    random.shuffle(viablePlanetCards)
-    return viablePlanetCards
+        return True
+    return False
 
 
 def cardCountsAsFaceCard(card, save):

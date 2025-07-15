@@ -1,4 +1,3 @@
-from subscripts.cardUtils import Card
 from subscripts.planetCards import usePlanetCard, Planet
 from subscripts.priceCalcLogic import calculatePrice
 from subscripts.tarotCards import useTarotCard, Tarot
@@ -16,7 +15,7 @@ def CLUseOrSellConsumables(consumable, save):
 
 # TODO: move the function for adding consumables to the player's hand here
 
-# TODO: get tarots and spectrals working here too
+# TODO: get spectrals working here too
 def useConsumable(consumable, save):
     if isinstance(consumable, Planet):
         usePlanetCard(consumable, save)
@@ -33,7 +32,7 @@ def sellConsumable(consumableIndex, save):
     sellPrice = getConsumableSellPrice(consumableToSell, save)
     save.money += sellPrice
     del save.consumables[consumableIndex]
-    print(f"Sold {consumableToSell.toString()} for {save.money}")
+    print(f"Sold {consumableToSell.toString()} for {save.money}!")
 
 def printConsumables(save):
     consumablesAmnt = len(save.consumables)
@@ -45,3 +44,11 @@ def printConsumables(save):
             iterator += 1
     else:
         print("You have no consumables!")
+
+# consumables that need a hand to work can't be used immediately
+# TODO: make this work for spectrals when they're added
+def consumableCanBeUsedImmediately(consumable):
+    if isinstance(consumable, Tarot):
+        if openjson("consumables/tarotDict")[consumable.name]["type"] == "handModifier":
+            return False
+    return True

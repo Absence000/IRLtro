@@ -9,16 +9,8 @@ class Pack():
     # returns the proper amount of cards if opened
     def open(self, save):
         cardList = []
-        subset = self.subset
-        if self.subset == "arcana":
-            subset = "tarot"
-        elif self.subset == "celestial":
-            subset = "planet"
-        elif subset == "standard":
-            subset = "playing"
-        elif subset == "buffoon":
-            subset = "joker"
-        for iterator in range(subsetDict[self.size]):
+        subset = packTypeToCardTypeDict[self.subset]
+        for iterator in range(sizeDict[self.size]):
             cardList.append(generateWeightedRandomCard(subset, save))
         return cardList
 
@@ -36,10 +28,17 @@ class Pack():
             "size": self.size
         }
 
-subsetDict = {
+sizeDict = {
     "normal": 3,
     "jumbo": 5,
     "mega": 5
+}
+
+packTypeToCardTypeDict = {
+    "arcana": "tarot",
+    "celestial": "planet",
+    "standard": "playing",
+    "buffoon": "joker"
 }
 
 packWeightDict = {

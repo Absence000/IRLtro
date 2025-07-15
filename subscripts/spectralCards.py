@@ -18,7 +18,7 @@ class Spectral:
         return{
             "name": self.name,
             "negative": self.negative,
-            "type": "spectral"
+            "type": "Spectral"
         }
 
     def toBinary(self):

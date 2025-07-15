@@ -1,0 +1,134 @@
+[
+    {
+        "type": "chip",
+        "value": 10,
+        "text": "+10",
+        "color": [
+            255,
+            255,
+            0
+        ],
+        "card": {
+            "number": "J",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "D",
+            "retriggeredBy": []
+        },
+        "chips": 40,
+        "mult": 4
+    },
+    {
+        "type": "chip",
+        "value": 10,
+        "text": "+10",
+        "color": [
+            255,
+            255,
+            0
+        ],
+        "card": {
+            "number": "10",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "D",
+            "retriggeredBy": []
+        },
+        "chips": 50,
+        "mult": 4
+    },
+    {
+        "type": "chip",
+        "value": 10,
+        "text": "+10",
+        "color": [
+            255,
+            255,
+            0
+        ],
+        "card": {
+            "number": "Q",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "H",
+            "retriggeredBy": []
+        },
+        "chips": 60,
+        "mult": 4
+    },
+    {
+        "type": "chip",
+        "value": 10,
+        "text": "+10",
+        "color": [
+            255,
+            255,
+            0
+        ],
+        "card": {
+            "number": "K",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "C",
+            "retriggeredBy": []
+        },
+        "chips": 70,
+        "mult": 4
+    },
+    {
+        "type": "chip",
+        "value": 11,
+        "text": "+11",
+        "color": [
+            255,
+            255,
+            0
+        ],
+        "card": {
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "C",
+            "retriggeredBy": []
+        },
+        "chips": 81,
+        "mult": 4
+    },
+    {
+        "type": "mult",
+        "value": 12,
+        "text": "+12",
+        "color": [
+            255,
+            0,
+            0
+        ],
+        "card": [
+            "Crazy Joker",
+            {
+                "type": "mult",
+                "condition": "hand",
+                "hand": "Straight",
+                "mult": 12,
+                "finished": true,
+                "position": [
+                    5,
+                    0
+                ],
+                "additionalSellValue": 0,
+                "edition": null,
+                "id": 9,
+                "cost": 4,
+                "rarity": "Common",
+                "description": "+12 Mult if played hand contains a Straight"
+            }
+        ],
+        "chips": 81,
+        "mult": 16
+    }
+]

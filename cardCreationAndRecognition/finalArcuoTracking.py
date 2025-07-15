@@ -1,4 +1,4 @@
-import cv2
+import cv2, traceback
 import numpy as np
 from subscripts.cardUtils import createCardFromBinary
 from subscripts.spacesavers import *
@@ -183,12 +183,14 @@ def arcuoToCard(detected_boards, lookupTable):
 
     for id in unique_ids:
         try:
-            detectedCard = createCardFromBinary(lookupTable[id])
+            binaryValue = lookupTable[id]
+            detectedCard = createCardFromBinary(binaryValue)
             position = id_to_position[id]
             categorized_cards[position].append(detectedCard)
         except Exception as e:
             print(e)
-            print(f"Unrecognized card! {id}, {lookupTable[id]}")
+            traceback.print_exc()
+            print(f"Unrecognized card! {id}, {binaryValue}")
     return categorized_cards
 
 
@@ -213,7 +215,7 @@ def returnFoundCards():
     aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_100)
     parameters = cv2.aruco.DetectorParameters()
     detected_boards = get_detected_boards(frame, aruco_dict, parameters)
-    return arcuoToCard(detected_boards, openjson("cardCreationAndRecognition/cardToArcuo old.json", True)
+    return arcuoToCard(detected_boards, openjson("cardCreationAndRecognition/cardToArcuo.json", True)
 )
 
 # displayFoundCards(openjson("cardToArcuo old.json", True))  # Display webcam feed with overlayed tracking info
