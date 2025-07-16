@@ -264,7 +264,7 @@ def main(loadSave=False):
     # cap.release()
     pygame.quit()
 
-CLPlay(fromSave=False, deck="standard", irl=True)
+CLPlay(fromSave=True, deck="standard", irl=True)
 
 # jokerDict = openjson("jokerDict")
 # name = "Crazy Joker"

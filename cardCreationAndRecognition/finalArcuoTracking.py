@@ -82,10 +82,7 @@ def get_detected_boards(frame, aruco_dict, parameters):
 
                     detected_boards.append(
                         {"id": combinedID, "rightSideUp": upwards, "verticalPos": verticalPos})
-                i += 2  # Skip to the next possible pair
-            else:
-                i += 1  # Move to the next marker
-
+            i += 1  # Move to the next marker
     return detected_boards
 
 
@@ -164,16 +161,21 @@ def correctID(id):
 
 def arcuoToCard(detected_boards, lookupTable):
     unique_ids = {}
-    id_to_position = {}
 
     for item in detected_boards:
         id_val = item["id"]
         position = item["verticalPos"]
+        right_side_up = item["rightSideUp"]
 
-        # Prefer rightSideUp cards if duplicates exist
-        if id_val not in unique_ids or item["rightSideUp"]:
-            unique_ids[id_val] = True
-            id_to_position[id_val] = position
+        if id_val not in unique_ids:
+            # First time seeing this card, store it
+            unique_ids[id_val] = {"position": position, "rightSideUp": right_side_up}
+        else:
+            # If we've already seen it, prefer right-side-up
+            if right_side_up and not unique_ids[id_val]["rightSideUp"]:
+                # Overwrite the previous upside-down detection
+                unique_ids[id_val] = {"position": position, "rightSideUp": True}
+
 
     categorized_cards = {
         "upper": [],
@@ -181,19 +183,20 @@ def arcuoToCard(detected_boards, lookupTable):
         "lower": []
     }
 
-    for id in unique_ids:
+    for idData in unique_ids.items():
+        cardID = idData[0]
+        position = idData[1]["position"]
         try:
-            binaryValue = lookupTable[id]
+            binaryValue = lookupTable[cardID]
             detectedCard = createCardFromBinary(binaryValue)
-            position = id_to_position[id]
             categorized_cards[position].append(detectedCard)
         except Exception as e:
             print(e)
             traceback.print_exc()
-            print(f"Unrecognized card! {id}, {binaryValue}")
+            print(f"Unrecognized card! {cardID}, {binaryValue}")
     return categorized_cards
 
-
+# unused
 def returnFoundCards():
     """Captures a single frame from the webcam and returns detected card objects."""
     cap = cv2.VideoCapture(1)
@@ -218,7 +221,6 @@ def returnFoundCards():
     return arcuoToCard(detected_boards, openjson("cardCreationAndRecognition/cardToArcuo.json", True)
 )
 
-# displayFoundCards(openjson("cardToArcuo old.json", True))  # Display webcam feed with overlayed tracking info
 
 def pygameDisplayFoundCards(lookupTable, frame):
     # opens the webcam frame and draws all the cards and stuff

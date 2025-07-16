@@ -1,86 +1,6 @@
 [
     {
         "type": "chip",
-        "value": 10,
-        "text": "+10",
-        "color": [
-            255,
-            255,
-            0
-        ],
-        "card": {
-            "number": "J",
-            "enhancement": null,
-            "edition": null,
-            "seal": null,
-            "suit": "D",
-            "retriggeredBy": []
-        },
-        "chips": 40,
-        "mult": 4
-    },
-    {
-        "type": "chip",
-        "value": 10,
-        "text": "+10",
-        "color": [
-            255,
-            255,
-            0
-        ],
-        "card": {
-            "number": "10",
-            "enhancement": null,
-            "edition": null,
-            "seal": null,
-            "suit": "D",
-            "retriggeredBy": []
-        },
-        "chips": 50,
-        "mult": 4
-    },
-    {
-        "type": "chip",
-        "value": 10,
-        "text": "+10",
-        "color": [
-            255,
-            255,
-            0
-        ],
-        "card": {
-            "number": "Q",
-            "enhancement": null,
-            "edition": null,
-            "seal": null,
-            "suit": "H",
-            "retriggeredBy": []
-        },
-        "chips": 60,
-        "mult": 4
-    },
-    {
-        "type": "chip",
-        "value": 10,
-        "text": "+10",
-        "color": [
-            255,
-            255,
-            0
-        ],
-        "card": {
-            "number": "K",
-            "enhancement": null,
-            "edition": null,
-            "seal": null,
-            "suit": "C",
-            "retriggeredBy": []
-        },
-        "chips": 70,
-        "mult": 4
-    },
-    {
-        "type": "chip",
         "value": 11,
         "text": "+11",
         "color": [
@@ -93,42 +13,138 @@
             "enhancement": null,
             "edition": null,
             "seal": null,
-            "suit": "C",
+            "suit": "H",
             "retriggeredBy": []
         },
-        "chips": 81,
-        "mult": 4
+        "chips": 21,
+        "mult": 2
     },
     {
         "type": "mult",
-        "value": 12,
-        "text": "+12",
+        "value": 2,
+        "text": "+2",
         "color": [
             255,
             0,
             0
         ],
         "card": [
-            "Crazy Joker",
+            "Misprint",
             {
                 "type": "mult",
-                "condition": "hand",
-                "hand": "Straight",
-                "mult": 12,
+                "condition": "active",
                 "finished": true,
                 "position": [
-                    5,
-                    0
+                    6,
+                    2
                 ],
                 "additionalSellValue": 0,
                 "edition": null,
-                "id": 9,
+                "id": 27,
                 "cost": 4,
                 "rarity": "Common",
-                "description": "+12 Mult if played hand contains a Straight"
+                "description": "+0-23 Mult"
             }
         ],
-        "chips": 81,
-        "mult": 16
+        "chips": 21,
+        "mult": 4
+    },
+    {
+        "type": "visual",
+        "value": null,
+        "text": "Triggered!",
+        "color": [
+            255,
+            255,
+            0
+        ],
+        "card": [
+            "Reserved Parking",
+            {
+                "type": "econ",
+                "finished": true,
+                "position": [
+                    6,
+                    13
+                ],
+                "additionalSellValue": 0,
+                "edition": null,
+                "id": 82,
+                "cost": 6,
+                "rarity": "Common",
+                "description": "Each face card held in hand has a 1 in 2 chance to give $1"
+            }
+        ],
+        "chips": 21,
+        "mult": 4
+    },
+    {
+        "type": "visual",
+        "value": null,
+        "text": "+$1",
+        "color": [
+            255,
+            255,
+            0
+        ],
+        "card": {
+            "number": "2",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        "chips": 21,
+        "mult": 4
+    },
+    {
+        "type": "visual",
+        "value": null,
+        "text": "Triggered!",
+        "color": [
+            255,
+            255,
+            0
+        ],
+        "card": [
+            "Reserved Parking",
+            {
+                "type": "econ",
+                "finished": true,
+                "position": [
+                    6,
+                    13
+                ],
+                "additionalSellValue": 0,
+                "edition": null,
+                "id": 82,
+                "cost": 6,
+                "rarity": "Common",
+                "description": "Each face card held in hand has a 1 in 2 chance to give $1"
+            }
+        ],
+        "chips": 21,
+        "mult": 4
+    },
+    {
+        "type": "visual",
+        "value": null,
+        "text": "+$1",
+        "color": [
+            255,
+            255,
+            0
+        ],
+        "card": {
+            "number": "6",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "H",
+            "retriggeredBy": []
+        },
+        "chips": 21,
+        "mult": 4
     }
 ]

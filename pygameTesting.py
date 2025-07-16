@@ -162,17 +162,24 @@ def showDetailedCamFeed():
 
         # hand display (left)
         mode = "handFinder"
+        ind = 0
         for card in handCards:
             cardType = type(card).__name__
             if cardType != "Card":
                 mode = "analysis"
+                analysisCardIndex = ind
+            ind += 1
+
 
         if mode == "handFinder":
                 handType = findBestHand(handCards)[0]
-                handInfo = openjson("save")["handLevels"][handType]
-                handMessage = f"{handType} lvl {handInfo['level']}:\n{handInfo['chips']} x {handInfo['mult']}"
+                try:
+                    handInfo = openjson("save")["handLevels"][handType]
+                    handMessage = f"{handType} lvl {handInfo['level']}:\n{handInfo['chips']} x {handInfo['mult']}"
+                except:
+                    handMessage = "loading..."
         elif mode == "analysis":
-            cardToAnalyze = handCards[0]
+            cardToAnalyze = handCards[analysisCardIndex]
             handMessage = cardToAnalyze.toString()
 
         handText = font.render(handMessage, True, BLACK)
