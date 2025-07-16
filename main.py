@@ -67,7 +67,7 @@ def commandLinePlayRound(save):
                     selectionIsValid = True
 
         # card selection logic handling
-        if choice in ["play", "discard"]:
+        if choice in ["play", "p", "discard", "d"]:
             if not save.irl:
                 selectionIsValid = False
                 while not selectionIsValid:
@@ -97,7 +97,7 @@ def commandLinePlayRound(save):
                 # finds the selected hand in the deck and takes it out
                 deck = [card for card in deck if card not in selectedHand + save.hand]
 
-            if choice == "play":
+            if choice in ["play", "p"]:
                 points, affectedCards = calcPointsFromHand(selectedHand, findBestHand(selectedHand), save.hand, save)
                 # handles glass card breaking, same reverse order trick as before
                 for cardIndex in range(len(selectedHand) - 1, -1, -1):
@@ -148,7 +148,7 @@ def commandLinePlayRound(save):
                         save.playedCards = []
                         save.discardedCards = []
                     return {"win": win, "handsLeft": save.hands}
-            elif choice == "discard":
+            elif choice == ["discard", "d"]:
                 for discardedCard in selectedHand:
                     save.discardedCards.append(discardedCard)
                 print("discarded!")
