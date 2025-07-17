@@ -47,6 +47,7 @@ class Save:
             playedCards.append(Card(card))
         self.playedCards = playedCards
         self.score = saveDict["score"]
+        self.round = saveDict["round"]
         self.irl = saveDict["irl"]
 
 
@@ -103,6 +104,7 @@ class Save:
             "discardedCards": discardedCards,
             "playedCards": playedCards,
             "score": self.score,
+            "round": self.round,
             "irl": self.irl
         }
         return saveDict
@@ -162,6 +164,7 @@ def createBlankSave(deck, irl):
         "discardedCards": [],
         "playedCards": [],
         "score": 0,
+        "round": 1,
         "irl": irl
     })
 

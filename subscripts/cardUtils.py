@@ -131,7 +131,7 @@ def createCardFromBinary(binary):
 
 NonPlayingCardTypeToBinaryIndexes = {
     "Tarot": {
-        "index": [3, 7],
+        "index": [3, 8],
         "jsonPath": "consumables/tarotDict"
     },
     "Planet": {

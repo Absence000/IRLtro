@@ -1,8 +1,9 @@
 import pygame, time, cv2
 import numpy as np
-from cardCreationAndRecognition.finalArcuoTracking import pygameDisplayFoundCards
+from subscripts.pygameSubfunctions import drawLeftBar, openCamera
 from subscripts.spacesavers import *
 from subscripts.handFinderAndPointsAssigner import findBestHand
+from subscripts.saveUtils import Save
 
 # TODO: once you figure out pygame replace the input system with this, right now it's a separate program that talks
 #  to the main one by reading the save and outputting the card read info as json which is really stupid
@@ -214,4 +215,6 @@ def showDetailedCamFeed():
     cap.release()
     pygame.quit()
 
-showDetailedCamFeed()
+# showDetailedCamFeed()
+
+loadAnteFromSave(Save(openjson("save")))

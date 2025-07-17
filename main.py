@@ -1,10 +1,10 @@
-# from cardCreationAndRecognition.finalArcuoTracking import returnFoundCards
-from subscripts.cardUtils import createCardFromBinary
 from subscripts.handFinderAndPointsAssigner import *
+from subscripts.spectralCards import Spectral
 from subscripts.saveUtils import *
 from subscripts.shop import *
 from subscripts.inputHandling import *
-import random
+from subscripts.pygameSubfunctions import *
+import random, pygame
 
 
 # play a specific ante in the command line
@@ -34,37 +34,55 @@ def commandLinePlayRound(save):
             print(f"Current hand:\n" + CLDisplayHand(save.hand))
         # print(f"{len(deck) + len()} cards")
         selectionIsValid = False
-        validResponses = ["play", "discard", "use", "inv"]
+        validResponses = ["play", "discard", "use", "inv", "sell"]
         while not selectionIsValid:
             choice = input("what do you want to do now? Type \"play\" to play, \"discard\" to discard, \"use\" to use/sell "
                            "a consumable, and \"inv\" to see your consumables.")
             if choice in validResponses:
                 if choice == "discard" and save.discards <= 0:
                     print("You have no discards left!")
-                elif choice == "inv":
-                    printConsumables(save)
-                elif choice == "use" and len(save.consumables) == 0:
-                    print("You have no consumables!")
-                else:
+                if not save.irl():
+                    if choice == "inv":
+                        printConsumables(save)
+                    elif choice == "use" and len(save.consumables) == 0:
+                        print("You have no consumables!")
+                    else:
+                        selectionIsValid = True
+                if choice in ["use", "sell"]:
                     selectionIsValid = True
             else:
                 print(f"Unrecognized action: {choice}")
 
         # consumable selection logic handling
+        # TODO: Figure out how using and selling consumables can work since you should be able to do it anywhere
         if choice == "use":
-            selectionIsValid = False
-            while not selectionIsValid:
-                printConsumables(save)
-                consumableSelect = input("Type the number of the consumable you want to use or sell! Type \"cancel\" "
-                                         " to cancel.")
-                if consumableSelect == "cancel":
-                    print("Cancelled!")
-                    selectionIsValid = True
-                elif consumableSelect.isdigit() and 0 < int(consumableSelect) <= len(save.consumables):
-                    consumable = save.consumables[int(consumableSelect)-1]
-                    del save.consumables[int(consumableSelect)-1]
-                    useConsumable(consumable, save)
-                    selectionIsValid = True
+            if not save.irl:
+                selectionIsValid = False
+                while not selectionIsValid:
+                    printConsumables(save)
+                    consumableSelect = input("Type the number of the consumable you want to use or sell! Type \"cancel\" "
+                                             " to cancel.")
+                    if consumableSelect == "cancel":
+                        print("Cancelled!")
+                        selectionIsValid = True
+                    elif consumableSelect.isdigit() and 0 < int(consumableSelect) <= len(save.consumables):
+                        consumable = save.consumables[int(consumableSelect)-1]
+                        del save.consumables[int(consumableSelect)-1]
+                        useConsumable(consumable, save)
+                        selectionIsValid = True
+            else:
+                if len(selectedHand) == 1:
+                    consumableToUse = selectedHand[0]
+                    if isinstance(consumableToUse, Tarot):
+                        useTarotCard(consumableToUse, save)
+                    elif isinstance(consumableToUse, Planet):
+                        useTarotCard(consumableToUse, save)
+                    elif isinstance(consumableToUse, Spectral):
+                        useSpectralCard(consumableToUse, save)
+                    else:
+                        print("You can't use a non-consumable card!")
+                else:
+                    print("You can't use more than one consumable at once!")
 
         # card selection logic handling
         if choice in ["play", "p", "discard", "d"]:
@@ -236,35 +254,69 @@ def CLPlay(fromSave, deck, irl):
             saveGame(save)
 
 
-def main(loadSave=False):
-    # startup
+def main(save):
     pygame.init()
-    screen = pygame.display.set_mode((1280, 720))
-    pygame.display.set_caption("IRLatro")
-    font = pygame.font.SysFont(None, 30)
+    screenWidth = 1280
+    screenHeight = 720
+    screen = pygame.display.set_mode((screenWidth, screenHeight))
+    pygame.display.set_caption("Realatro")
+    font = pygame.font.Font("cardSprites/font/balatro.otf")
+
+    lookupTable = openjson("cardCreationAndRecognition/cardToArcuo.json", True)
+
+    # TODO: The outline changes color depending on the game state
+    colors = {
+        "backgroundColor": (60, 120, 90),
+        "red": (254, 76, 64),
+        "green": (52, 189, 133),
+        "blue": (0, 146, 255),
+        "white": (255, 255, 255),
+        "yellow": (245, 179, 68),
+        "uiOutline": (125, 62, 62),
+        "darkUI": (27, 38, 40),
+        "lightUI": (59, 80, 85)
+    }
+
+    cap = openCamera(1)
 
     running = True
-
-    if not loadSave:
-        gameState = "blindSelect"
-
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
-        # shows the 3 blinds with the options to play or skip
-        if gameState == "blindSelect":
-            return
 
-        elif gameState == "round":
-            return
 
-    # Cleanup
-    # cap.release()
-    pygame.quit()
+        screen.fill(colors["backgroundColor"])
 
-CLPlay(fromSave=True, deck="standard", irl=True)
+        foundCards = drawWebcamAndReturnFoundCards(cap, lookupTable, screen)
+
+        handType, handInfo = drawCardCounter(save, font, screen, colors, foundCards)
+
+        # analysis mode, draws a popup saying what the joker/consumable does
+        if handInfo is None:
+            drawAnalysisPopup(save, font, screen, colors, handType)
+            handType = ""
+            level = ""
+            score = 0
+            displayChips = 0
+            displayMult = 0
+        else:
+            level = handInfo["level"]
+            score = 0
+            displayChips = handInfo["chips"]
+            displayMult = handInfo["mult"]
+
+        # TODO: since the cards flicker a lot per frame, there's probably a way to correct for it here
+
+        drawLeftBar(save, font, screen, colors, handType, level, score, displayChips, displayMult)
+
+        drawButtons(save, screen, colors, font)
+
+        pygame.display.flip()
+
+main(Save(openjson("save")))
+# CLPlay(fromSave=True, deck="standard", irl=True)
 
 # jokerDict = openjson("jokerDict")
 # name = "Crazy Joker"
