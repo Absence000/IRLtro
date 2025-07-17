@@ -2,15 +2,13 @@ import cv2, traceback
 import numpy as np
 from subscripts.cardUtils import createCardFromBinary
 from subscripts.spacesavers import *
+from collections import defaultdict, Counter
 
 
-def is_marker_upside_down(corners):
-    """
-    Determines if a marker is upside down by checking if the bottom corners
-    are higher than the top corners.
-    """
-    top_left, top_right, bottom_right, bottom_left = corners
-    return (bottom_left[1] < top_left[1]) and (bottom_right[1] < top_right[1])
+def markerIsRightSideUp(corners):
+    p1, p2, p3, p4 = corners
+    rightSideUp = p1[1] < p3[1]
+    return rightSideUp
 
 
 def get_detected_boards(frame, aruco_dict, parameters):
@@ -23,48 +21,47 @@ def get_detected_boards(frame, aruco_dict, parameters):
     corners, ids, _ = detector.detectMarkers(gray)
 
     detected_boards = []
+    unpairedTags = []
 
     if ids is not None and len(ids) >= 2:
-        # Convert IDs and corners to lists
+        # sorting them from left to right
         ids_list = ids.flatten().tolist()
-        corners_list = [c.reshape(-1, 2) for c in corners]  # Flatten corners
-
-        # Sort markers by x-position for left-to-right pairing
+        corners_list = [c.reshape(-1, 2) for c in corners]
         sorted_markers = sorted(zip(ids_list, corners_list), key=lambda x: np.mean(x[1][:, 0]))
 
-        # Try forming 1×2 boards based on spatial proximity
+        unsortedBoardTags = []
+        # tries to form the boards into 1 x 2 groups
         i = 0
         while i < len(sorted_markers) - 1:
+            # I have to find the distance between them which means I have to get the size
+            # idk how this works chatGPT made it
             id1, corners1 = sorted_markers[i]
             id2, corners2 = sorted_markers[i + 1]
-
-            # Compute the horizontal distance between marker centers
             center1 = np.mean(corners1, axis=0)
             center2 = np.mean(corners2, axis=0)
             distance_x = abs(center1[0] - center2[0])
             distance_y = abs(center1[1] - center2[1])
-
-            # Compute marker size (average of height and width)
             marker_size = np.linalg.norm(corners1[0] - corners1[2])
             normalized_y_distance = distance_y / marker_size if marker_size > 0 else 0
 
-            # Check if they form a 1-row, 2-column structure
-            if distance_x < distance_y:  # More separated in X than in Y
-                if is_marker_upside_down(corners1):
-                    if corners1[0][1] > corners2[0][1]:
-                        upwards = True
-                    else:
-                        upwards = False
+            # orientation doesn't matter as long as the cards face upwards
+            if distance_x < distance_y:
+                upwards = markerIsRightSideUp(corners1)
+
+                # since it's left to right I have to flip the orientation if the bottom one gets scanned first
+                # this took so long to figure out god dammit
+                marker1TopLeftY = corners1[0][1]
+                marker2TopLeftY = corners2[0][1]
+                if marker2TopLeftY < marker1TopLeftY:
+                    flipID = not upwards
                 else:
-                    if corners1[0][1] > corners2[0][1]:
-                        upwards = False
-                    else:
-                        upwards = True
+                    flipID = upwards
+
 
                 id1 = correctID(id1)
                 id2 = correctID(id2)
 
-                if upwards:
+                if flipID:
                     combinedID = int(f"{id1}{id2}")
                 else:
                     combinedID = int(f"{id2}{id1}")
@@ -72,6 +69,7 @@ def get_detected_boards(frame, aruco_dict, parameters):
                 if normalized_y_distance < 1.1:
                     # I could do this more accurately but it's way more math so no
                     boardYCenter = corners1[0][1]
+                    unsortedBoardTags += [int(id1), int(id2)]
 
                     if boardYCenter < thirdOfFrameHeight:
                         verticalPos = "upper"
@@ -83,7 +81,14 @@ def get_detected_boards(frame, aruco_dict, parameters):
                     detected_boards.append(
                         {"id": combinedID, "rightSideUp": upwards, "verticalPos": verticalPos})
             i += 1  # Move to the next marker
-    return detected_boards
+
+        # stupid python list comprehension removing duplicates too I had to use chatGPT for this
+        ids_counter = Counter(ids_list)
+        board_counter = Counter(unsortedBoardTags)
+
+        unpaired_counter = ids_counter - board_counter
+        unpairedTags = list(unpaired_counter.elements())
+    return detected_boards, unpairedTags
 
 
 def displayFoundCards(lookupTable):
@@ -159,42 +164,42 @@ def correctID(id):
     else:
         return str(id).zfill(2)
 
-def arcuoToCard(detected_boards, lookupTable):
-    unique_ids = {}
+def arcuoToCard(detected_boards, lookupTable, unpairedTags):
+    # this stupid card filtering algorithm took so long jesus
+    output = {"upper": [], "middle": [], "lower": [], "unpairedTags": unpairedTags}
 
-    for item in detected_boards:
-        id_val = item["id"]
-        position = item["verticalPos"]
-        right_side_up = item["rightSideUp"]
+    grouped = defaultdict(list)
 
-        if id_val not in unique_ids:
-            # First time seeing this card, store it
-            unique_ids[id_val] = {"position": position, "rightSideUp": right_side_up}
-        else:
-            # If we've already seen it, prefer right-side-up
-            if right_side_up and not unique_ids[id_val]["rightSideUp"]:
-                # Overwrite the previous upside-down detection
-                unique_ids[id_val] = {"position": position, "rightSideUp": True}
+    for d in detected_boards:
+        key = (d['id'], d['verticalPos'])
+        grouped[key].append(d['rightSideUp'])
 
-
-    categorized_cards = {
-        "upper": [],
-        "middle": [],
-        "lower": []
-    }
-
-    for idData in unique_ids.items():
-        cardID = idData[0]
-        position = idData[1]["position"]
+    # Process each group
+    for (cardID, pos), orientations in grouped.items():
         try:
             binaryValue = lookupTable[cardID]
             detectedCard = createCardFromBinary(binaryValue)
-            categorized_cards[position].append(detectedCard)
         except Exception as e:
             print(e)
             traceback.print_exc()
             print(f"Unrecognized card! {cardID}, {binaryValue}")
-    return categorized_cards
+            detectedCard = None
+
+        num_true = orientations.count(True)
+        num_false = orientations.count(False)
+
+        # TODO: figure out a way to make it work if there's a bunch of duplicate cards and one only scans right side up
+        #  and another only scans upside down
+        num_pairs = min(num_true, num_false)
+
+        # Add one detection per full pair
+        output[pos].extend([detectedCard] * num_pairs)
+
+        # Add leftover single detections
+        leftover = abs(num_true - num_false)
+        output[pos].extend([detectedCard] * leftover)
+
+    return output
 
 # unused
 def returnFoundCards():
@@ -228,7 +233,7 @@ def pygameDisplayFoundCards(lookupTable, frame):
     aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_100)
     parameters = cv2.aruco.DetectorParameters()
 
-    detected_boards = get_detected_boards(frame, aruco_dict, parameters)
+    detected_boards, unpairedTags = get_detected_boards(frame, aruco_dict, parameters)
 
     # Detect markers and draw detected squares
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -238,7 +243,7 @@ def pygameDisplayFoundCards(lookupTable, frame):
     if ids is not None:
         cv2.aruco.drawDetectedMarkers(frame, corners, ids)
 
-    sortedDetectedCards = arcuoToCard(detected_boards, lookupTable)
+    sortedDetectedCards = arcuoToCard(detected_boards, lookupTable, unpairedTags)
 
     # Draw detected boards on the frame
     # for card in finishedCardDetectionList:

@@ -4,7 +4,7 @@ from subscripts.saveUtils import *
 from subscripts.shop import *
 from subscripts.inputHandling import *
 from subscripts.pygameSubfunctions import *
-import random, pygame
+import random, pygame, time
 
 
 # play a specific ante in the command line
@@ -264,6 +264,14 @@ def main(save):
 
     lookupTable = openjson("cardCreationAndRecognition/cardToArcuo.json", True)
 
+    backupDetectedCardsScan = {
+        "upper": [],
+        "middle": [],
+        "lower": [],
+        "unpairedTags": []
+    }
+    backupDetectedCardsScanTime = time.time()
+
     # TODO: The outline changes color depending on the game state
     colors = {
         "backgroundColor": (60, 120, 90),
@@ -291,6 +299,16 @@ def main(save):
 
         foundCards = drawWebcamAndReturnFoundCards(cap, lookupTable, screen)
 
+        # idk how much this really helps with flickering but if there's partial scans of tags it'll switch to a scan
+        # without any unpaired tags less than 3 seconds old
+        currentTime = time.time()
+        if len(foundCards["unpairedTags"]) > 0:
+            if currentTime - backupDetectedCardsScanTime < 3:
+                foundCards = backupDetectedCardsScan
+        else:
+            backupDetectedCardsScan = foundCards
+            backupDetectedCardsScanTime = currentTime
+
         handType, handInfo = drawCardCounter(save, font, screen, colors, foundCards)
 
         # analysis mode, draws a popup saying what the joker/consumable does
@@ -306,8 +324,6 @@ def main(save):
             score = 0
             displayChips = handInfo["chips"]
             displayMult = handInfo["mult"]
-
-        # TODO: since the cards flicker a lot per frame, there's probably a way to correct for it here
 
         drawLeftBar(save, font, screen, colors, handType, level, score, displayChips, displayMult)
 

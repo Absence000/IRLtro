@@ -19,6 +19,10 @@ def drawWebcamAndReturnFoundCards(cap, lookupTable, screen):
     surface = pygame.surfarray.make_surface(frame)
     screen.blit(surface, (320, 0))
 
+    # it's easier to see where to put the cards if I draw lines on top
+    drawRect(screen, (0, 0, 0), (320, 180, 960, 3))
+    drawRect(screen, (0, 0, 0), (320, 360, 960, 3))
+
     return sortedDetectedCards
 
 def openCamera(index):
@@ -176,6 +180,10 @@ def drawButtons(save, screen, colors, font):
     drawText(screen, "Discard\nSell", font, white, (discardX + 10, buttonY + 10), "left", 40)
 
 def drawCardCounter(save, font, screen, colors, foundCards):
+
+    prunedFoundCards = foundCards.copy()
+    del prunedFoundCards["unpairedTags"]
+
     darkUI = colors["darkUI"]
     lightUI = colors["lightUI"]
     white = colors["white"]
@@ -188,7 +196,7 @@ def drawCardCounter(save, font, screen, colors, foundCards):
 
     mode = "handFinder"
     ind = 0
-    handCards = foundCards["middle"]
+    handCards = prunedFoundCards["middle"]
 
     for card in handCards:
         cardType = type(card).__name__
@@ -205,12 +213,18 @@ def drawCardCounter(save, font, screen, colors, foundCards):
     }
 
     iterator = 0
-    for subset, cards in foundCards.items():
+    for subset, cards in prunedFoundCards.items():
         trackedCardsInThirdOfScreen = []
         for card in cards:
             trackedCardsInThirdOfScreen.append(card.toString(mode="fancy"))
         finishedMessage = f"{subsetDict[subset]}\n{'\n'.join(trackedCardsInThirdOfScreen)}"
-        drawText(screen, finishedMessage, font, white, (xOrigin + iterator, yOrigin), "left",
+        yOffset = 0
+        overflowTrackedCardsAmount = len(trackedCardsInThirdOfScreen) - 7
+        if overflowTrackedCardsAmount > 0:
+            yOffset = 20 * (overflowTrackedCardsAmount)
+            drawRect(screen, darkUI, (xOrigin + iterator - 5, yOrigin-yOffset - 5, 143, yOffset + 5), round=8)
+
+        drawText(screen, finishedMessage, font, white, (xOrigin + iterator, yOrigin - yOffset), "left",
                  getOptimalTextSize(finishedMessage, 20, 133))
         iterator += 133
 
