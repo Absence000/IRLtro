@@ -13,6 +13,7 @@ class EventChain:
     def add(self, type, text, card, chips, mult):
         self.events.append(Event(type, text, card, chips, mult))
 
+# TODO: use global colors here
 class Event:
     def __init__(self, type, text, card, chips, mult):
         self.type = type
@@ -28,11 +29,11 @@ class Event:
             self.text = text
 
         if self.type == "chip":
-            self.color = (0, 0, 255)
-        if self.type == "mult" or self.type == "multmult":
-            self.color = (255, 0, 0)
+            self.color = (0, 146, 255)
+        elif self.type == "mult" or self.type == "multmult":
+            self.color = (254, 76, 64)
         else:
-            self.color = (255, 255, 0)
+            self.color = (245, 179, 68)
         self.card = card
 
         self.chips = chips

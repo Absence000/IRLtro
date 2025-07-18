@@ -4,6 +4,7 @@ class Spectral:
     def __init__(self, name, negative=None):
         self.name = name
         self.negative = negative
+        self.coords = None
 
     def toString(self, mode=None):
         isNegative = ""

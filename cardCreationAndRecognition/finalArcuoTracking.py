@@ -68,8 +68,16 @@ def get_detected_boards(frame, aruco_dict, parameters):
 
                 if normalized_y_distance < 1.1:
                     # I could do this more accurately but it's way more math so no
-                    boardYCenter = corners1[0][1]
+                    roughBoardPosition = corners1[0]
+                    boardYCenter = roughBoardPosition[1]
                     unsortedBoardTags += [int(id1), int(id2)]
+
+                    if upwards:
+                        roughBoardPosition[0] -= 2 * marker_size
+                        roughBoardPosition[1] += 3 * marker_size
+                    else:
+                        roughBoardPosition[0] += 2 * marker_size
+                        roughBoardPosition[1] -= 3 * marker_size
 
                     if boardYCenter < thirdOfFrameHeight:
                         verticalPos = "upper"
@@ -79,7 +87,8 @@ def get_detected_boards(frame, aruco_dict, parameters):
                         verticalPos = "lower"
 
                     detected_boards.append(
-                        {"id": combinedID, "rightSideUp": upwards, "verticalPos": verticalPos})
+                        {"id": combinedID, "rightSideUp": upwards, "verticalPos": verticalPos,
+                         "roughPos": roughBoardPosition})
             i += 1  # Move to the next marker
 
         # stupid python list comprehension removing duplicates too I had to use chatGPT for this
@@ -172,32 +181,35 @@ def arcuoToCard(detected_boards, lookupTable, unpairedTags):
 
     for d in detected_boards:
         key = (d['id'], d['verticalPos'])
-        grouped[key].append(d['rightSideUp'])
+        grouped[key].append(d)
 
     # Process each group
     for (cardID, pos), orientations in grouped.items():
         try:
             binaryValue = lookupTable[cardID]
             detectedCard = createCardFromBinary(binaryValue)
+            detectedCard.coords = orientations[0]["roughPos"]
         except Exception as e:
             print(e)
             traceback.print_exc()
             print(f"Unrecognized card! {cardID}, {binaryValue}")
             detectedCard = None
-
-        num_true = orientations.count(True)
-        num_false = orientations.count(False)
+        # rightSideUp = orientations["rightSideUp"]
+        trues = [d for d in orientations if d['rightSideUp']]
+        falses = [d for d in orientations if not d['rightSideUp']]
 
         # TODO: figure out a way to make it work if there's a bunch of duplicate cards and one only scans right side up
         #  and another only scans upside down
-        num_pairs = min(num_true, num_false)
+        num_pairs = min(len(trues), len(falses))
 
         # Add one detection per full pair
-        output[pos].extend([detectedCard] * num_pairs)
+        for i in range(num_pairs):
+            output[pos].append(detectedCard)
 
         # Add leftover single detections
-        leftover = abs(num_true - num_false)
-        output[pos].extend([detectedCard] * leftover)
+        leftovers = trues[num_pairs:] + falses[num_pairs:]
+        for leftover in leftovers:
+            output[pos].append(detectedCard)
 
     return output
 

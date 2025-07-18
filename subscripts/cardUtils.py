@@ -34,6 +34,7 @@ class Card:
         self.seal = cardDict.get("seal")
         # TODO: Figure out why some of them are getting None as retriggeredBy but not all of them
         self.retriggeredBy = cardDict.get("retriggeredBy", [])
+        self.coords = None
 
     def toDict(self):
         return {

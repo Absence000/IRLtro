@@ -421,6 +421,7 @@
     "blindIndex": 0,
     "state": "playing",
     "hands": 4,
+    "handLimit": 8,
     "discards": 4,
     "shop": {
         "cards": [

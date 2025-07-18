@@ -60,6 +60,19 @@ def CLDisplayHand(hand):
     return('\n'.join(handDisplay))
 
 
+def prepareSelectedCards(save, foundCards):
+    selectedHand = foundCards["middle"]
+    save.hand = foundCards["lower"]
+    save.jokers = []
+    save.consumables = []
+    for card in foundCards["upper"]:
+        cardType = type(card).__name__
+        if cardType == "Joker":
+            save.jokers.append(card)
+        else:
+            save.consumables.append(card)
+
+    return selectedHand
 
 def pushIRLInputIntoSave(save):
     from subscripts.cardUtils import Card

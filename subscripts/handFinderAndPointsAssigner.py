@@ -172,15 +172,15 @@ def calcPointsFromHand(hand, handData, unselectedHand, save):
 
     chain = EventChain()
 
-    print(f"{displayHandType} lvl {save.handLevels[handType]['level']}")
-    print(f"Triggered cards: {affectedCards}")
+    # print(f"{displayHandType} lvl {save.handLevels[handType]['level']}")
+    # print(f"Triggered cards: {affectedCards}")
 
 
     # if an illegal hand has been played it updates the save
     if handType in ["Flush Five", "Flush House", "Five Of A Kind"]:
         if handType not in save.illegalHandsDiscovered:
             save.illegalHandsDiscovered.append(handType)
-            print(f"Discovered {handType}!")
+            # print(f"Discovered {handType}!")
 
     # iterates through each card in the hand to award points
     for card in hand:
@@ -189,7 +189,7 @@ def calcPointsFromHand(hand, handData, unselectedHand, save):
             if card.seal == "gold":
                 save.money += 3
                 chain.add("visual", "+$3", card, chips, mult)
-                print("Earned $3 from a gold seal!")
+                # print("Earned $3 from a gold seal!")
 
 
     # here comes most of the joker logic in the game oh boy
@@ -501,9 +501,18 @@ def calcPointsFromHand(hand, handData, unselectedHand, save):
     for card in hand + unselectedHand + save.deck:
         card.retriggeredBy = []
 
-    print(f"{chips} X {mult}")
-    chain.save()
-    return(chips * mult, affectedCards)
+    # handles glass card breaking, goes in reverse so deleting it doesn't mess with the iteration
+    for cardIndex in range(len(hand) - 1, -1, -1):
+        save.playedCards.append(hand[cardIndex])
+        if hand[cardIndex].enhancement == "glass":
+            if hand[cardIndex].number in affectedCards or affectedCards == "all":
+                if random.randint(1, 4) == 1:
+                    chain.add("visual", "Broke!", hand[cardIndex], chips, mult)
+                    # TODO: Glass joker stuff here
+                    del hand[cardIndex]
+
+    # print(f"{chips} X {mult}")
+    return chips * mult, chain, hand
 
 
 def triggerCard(card, save, chain):
@@ -535,11 +544,11 @@ def triggerCard(card, save, chain):
         luckyCardTriggered = False
         if random.randint(1, 5) == 1:
             enhancementBonusMult = 20
-            print("+20 mult from lucky card!")
+            # print("+20 mult from lucky card!")
             luckyCardTriggered = True
         if random.randint(1, 15) == 1:
             save.money += 20
-            print("Won $20 with a lucky card!")
+            # print("Won $20 with a lucky card!")
             chain.add("visual", "+$20", card, chips, mult)
             luckyCardTriggered = True
         # On lucky card trigger (lucky cat)
@@ -706,7 +715,7 @@ def triggerCard(card, save, chain):
     if card.seal == "red":
         if "red seal" not in card.retriggeredBy:
             card.retriggeredBy.append("red seal")
-            print(f"Retriggering {card.number}!")
+            # print(f"Retriggering {card.number}!")
             chain.add("visual", "Retriggered!", card, chips, mult)
             triggerCard(card, save, chain)
 

@@ -14,6 +14,7 @@ class Joker:
         self.description = unsortedData["description"]
         self.additionalSellValue = unsortedData.get("additionalSellValue", 0)
         self.edition = edition
+        self.coords = None
 
     def getSellValue(self):
         # yes I know the joker is stored as a dict and all the other cards are objects deal with it

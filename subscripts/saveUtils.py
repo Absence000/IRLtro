@@ -15,6 +15,7 @@ class Save:
         self.blindIndex = saveDict["blindIndex"]
         self.state = saveDict["state"]
         self.hands = saveDict["hands"]
+        self.handLimit = saveDict["handLimit"]
         self.discards = saveDict["discards"]
         self.shop = createShopFromDict(saveDict["shop"])
         self.money = saveDict["money"]
@@ -97,6 +98,7 @@ class Save:
             "consumables": consumables,
             "consumablesLimit": self.consumablesLimit,
             "hand": hand,
+            "handLimit": self.handLimit,
             "jokers": jokers,
             "jokerLimit": self.jokerLimit,
             "requiredScore": self.requiredScore,
@@ -157,6 +159,7 @@ def createBlankSave(deck, irl):
         "consumables": [],
         "consumablesLimit": 2,
         "hand": [],
+        "handLimit": 8,
         "jokers": [],
         "jokerLimit": 5,
         "requiredScore": 0,
