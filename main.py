@@ -5,6 +5,12 @@ from subscripts.saveUtils import *
 from subscripts.colorManagement import Colors
 import pygame, time
 
+blindIndexToBlindInfo = [("Small Blind", 1, 3), ("Big Blind", 1.5, 4), ("Boss Blind", 2, 5)]
+anteBaseChipsList = [100, 300, 800, 2000, 5000, 11000, 20000, 35000, 50000, 110000, 560000, 72000000, 300000000,
+                     47000000000, 2.9E+13, 7.7E+16, 8.6E+20, 4.2E+25, 9.2E+30, 9.2E+36, 4.3E+43, 9.7E+50, 1.0E+59,
+                     5.8E+67, 1.6E+77, 2.4E+87, 1.9E+98, 8.4E+109, 2.0E+122, 2.7E+135, 2.1E+149, 9.9E+163, 2.7E+179,
+                     4.4E+195, 4.4E+212, 2.8E+230, 1.1E+249, 2.7E+268, 4.5E+288, 4.8E+309]
+
 def main():
     pygame.init()
     screenWidth = 1280
@@ -16,6 +22,17 @@ def main():
 
     lookupTable = openjson("cardCreationAndRecognition/cardToArcuo.json", True)
     save = Save(openjson("save"))
+
+    # temp blank save stuff
+    # save = createBlankSave("standard", True)
+    # save.blindInfo = blindIndexToBlindInfo[save.blindIndex]
+    # save.requiredScore = anteBaseChipsList[save.ante] * save.blindInfo[1]
+    # save.state = "playing"
+    # save.discardedCards = []
+    # save.playedCards = []
+    # save.discards = 4
+    # save.hands = 4
+    # save.score = 0
 
     backupDetectedCardsScan = {
         "upper": [],
@@ -76,7 +93,7 @@ def main():
             drawBlindSelectScreen(save, colors)
             drawLeftBar(save, font, screen, colors, "", "", 0, 0, 0, camIndex)
 
-        if save.state == "playing":
+        elif save.state == "playing":
             if calculatingHand:
                 freezeFrame = rawFrame
             else:
@@ -85,7 +102,7 @@ def main():
             # this is really confusing but it draws the webcam
             foundCards, backupDetectedCardsScan, backupDetectedCardsScanTime, rawFrame = (
                 drawWebcamAndReturnFoundCards(cap, lookupTable, screen, backupDetectedCardsScan,
-                                              backupDetectedCardsScanTime, currentTime, save, freezeFrame))
+                                              backupDetectedCardsScanTime, currentTime, save, freezeFrame, None))
 
             if calculatingHand:
                 # this part took so long to figure out holy shit
@@ -105,8 +122,29 @@ def main():
                         displayMult = 0
                     else:
                         save.score += points
+                        save.hands -= 1
+                        if save.score >= save.requiredScore:
+                            # advances to the next round
+                            if save.blindIndex == 2:
+                                save.ante += 1
+                                save.blindIndex = 0
+                            else:
+                                save.blindIndex += 1
+                            baseReward = save.blindInfo[2]
+                            totalReward = baseReward + save.hands
+                            save.money += totalReward
+                            save.state = "shop"
+                            save.shop = Shop(cards=[None, None], packs=[None, None], vouchers=[None], rerollCost=5)
+                            save.shop.rollCards(save)
+                            save.shop.rollPacks(save)
+                            saveGame(save)
+                        elif save.hands <= 0:
+                            save.state = "dead"
+                            saveGame(save)
+
                         calculatingHand = False
                         canInteract = True
+                        saveGame(save)
             else:
                 handType, handInfo = drawCardCounter(save, font, screen, colors, foundCards)
                 if handInfo is None:
@@ -144,6 +182,33 @@ def main():
                                 calcPointsFromHand(selectedHand, findBestHand(selectedHand), save.hand, save))
                             lastEventTime = currentTime
                             chainIndex = 0
+                elif pressedButton == "discard":
+                    if analysisMode:
+                        return
+                    else:
+                        selectedHand = prepareSelectedCards(save, foundCards)
+                        if len(selectedHand) <= 5:
+                            # TODO: Discard check stuff here
+                            pressedButton = ""
+                            save.discardedCards += selectedHand
+                            save.discards -= 1
+
+        elif save.state == "shop":
+            drawLeftBar(save, font, screen, colors, "", "", 0, 0, 0, camIndex)
+
+            if calculatingHand:
+                freezeFrame = rawFrame
+            else:
+                freezeFrame = None
+
+            # this is really confusing but it draws the webcam
+            foundCards, backupDetectedCardsScan, backupDetectedCardsScanTime, rawFrame = (
+                drawWebcamAndReturnFoundCards(cap, lookupTable, screen, backupDetectedCardsScan,
+                                              backupDetectedCardsScanTime, currentTime, save, freezeFrame, "top"))
+
+            drawShop(save, font, screen, colors)
+            # TODO: Clear shop.images when the shop is exited
+
 
 
         clock.tick(60)

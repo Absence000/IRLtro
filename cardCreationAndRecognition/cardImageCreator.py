@@ -1,3 +1,5 @@
+import random
+
 from PIL import Image, ImageChops, ImageFilter, ImageEnhance
 from cardCreationAndRecognition.fiducialRecognizerTest import generateBoardForCard
 from subscripts.spacesavers import *
@@ -54,7 +56,6 @@ def createImageFromCard(card):
         if card.seal != None:
             sealImage = returnCroppedImageByName("playing", card.seal + " seal")
             cardImage.paste(sealImage, (0, 0), sealImage)
-        return cardImage
 
     elif cardType == "Tarot":
         # tarots are in order on a 10 wide image
@@ -62,7 +63,7 @@ def createImageFromCard(card):
         tarotIndex = list(tarotDict.keys()).index(card.name)
         x = tarotIndex % 10
         y = tarotIndex // 10
-        return getConsumableImageByCoords(x, y, card)
+        cardImage =  getConsumableImageByCoords(x, y, card)
 
     elif cardType == "Planet":
         # the secret ones are in weird spots but the others are all on the same row in order
@@ -78,7 +79,7 @@ def createImageFromCard(card):
         else:
             x = secretPosDict[card.name]
             y = 2
-        return getConsumableImageByCoords(x, y, card)
+        cardImage = getConsumableImageByCoords(x, y, card)
 
     elif cardType == "Spectral":
         regularOrder = ["Black Hole", "Familiar", "Grim", "Incantation", "Talisman", "Aura", "Wraith", "Sigil",
@@ -88,7 +89,7 @@ def createImageFromCard(card):
             correctedIndex = regularOrder.index(card.name) + 39
             x = correctedIndex % 10
             y = correctedIndex // 10
-            return getConsumableImageByCoords(x, y, card)
+            cardImage = getConsumableImageByCoords(x, y, card)
         else:
             # it's the soul and I have to do some weird stuff
             baseSoulImage = getConsumableImageByCoords(2, 2, card)
@@ -98,16 +99,16 @@ def createImageFromCard(card):
             topLeftY = enhancersHeight + enhancersPixelGap + 1
             crop = baseImage.crop((topLeftX, topLeftY, topLeftX + enhancersWidth, topLeftY + enhancersHeight))
             baseSoulImage.paste(crop, (0, 0), crop)
-            return baseSoulImage
+            cardImage = baseSoulImage
     elif cardType == "Joker":
         jokerDict = openjson("jokerDict")
         x, y = jokerDict[card.name]["position"]
-        jokerImage = getConsumableImageByCoords(x, y, card)
+        cardImage = getConsumableImageByCoords(x, y, card)
 
         # handles editions
         if card.edition is not None and card.edition != "negative":
             cardEditionImage = returnCroppedImageByName("playing", card.edition)
-            r, g, b, a = jokerImage.split()
+            r, g, b, a = cardImage.split()
             if card.edition == "polychrome":
                 # overlays only on nonwhite pixels with an alpha greater than 0
                 rgbMask = ImageChops.invert(Image.merge("RGB", (r, g, b))).convert("L")
@@ -117,7 +118,7 @@ def createImageFromCard(card):
                 # overlays only on pixels with an alpha greater than 0
                 r2, g2, b2, a2 = cardEditionImage.split()
                 mask = ImageChops.multiply(a, a2)
-            jokerImage.paste(cardEditionImage, (0, 0), mask)
+            cardImage.paste(cardEditionImage, (0, 0), mask)
 
         # hologram has a secondary position, all the legendaries have the faces under it
         if card.name == "Hologram":
@@ -126,15 +127,27 @@ def createImageFromCard(card):
 
             secondaryImage = prepareHologramPicture(secondaryImage, 5, 20, 1,
                                                     (260, 242, 242), (0, 250, 255))
-            jokerImage.paste(secondaryImage, (0, 0), secondaryImage)
+            cardImage.paste(secondaryImage, (0, 0), secondaryImage)
 
         if card.rarity == "Legendary":
             x2 = x
             y2 = y + 1
             secondaryImage = getConsumableImageByCoords(x2, y2, card, "secondary")
-            jokerImage.paste(secondaryImage, (0, 0), secondaryImage)
+            cardImage.paste(secondaryImage, (0, 0), secondaryImage)
 
-        return jokerImage
+    # resizing
+
+    cardImage = cardImage.resize((690, 966), Image.Resampling.NEAREST)
+    # I have to handle the wee joker stuff here bc if I resized it earlier it would have messed up the scaling
+    if hasattr(card, "name") and card.name == "Wee Joker":
+        resize = cardImage.resize((345, 483), Image.Resampling.NEAREST)
+        canvas = Image.new("RGBA", (690, 966), (0, 0, 0, 0))
+        # this is half a pixel out of center but who cares lmao
+        topLeftCorner = (172, 241)
+
+        canvas.paste(resize, topLeftCorner, resize)
+        cardImage = canvas
+    return cardImage
 
 def getConsumableImageByCoords(x, y, card, secondary=None):
     # stupid circular imports making me do this instead of isinstance()
@@ -319,16 +332,6 @@ def createTaggedCardImage(card, lookupTable):
     lookupIndex = lookupTable.index(card.toBinary())
     generateBoardForCard(lookupIndex)
     fiducialImage = Image.open("testBoard.png")
-    cardImage = cardImage.resize((690, 966), Image.Resampling.NEAREST)
-    # I have to handle the wee joker stuff here bc if I resized it earlier it would have messed up the scaling
-    if hasattr(card, "name") and card.name == "Wee Joker":
-        resize = cardImage.resize((345, 483), Image.Resampling.NEAREST)
-        canvas = Image.new("RGBA", (690, 966), (0, 0, 0, 0))
-        # this is half a pixel out of center but who cares lmao
-        topLeftCorner = (172, 241)
-
-        canvas.paste(resize, topLeftCorner, resize)
-        cardImage = canvas
 
     cardImage.paste(fiducialImage, (564, 50))
     fiducialImage = fiducialImage.rotate(180)
@@ -353,10 +356,52 @@ def createTaggedCardImage(card, lookupTable):
     background.paste(cardImage, (paste_x, paste_y), cardImage)
     background.save(f"print/{cardName}.png")
 
+packCoordsDict = {
+    "arcana": {
+        "normal": [(0, 0), (1, 0), (2, 0), (3, 0)],
+        "jumbo": [(0, 2), (1, 2)],
+        "mega": [(2, 2), (3, 2)]
+    },
+    "celestial": {
+        "normal": [(0, 1), (1, 1), (2, 1), (3, 1)],
+        "jumbo": [(0, 3), (1, 3)],
+        "mega": [(2, 3), (3, 3)]
+    },
+    "spectral": {
+        "normal": [(0, 4), (1, 4)],
+        "jumbo": [(2, 4)],
+        "mega": [(3, 4)]
+    },
+    "standard": {
+        "normal": [(0, 6), (1, 6), (2, 6), (3, 6)],
+        "jumbo": [(0, 7), (1, 7)],
+        "mega": [(2, 7), (3, 7)]
+    },
+    "buffoon": {
+        "normal": [(0, 8), (1, 8)],
+        "jumbo": [(2, 8)],
+        "mega": [(3, 8)]
+    }
+}
 
-#TODO: Add tarot, joker, planet, spectral, and stone cards here
+packX = 69
+packY = 93
 
-# these things don't work rn bc  of circular imports but I only needed to run them once so who cares
+def createPackImage(pack):
+    baseImage = Image.open("cardSprites/packs.png")
+    validCoords = packCoordsDict[pack.subset][pack.size]
+    if len(validCoords) > 1:
+        random.shuffle(validCoords)
+    x, y = validCoords[0]
+
+    # there's a 1 pixel gap around them and 2 pixels in between each one
+    fixedX = 1 + (packX * x) + (2 * (x - 1))
+    fixedY = 1 + (packY * y) + (2 * (y - 1))
+    packImage = baseImage.crop((fixedX, fixedY, fixedX + packX, fixedY + packY))
+    packImage = packImage.resize((690, 930))
+    return packImage
+
+# these things don't work rn bc of circular imports but I only needed to run them once so who cares
 
 def generateCardPairingList():
     iterator = 0

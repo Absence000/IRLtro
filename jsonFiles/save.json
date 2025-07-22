@@ -418,38 +418,85 @@
         }
     ],
     "ante": 1,
-    "blindIndex": 0,
-    "state": "playing",
-    "hands": 4,
-    "handLimit": 8,
+    "blindIndex": 1,
+    "state": "shop",
+    "hands": 3,
     "discards": 4,
     "shop": {
         "cards": [
             [
-                null,
-                null
+                [
+                    "Walkie Talkie",
+                    {
+                        "type": "chipsAndMult",
+                        "chip": 10,
+                        "mult": 4,
+                        "condition": "numbers",
+                        "numbers": [
+                            "10",
+                            "4"
+                        ],
+                        "finished": true,
+                        "position": [
+                            8,
+                            15
+                        ],
+                        "id": 101,
+                        "cost": 4,
+                        "rarity": "Common",
+                        "description": "Each played 10 or 4 gives +10 Chips and +4 Mult when scored",
+                        "additionalSellValue": 0,
+                        "edition": null
+                    }
+                ],
+                4
             ],
             [
-                null,
-                null
+                [
+                    "Devious Joker",
+                    {
+                        "type": "chip",
+                        "condition": "hand",
+                        "hand": "Straight",
+                        "chip": 100,
+                        "finished": true,
+                        "position": [
+                            3,
+                            14
+                        ],
+                        "id": 14,
+                        "cost": 4,
+                        "rarity": "Common",
+                        "description": "+100 Chips if a played hand contains a Straight",
+                        "additionalSellValue": 0,
+                        "edition": null
+                    }
+                ],
+                4
             ]
         ],
         "packs": [
             [
-                null,
-                null
+                {
+                    "subset": "celestial",
+                    "size": "jumbo"
+                },
+                6
             ],
             [
-                null,
-                null
+                {
+                    "subset": "celestial",
+                    "size": "jumbo"
+                },
+                6
             ]
         ],
         "vouchers": [
             null
         ],
-        "rerollCost": 0
+        "rerollCost": 5
     },
-    "money": 0,
+    "money": 6,
     "handLevels": {
         "High Card": {
             "level": 1,
@@ -520,7 +567,33 @@
     "illegalHandsDiscovered": [],
     "consumables": [],
     "consumablesLimit": 2,
-    "hand": [],
+    "hand": [
+        {
+            "number": "J",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        },
+        {
+            "number": "7",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "D",
+            "retriggeredBy": []
+        },
+        {
+            "number": "3",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        }
+    ],
+    "handLimit": 8,
     "jokers": [],
     "jokerLimit": 5,
     "requiredScore": 300,
@@ -530,8 +603,49 @@
         3
     ],
     "discardedCards": [],
-    "playedCards": [],
-    "score": 0,
+    "playedCards": [
+        {
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "D",
+            "retriggeredBy": []
+        },
+        {
+            "number": "10",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "D",
+            "retriggeredBy": []
+        },
+        {
+            "number": "J",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "C",
+            "retriggeredBy": []
+        },
+        {
+            "number": "Q",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "H",
+            "retriggeredBy": []
+        },
+        {
+            "number": "K",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": []
+        }
+    ],
+    "score": 324,
     "round": 1,
     "irl": true
 }

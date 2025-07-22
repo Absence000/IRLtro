@@ -17,6 +17,7 @@ class Shop:
         self.packs = packs
         self.vouchers = vouchers
         self.rerollCost = rerollCost
+        self.images = {}
 
     def rollCards(self, save):
         cardList = []

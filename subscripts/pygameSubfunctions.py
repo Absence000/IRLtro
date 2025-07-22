@@ -3,10 +3,11 @@ import numpy as np
 from cardCreationAndRecognition.finalArcuoTracking import pygameDisplayFoundCards
 from subscripts.handFinderAndPointsAssigner import findBestHand
 from PIL import Image
+from cardCreationAndRecognition.cardImageCreator import createImageFromCard, createPackImage
 from subscripts.spacesavers import *
 
 def drawWebcamAndReturnFoundCards(cap, lookupTable, screen, backupDetectedCardsScan, backupDetectedCardsScanTime,
-                                  currentTime, save, frame=None):
+                                  currentTime, save, frame, cutoff):
     if frame is None:
         ret, frame = cap.read()
     rawFrame = frame.copy()
@@ -20,6 +21,9 @@ def drawWebcamAndReturnFoundCards(cap, lookupTable, screen, backupDetectedCardsS
     # resizes to 540p
     # idk why this is height x width instead of width x height
     frame = cv2.resize(frame, (540, 960))
+    if cutoff == "top":
+        frame = frame[0:960, 0:180]
+
     surface = pygame.surfarray.make_surface(frame)
     screen.blit(surface, (320, 0))
 
@@ -27,14 +31,15 @@ def drawWebcamAndReturnFoundCards(cap, lookupTable, screen, backupDetectedCardsS
     drawRect(screen, (0, 0, 0), (320, 180, 960, 3))
     drawRect(screen, (0, 0, 0), (320, 360, 960, 3))
 
-    # idk how much this really helps with flickering but if it can't find all the cards in the hand limit it goes to
-    # an old scan less than 3 seconds old
-    if len(sortedDetectedCards["middle"]) + len(sortedDetectedCards["lower"]) < save.handLimit:
-        if currentTime - backupDetectedCardsScanTime < 3:
-            sortedDetectedCards = backupDetectedCardsScan
-    else:
-        backupDetectedCardsScan = sortedDetectedCards
-        backupDetectedCardsScanTime = currentTime
+    if cutoff is None:
+        # idk how much this really helps with flickering but if it can't find all the cards in the hand limit it goes to
+        # an old scan less than 3 seconds old
+        if len(sortedDetectedCards["middle"]) + len(sortedDetectedCards["lower"]) < save.handLimit:
+            if currentTime - backupDetectedCardsScanTime < 3:
+                sortedDetectedCards = backupDetectedCardsScan
+        else:
+            backupDetectedCardsScan = sortedDetectedCards
+            backupDetectedCardsScanTime = currentTime
 
 
     return sortedDetectedCards, backupDetectedCardsScan, backupDetectedCardsScanTime, rawFrame
@@ -308,11 +313,95 @@ def displayChainEvent(event, screen, font):
     drawText(screen, event.text, font, (255, 255, 255), (newX, newY-10), "center")
 
 
-
 def drawBlindSelectScreen(save, colors):
     return
     # selectedBlind = save.blindIndex
     # drawRect(screen, colors.darkUI)
+
+def drawShop(save, font, screen, colors):
+    # backgrounds
+    shopOriginX = 350
+    shopOriginY = 340
+    drawRect(screen, colors.lightUI, (shopOriginX, shopOriginY, 700, 390), colors.uiOutline, round=8)
+    drawRect(screen, colors.darkUI, (shopOriginX + 5, shopOriginY + 5, 690, 380), round=8)
+
+    shopItemHeight = 160
+    cardForSaleY = shopOriginY + 20
+    drawRect(screen, colors.lightUI, (shopOriginX + 210, cardForSaleY, 470, shopItemHeight + 10), round=8)
+
+    vouchersAndPacksY = shopOriginY + 200
+    drawRect(screen, colors.lightUI, (shopOriginX + 20, vouchersAndPacksY, 325, shopItemHeight + 10), round=8)
+    drawRect(screen, colors.darkUI, (shopOriginX + 25, vouchersAndPacksY + 5, 315, shopItemHeight), round=8)
+    drawText(screen, f"ANTE {save.ante} VOUCHER", font, colors.lightUI,
+             (shopOriginX + 40, vouchersAndPacksY + 20), "center", 20, 90)
+
+    drawText(screen, "NOT\nIMPLEMENTED\nYET", font, colors.white,
+             (shopOriginX + 160, vouchersAndPacksY + 50), "center")
+
+    drawRect(screen, colors.lightUI, (shopOriginX + 355, vouchersAndPacksY, 325, shopItemHeight + 10), round=8)
+
+    # buttons
+    nextRoundRect = (shopOriginX + 20, shopOriginY + 20, 180, 80)
+    drawRect(screen, colors.red, nextRoundRect, round=8)
+    drawText(screen, "Next Round", font, colors.white, (shopOriginX + 50, shopOriginY + 45), "left")
+
+    rerollRect = (shopOriginX + 20, shopOriginY + 110, 180, 80)
+    drawRect(screen, colors.green, rerollRect, round=8)
+    drawText(screen, "Reroll", font, colors.white, (shopOriginX + 85, shopOriginY + 120), "left", 20)
+    rerollText = f"${save.shop.rerollCost}"
+    drawText(screen, rerollText, font, colors.white, (shopOriginX + 105, shopOriginY + 145), "center", 40)
+
+    shop = save.shop
+
+    def generateShopItem(coords, rawImg, price, pack=False):
+        x, y = coords
+        drawRect(screen, colors.darkUI, (x + 20, y - 30, 74, 40), round=8)
+        drawRect(screen, colors.lightUI, (x + 25, y - 25, 64, 25), round=8)
+        drawText(screen, f"${price}", font, colors.yellow, (x + 57, y - 25))
+
+        if pack:
+            size = (690, 930)
+        else:
+            size = (690, 966)
+        cardImg = pygame.image.frombytes(rawImg.tobytes(), size, "RGBA")
+        cardImg = pygame.transform.scale(cardImg, (114, shopItemHeight))
+        screen.blit(cardImg, (x, y + 5))
+
+    # TODO: Double check the math here idk why it's not centered without the +50
+    cardCenterX = shopOriginX + 340 + 57 + 50
+    cardStarterX = cardCenterX - (60 * len(shop.cards))
+
+
+    for card, price in shop.cards:
+        # idk how much this helps performance since it's not like generating the images is super expensive but whatever
+        if card in shop.images.keys():
+            rawImage = shop.images[card]
+        else:
+            rawImage = createImageFromCard(card)
+            shop.images[card] = rawImage
+
+        generateShopItem((cardStarterX, cardForSaleY), rawImage, price)
+        cardStarterX += 120
+
+    packCenterX = shopOriginX + 640
+    packStarterX = packCenterX - (120 * len(shop.packs))
+
+    for pack, price in shop.packs:
+        if pack in shop.images.keys():
+            rawImage = shop.images[pack]
+        else:
+            rawImage = createPackImage(pack)
+            shop.images[pack] = rawImage
+
+        generateShopItem((packStarterX, vouchersAndPacksY), rawImage, price, True)
+        packStarterX += 120
+
+    # packs
+
+    # vouchers
+
+
+
 
 def drawRect(screen, color, rect, outline=None, round=None):
     if round is not None:
@@ -334,12 +423,16 @@ def getOptimalTextSize(text, defaultSize, sizeLimit):
     else:
         return int(sizeLimit/(0.45*longestLineLength))
 
-def drawText(screen, text, font, color, coords, centering="center", size=None):
+def drawText(screen, text, font, color, coords, centering="center", size=None, rotation=None):
     if size is None:
         label = font.render(text, True, color)
     else:
         font = pygame.font.Font("cardSprites/font/m6x11.ttf", size)
         label = font.render(text, True, color)
+
+    if rotation is not None:
+        label = pygame.transform.rotate(label, rotation)
+
     textRect = label.get_rect()
 
     if centering == "left":
