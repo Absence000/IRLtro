@@ -1,15 +1,18 @@
+from subscripts.consumableCards import consumableCanBeUsedImmediately
 from subscripts.handFinderAndPointsAssigner import calcPointsFromHand
-from subscripts.inputHandling import prepareSelectedCards
+from subscripts.inputHandling import prepareSelectedCards, prepareCardForPrinting
 from subscripts.pygameSubfunctions import *
 from subscripts.saveUtils import *
 from subscripts.colorManagement import Colors
+from subscripts.eventChainManagement import EventChain, Event
+from subscripts.packs import Pack
+from subscripts.cardUtils import Card
+from subscripts.jokers import Joker
+from subscripts.planetCards import Planet, usePlanetCard
+from subscripts.shop import newItemIsConsumable
+from subscripts.tarotCards import Tarot, useTarotCard
+from subscripts.spectralCards import Spectral
 import pygame, time
-
-blindIndexToBlindInfo = [("Small Blind", 1, 3), ("Big Blind", 1.5, 4), ("Boss Blind", 2, 5)]
-anteBaseChipsList = [100, 300, 800, 2000, 5000, 11000, 20000, 35000, 50000, 110000, 560000, 72000000, 300000000,
-                     47000000000, 2.9E+13, 7.7E+16, 8.6E+20, 4.2E+25, 9.2E+30, 9.2E+36, 4.3E+43, 9.7E+50, 1.0E+59,
-                     5.8E+67, 1.6E+77, 2.4E+87, 1.9E+98, 8.4E+109, 2.0E+122, 2.7E+135, 2.1E+149, 9.9E+163, 2.7E+179,
-                     4.4E+195, 4.4E+212, 2.8E+230, 1.1E+249, 2.7E+268, 4.5E+288, 4.8E+309]
 
 def main():
     pygame.init()
@@ -21,10 +24,10 @@ def main():
     clock = pygame.time.Clock()
 
     lookupTable = openjson("cardCreationAndRecognition/cardToArcuo.json", True)
-    save = Save(openjson("save"))
+    # save = Save(openjson("save"))
 
     # temp blank save stuff
-    # save = createBlankSave("standard", True)
+    save = createBlankSave("standard", True)
     # save.blindInfo = blindIndexToBlindInfo[save.blindIndex]
     # save.requiredScore = anteBaseChipsList[save.ante] * save.blindInfo[1]
     # save.state = "playing"
@@ -40,7 +43,11 @@ def main():
         "lower": [],
         "unpairedTags": []
     }
-    backupDetectedCardsScanTime = time.time()
+    backupDetectedCardsScanTime = {
+        "upper": time.time(),
+        "middle": time.time(),
+        "lower": time.time()
+    }
 
     # TODO: The outline changes color depending on the game state
     # TODO: Turn this into an object with all the colors as attributes
@@ -54,8 +61,13 @@ def main():
     camIndex = 1
     cap = openCamera(camIndex)
 
+    shopChain = EventChain()
+    packChain = EventChain()
+    askingAboutImmediateUse = False
+
     running = True
     while running:
+        mousePos = pygame.mouse.get_pos()
         currentTime = time.time()
         colors.switchOutline(save)
         for event in pygame.event.get():
@@ -63,10 +75,10 @@ def main():
                 running = False
 
             if event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_pos = pygame.mouse.get_pos()
                 for button in buttons:
-                    if pygame.Rect(button["rect"]).collidepoint(mouse_pos):
+                    if pygame.Rect(button["rect"]).collidepoint(mousePos):
                         pressedButton = button["name"]
+                        pressedButtonInfo = button
                         # I need these for like every state so they're up here
                         if pressedButton == "+":
                             pressedButton = ""
@@ -90,8 +102,32 @@ def main():
         screen.fill(colors.backgroundColor)
 
         if save.state == "selectingBlind":
-            drawBlindSelectScreen(save, colors)
-            drawLeftBar(save, font, screen, colors, "", "", 0, 0, 0, camIndex)
+            if calculatingHand:
+                freezeFrame = rawFrame
+            else:
+                freezeFrame = None
+
+            buttons = drawLeftBar(save, font, screen, colors, "", "", 0, 0, 0, camIndex)
+
+            foundCards, backupDetectedCardsScan, backupDetectedCardsScanTime, rawFrame = (
+                drawWebcamAndReturnFoundCards(cap, lookupTable, screen, backupDetectedCardsScan,
+                                              backupDetectedCardsScanTime, currentTime, save, freezeFrame, "middle"))
+
+            buttons += drawBlindSelectScreen(save, font, screen, colors)
+
+            if canInteract:
+                if pressedButton == "select":
+                    pressedButton = ""
+                    save.state = "playing"
+                    save.discardedCards = []
+                    save.playedCards = []
+                    save.discards = 4
+                    save.hands = 3
+                    save.score = 0
+
+                elif pressedButton == "skip":
+                    pressedButton = ""
+                    save.nextBlind()
 
         elif save.state == "playing":
             if calculatingHand:
@@ -116,47 +152,53 @@ def main():
                     displayMult = chainLink.mult
                     chainEndTime = currentTime
                 else:
-                    if currentTime - chainEndTime < 1:
-                        handType = str(points)
-                        displayChips = 0
-                        displayMult = 0
-                    else:
-                        save.score += points
-                        save.hands -= 1
-                        if save.score >= save.requiredScore:
-                            # advances to the next round
-                            if save.blindIndex == 2:
-                                save.ante += 1
-                                save.blindIndex = 0
-                            else:
-                                save.blindIndex += 1
-                            baseReward = save.blindInfo[2]
-                            totalReward = baseReward + save.hands
-                            save.money += totalReward
-                            save.state = "shop"
-                            save.shop = Shop(cards=[None, None], packs=[None, None], vouchers=[None], rerollCost=5)
-                            save.shop.rollCards(save)
-                            save.shop.rollPacks(save)
-                            saveGame(save)
-                        elif save.hands <= 0:
-                            save.state = "dead"
-                            saveGame(save)
+                    if not analysisMode:
+                        if currentTime - chainEndTime < 1:
+                            handType = str(points)
+                            displayChips = 0
+                            displayMult = 0
+                        else:
+                            save.score += points
+                            save.hands -= 1
+                            if save.score >= save.requiredScore:
+                                # advances to the next round
+                                baseReward = save.blindInfo[2]
+                                save.nextBlind()
+                                totalReward = baseReward + save.hands
+                                save.money += totalReward
+                                save.state = "shop"
+                                save.shop = Shop(cards=[None, None], packs=[None, None], vouchers=[None], rerollCost=5)
+                                save.shop.rollCards(save)
+                                save.shop.rollPacks(save)
+                                saveGame(save)
+                            elif save.hands <= 0:
+                                save.state = "dead"
+                                saveGame(save)
 
+                            calculatingHand = False
+                            canInteract = True
+                            saveGame(save)
+                    else:
                         calculatingHand = False
                         canInteract = True
                         saveGame(save)
             else:
                 handType, handInfo = drawCardCounter(save, font, screen, colors, foundCards)
-                if handInfo is None:
+                handTypeType = type(handType).__name__
+                if handTypeType in ["Joker", "Planet", "Tarot", "Spectral"]:
                     # analysis mode, draws a popup saying what the joker/consumable does
                     analysisMode = True
                     drawAnalysisPopup(save, font, screen, colors, handType)
+                    consumable = handType
+                    otherCards = handInfo
                     handType = ""
                     level = ""
                     score = save.score
                     displayChips = 0
                     displayMult = 0
                 else:
+                    consumable = None
+                    otherCards = None
                     analysisMode = False
                     level = handInfo["level"]
                     score = save.score
@@ -170,12 +212,24 @@ def main():
 
             if canInteract:
                 if pressedButton == "play":
+                    pressedButton = ""
                     if analysisMode:
-                        return
+                        if isinstance(consumable, Tarot):
+                            success = useTarotCard(consumable, otherCards, save)
+                            chain = EventChain()
+                            calculatingHand = True
+                            canInteract = False
+                            lastEventTime = currentTime
+                            chainIndex = 0
+                            if success:
+                                chain.add("visual", "Success!", consumable, 0, 0)
+                            else:
+                                chain.add("visual", "Wrong amount of cards!", consumable, 0, 0)
+                        elif isinstance(consumable, Planet):
+                            usePlanetCard(consumable, save)
                     else:
                         selectedHand = prepareSelectedCards(save, foundCards)
                         if len(selectedHand) <= 5:
-                            pressedButton = ""
                             calculatingHand = True
                             canInteract = False
                             points, chain, selectedHand = (
@@ -194,7 +248,7 @@ def main():
                             save.discards -= 1
 
         elif save.state == "shop":
-            drawLeftBar(save, font, screen, colors, "", "", 0, 0, 0, camIndex)
+            buttons = drawLeftBar(save, font, screen, colors, "", "", 0, 0, 0, camIndex)
 
             if calculatingHand:
                 freezeFrame = rawFrame
@@ -206,11 +260,133 @@ def main():
                 drawWebcamAndReturnFoundCards(cap, lookupTable, screen, backupDetectedCardsScan,
                                               backupDetectedCardsScanTime, currentTime, save, freezeFrame, "top"))
 
-            drawShop(save, font, screen, colors)
-            # TODO: Clear shop.images when the shop is exited
 
+            if askingAboutImmediateUse: buttons += drawImmediateUsePopup(save, font, screen, colors, item)
+            else: buttons += drawShop(save, font, screen, colors, mousePos)
 
+            if len(shopChain.events) > 0:
+                if currentTime - lastEventTime < 0.25:
+                    displayChainEvent(shopChain.events[0], screen, font)
+                else:
+                    del shopChain.events[0]
 
+            # TODO: Non hand-requiring consumables should be usable here
+            if canInteract:
+                if not askingAboutImmediateUse:
+                    if pressedButton == "Reroll":
+                        pressedButton = ""
+                        if save.money >= save.shop.rerollCost:
+                            save.money -= save.shop.rerollCost
+                            save.shop.rollCards(save)
+                            save.shop.rerollCost += 1
+                    if pressedButton == "Next Round":
+                        pressedButton = ""
+                        # TODO: end of shop checks go here
+                        save.state = "selectingBlind"
+                    if pressedButton == "buy":
+                        pressedButton = ""
+                        buyStatus = save.shop.buyItem(pressedButtonInfo["type"], pressedButtonInfo["index"], save)
+                        if isinstance(buyStatus, str):
+                            shopChain.add("visual", buyStatus, pressedButtonInfo["coords"], 0, 0)
+                        else:
+                            shopChain.add("visual", "Bought!", pressedButtonInfo["coords"], 0, 0)
+                            item = buyStatus
+                            needsToBePrinted = True
+                            if isinstance(item, Pack):
+                                needsToBePrinted = False
+                                save.state = "openingPack"
+                                pickAmount = item.pickAmount
+                                doneOpeningPack = False
+                                items = item.open(save)
+                            elif newItemIsConsumable(item):
+                                # TODO: when consumable usage is implemented finish this
+                                if consumableCanBeUsedImmediately(item):
+                                    askingAboutImmediateUse = True
+                                else:
+                                    needsToBePrinted = True
+                            if needsToBePrinted: prepareCardForPrinting(buyStatus, keep=True)
+
+                        lastEventTime = currentTime
+                else:
+                    if pressedButton == "yes":
+                        pressedButton = ""
+                        askingAboutImmediateUse = False
+                        # TODO: Move this to a separate function once you figure out the circular import stuff
+                        if isinstance(item, Card) or isinstance(item, Joker):
+                            prepareCardForPrinting(item, keep=True)
+                        elif isinstance(item, Tarot):
+                            useTarotCard(item, None, save)
+                        elif isinstance(item, Planet):
+                            usePlanetCard(item, save)
+                        # TODO: spectrals here
+                    elif pressedButton == "no":
+                        askingAboutImmediateUse = False
+                        pressedButton = ""
+                        prepareCardForPrinting(item, keep=True)
+        elif save.state in ["openingPack", "openingPackFromTag"]:
+            buttons = drawLeftBar(save, font, screen, colors, "", "", 0, 0, 0, camIndex)
+
+            if calculatingHand:
+                freezeFrame = rawFrame
+            else:
+                freezeFrame = None
+
+            foundCards, backupDetectedCardsScan, backupDetectedCardsScanTime, rawFrame = (
+                drawWebcamAndReturnFoundCards(cap, lookupTable, screen, backupDetectedCardsScan,
+                                              backupDetectedCardsScanTime, currentTime, save, freezeFrame, cutoff=None))
+
+            if len(packChain.events) > 0:
+                if currentTime - lastEventTime < 0.25:
+                    displayChainEvent(packChain.events[0], screen, font)
+                else:
+                    del packChain.events[0]
+                    calculatingHand = False
+                    canInteract = True
+            else:
+                if doneOpeningPack:
+                    if save.state == "openingPack":
+                        save.state = "shop"
+                    elif save.state == "openingPackFromTag":
+                        save.state = "selectingBlind"
+
+            buttons += drawPackButtons(save, items, pickAmount, font, screen, colors, mousePos)
+            # TODO: All consumables should be usable here
+            if canInteract:
+                if pressedButton == "skip":
+                    pressedButton = ""
+                    doneOpeningPack = True
+                if pressedButton == "buy":
+                    pressedButton = ""
+                    chosenItemIndex = pressedButtonInfo["index"]
+                    chosenCard = items[chosenItemIndex]
+
+                    if isinstance(chosenCard, Card) or isinstance(chosenCard, Joker):
+                        prepareCardForPrinting(chosenCard, keep=True)
+                        del items[chosenItemIndex]
+                        pickAmount -= 1
+                    elif isinstance(chosenCard, Planet):
+                        usePlanetCard(chosenCard, save)
+                        del items[chosenItemIndex]
+                        pickAmount -= 1
+                    # TODO: spectrals here
+                    elif isinstance(chosenCard, Tarot):
+                        chosenCards = foundCards["middle"]
+                        success = useTarotCard(chosenCard, chosenCards, save)
+                        calculatingHand = True
+                        canInteract = False
+                        lastEventTime = currentTime
+                        if success:
+                            packChain.add("visual", "Success!", chosenCards[0], 0, 0)
+                            pickAmount -= 1
+                            del items[chosenItemIndex]
+                        else:
+                            packChain.add("visual", "Wrong amount of cards!", chosenCards[0], 0, 0)
+
+                    if pickAmount <= 0:
+                        doneOpeningPack = True
+
+        elif save.state == "dead":
+            running = False
         clock.tick(60)
         pygame.display.flip()
 

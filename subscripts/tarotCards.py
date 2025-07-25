@@ -15,8 +15,10 @@ class Tarot:
             isNegative = "Negative "
         if mode is None:
             return f"{isNegative}{self.name}: {openjson('consumables/tarotDict')[self.name]['description']}"
-        else:
+        elif mode == "name":
             return f"{isNegative}{self.name}"
+        elif mode == "description":
+            return openjson('consumables/tarotDict')[self.name]['description']
 
     def toDict(self):
         return{
@@ -44,124 +46,65 @@ def generateShuffledListOfFinishedTarotCards():
         viableTarotCards.append(Tarot(tarot))
     random.shuffle(viableTarotCards)
     return viableTarotCards
-def useTarotCard(card, save):
+def useTarotCard(card, otherCards, save):
     # unlike cards or jokers I can get away with using tarot card dictionaries since all this stuff is immutable for
     # all of them
     tarotCardInfo = openjson("consumables/tarotDict")[card.name]
-    print(f"{card.toString()}")
 
     # if the tarot card needs you to select cards from your hand (most of them)
     if tarotCardInfo["type"] == "handModifier":
         maxCardSelectAmount = tarotCardInfo["amnt"]
         # death is the only one that needs exactly two cards picked
         canSelectLessThanMax = True
-        upTo = "up to "
         if card.name == "Death (XIII)":
             canSelectLessThanMax = False
-            upTo = "exactly "
 
-        # makes sure the user selects the correct amount of cards plus error handling
-        selectedHandIndexes = []
-        selectionIsValid = False
-        while not selectionIsValid:
-            if not save.irl:
-                print(f"Your hand:\n{CLDisplayHand(save.hand)}")
-                cardSelection = input(f"Select {upTo}{maxCardSelectAmount} cards, separated by commas and spaces! "
-                                      f"Type \"cancel\" to cancel.")
-                try:
-                    selectedHandIndexes = [int(num) for num in cardSelection.split(", ")]
-                    if len(selectedHandIndexes) > maxCardSelectAmount:
-                        print(f"You can't select more than {maxCardSelectAmount} cards at once!")
-                    elif all(1 <= index <= 8 for index in selectedHandIndexes):
-                        if canSelectLessThanMax:
-                            selectionIsValid = True
-                        else:
-                            if len(selectedHandIndexes) == maxCardSelectAmount:
-                                selectionIsValid = True
-                            else:
-                                print(f"Select exactly {maxCardSelectAmount} cards!")
-                    else:
-                        print("Numbers out of range!")
-                except:
-                    print(f"Unrecognized hand indexes: {cardSelection}")
-            else:
-                # TODO: fix the messages so the user has time to choose
-                while not selectionIsValid:
-                    cardSelection = input(f"Put {upTo}{maxCardSelectAmount}  cards in the center and type \"play\" "
-                                          f"to select them! Type \"cancel\" to cancel.")
-                    if cardSelection == "play":
+        if otherCards == []:
+            return False
 
-                        selectedHand = pushIRLInputIntoSave(save)
-                        if len(selectedHand) > maxCardSelectAmount:
-                            print(f"You can't select more than {maxCardSelectAmount} cards at once!")
-                        elif canSelectLessThanMax:
-                            selectionIsValid = True
-                        else:
-                            if len(selectedHand) == maxCardSelectAmount:
-                                selectionIsValid = True
-                            else:
-                                print(f"Select exactly {maxCardSelectAmount} cards!")
+        if len(otherCards) > maxCardSelectAmount:
+            return False
 
-        # I know this is a really shitty way of handling irl vs command line playing but who cares lmao
+        if card.name == "Death (XIII)" and len(otherCards) == 1:
+            return False
 
         # suit converters (star, moon, sun, world)
         if tarotCardInfo["modifier"] == "suit":
-            if save.irl:
-                clearPrintFolder()
-                for card in selectedHand:
-                    card.suit = tarotCardInfo["suit"]
-                    prepareCardForPrinting(card, keep=True)
-                print("Print out the cards in the \"print\" folder, and replace the current cards with them!")
+            for card in otherCards:
+                newCard = card.copy()
+                newCard.suit = tarotCardInfo["suit"]
+                save.replaceCardInDeck(card, newCard)
+                prepareCardForPrinting(newCard, keep=True)
 
-            else:
-                for index in selectedHandIndexes:
-                    save.hand[index-1].suit = tarotCardInfo["suit"]
 
         # enhancer converters (magician, empress, hierophant, lovers, chariot, justice, devil, tower)
         elif tarotCardInfo["modifier"] == "enhancer":
-            if save.irl:
-                clearPrintFolder()
-                for card in selectedHand:
-                    card.enhancement = tarotCardInfo["enhancement"]
-                    prepareCardForPrinting(card, keep=True)
-                print("Print out the cards in the \"print\" folder, and replace the current cards with them!")
-
-            else:
-                for index in selectedHandIndexes:
-                    save.hand[index-1].enhancement = tarotCardInfo["enhancement"]
+            for card in otherCards:
+                newCard = card.copy()
+                newCard.enhancement = tarotCardInfo["enhancement"]
+                save.replaceCardInDeck(card, newCard)
+                prepareCardForPrinting(newCard, keep=True)
 
         # rank converter (strength)
         elif tarotCardInfo["modifier"] == "rank":
-            if save.irl:
-                clearPrintFolder()
-                for card in selectedHand:
-                    card.number = increaseCardVal(card.number)
-                    prepareCardForPrinting(card, keep=True)
-                print("Print out the cards in the \"print\" folder, and replace the current cards with them!")
-
-            else:
-                for index in selectedHandIndexes:
-                    save.hand[index-1].number = increaseCardVal(save.hand[index-1].number)
+            for card in otherCards:
+                newCard = card.copy()
+                newCard.number = increaseCardVal(card.number)
+                save.replaceCardInDeck(card, newCard)
+                prepareCardForPrinting(newCard, keep=True)
 
         # destroy converter (hanged man)
         elif tarotCardInfo["modifier"] == "destroy":
-            if save.irl:
-                print("Put the selected cards off to the side and don't use them for the rest of the game!")
-            else:
-                for index in selectedHandIndexes:
-                    del save.hand[index-1]
+            for card in otherCards:
+                save.replaceCardInDeck(card, None)
 
         # convert converter (death)
         elif tarotCardInfo["modifier"] == "convert":
-            if save.irl:
-                prepareCardForPrinting(selectedHand[1])
-                print("Print out the card in the \"print\" folder, and replace the left card with it!")
+            newCard = otherCards[1].copy()
+            prepareCardForPrinting(newCard)
+            save.replaceCardInDeck(otherCards[0], newCard)
 
-            else:
-                save.hand[selectedHandIndexes[0]] = save.hand[selectedHandIndexes[1]]
-
-        print(f"Success! New hand:\n{CLDisplayHand(save.hand)}")
-
+        return True
 
 def increaseCardVal(oldVal):
     face_cards = {"J": 11, "Q": 12, "K": 13, "A": 14}

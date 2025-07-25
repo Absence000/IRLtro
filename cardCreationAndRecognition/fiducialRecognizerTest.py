@@ -1,6 +1,5 @@
 import cv2
 import numpy as np
-from subscripts.cardUtils import *
 
 def arucoBoardsToCard(lookupTable, image_path=None, debugging=None):
     """

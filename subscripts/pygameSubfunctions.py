@@ -1,10 +1,15 @@
-import pygame, cv2, textwrap, time
+import pygame, cv2, textwrap
 import numpy as np
 from cardCreationAndRecognition.finalArcuoTracking import pygameDisplayFoundCards
 from subscripts.handFinderAndPointsAssigner import findBestHand
 from PIL import Image
 from cardCreationAndRecognition.cardImageCreator import createImageFromCard, createPackImage
-from subscripts.spacesavers import *
+from subscripts.cardUtils import Card
+from subscripts.planetCards import Planet
+from subscripts.packs import Pack
+from subscripts.tarotCards import Tarot
+from subscripts.jokers import Joker
+from subscripts.spectralCards import Spectral
 
 def drawWebcamAndReturnFoundCards(cap, lookupTable, screen, backupDetectedCardsScan, backupDetectedCardsScanTime,
                                   currentTime, save, frame, cutoff):
@@ -23,6 +28,8 @@ def drawWebcamAndReturnFoundCards(cap, lookupTable, screen, backupDetectedCardsS
     frame = cv2.resize(frame, (540, 960))
     if cutoff == "top":
         frame = frame[0:960, 0:180]
+    elif cutoff == "middle":
+        frame = frame[0:960, 0:360]
 
     surface = pygame.surfarray.make_surface(frame)
     screen.blit(surface, (320, 0))
@@ -31,16 +38,16 @@ def drawWebcamAndReturnFoundCards(cap, lookupTable, screen, backupDetectedCardsS
     drawRect(screen, (0, 0, 0), (320, 180, 960, 3))
     drawRect(screen, (0, 0, 0), (320, 360, 960, 3))
 
-    if cutoff is None:
-        # idk how much this really helps with flickering but if it can't find all the cards in the hand limit it goes to
-        # an old scan less than 3 seconds old
-        if len(sortedDetectedCards["middle"]) + len(sortedDetectedCards["lower"]) < save.handLimit:
-            if currentTime - backupDetectedCardsScanTime < 3:
-                sortedDetectedCards = backupDetectedCardsScan
+    # ok I think I finally figured out a way to get the anti flicker working
+    # it checks the bottom, middle, and top separately against an old reference scan
+    # if the old one has more cards and is less than 3 seconds old it defaults to that
+    for section in ["upper", "middle", "lower"]:
+        if len(sortedDetectedCards[section]) < len(backupDetectedCardsScan[section]):
+            if currentTime - backupDetectedCardsScanTime[section] < 3:
+                sortedDetectedCards[section] = backupDetectedCardsScan[section]
         else:
-            backupDetectedCardsScan = sortedDetectedCards
-            backupDetectedCardsScanTime = currentTime
-
+            backupDetectedCardsScan[section] = sortedDetectedCards[section]
+            backupDetectedCardsScanTime[section] = currentTime
 
     return sortedDetectedCards, backupDetectedCardsScan, backupDetectedCardsScanTime, rawFrame
 
@@ -50,6 +57,65 @@ def openCamera(index):
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
     return cap
+
+
+def drawBlindInfoScreen(save, blindInfo, screen, colors, font, origin, mode, chipSymbol):
+    # TODO: Fix this it's dumb
+    blindName = blindInfo[0]
+    blindIndexList = ["Small Blind", "Big Blind", "Boss Blind"]
+    blindIndex = blindIndexList.index(blindName)
+    blindColor = colors.blindColors[blindIndex]
+
+    x, y = origin
+    thickness = 300
+    blindNameCoords = (x + 150, y + 10)
+    blindNameSize = 40
+    blindNameThickness = 40
+    blindNameColor = colors.uiOutline
+
+    blindSpriteSize = (50, 50)
+    blindSpritePosition = (x + 10, y + 105)
+
+    rewardPanelX = x + 70
+    rewardPanelY = y + 100
+    rewardPanelThickness = 220
+    rewardTextX = rewardPanelX + 35
+
+    if mode == "selection":
+        thickness = 150
+        blindNameCoords = (x + 75, y + 10)
+        blindNameSize = 30
+        blindNameThickness = 30
+        blindNameColor = blindColor
+
+        blindSpriteSize = (70, 70)
+        blindSpritePosition = (x + 40, y + 40)
+
+        rewardPanelX = x
+        rewardPanelY = y + 120
+        rewardPanelThickness = 150
+        rewardTextX = rewardPanelX + 20
+    else:
+        drawRect(screen, colors.darkUI, (x, y, thickness, 170), round=5)
+        drawRect(screen, blindColor, (x + 5, y + 50, thickness - 10, 115), round=5)
+    drawRect(screen, blindNameColor, (x + 5, y + 5, thickness - 10, blindNameThickness), round=5)
+    drawText(screen, blindName, font, colors.white, blindNameCoords, "center", blindNameSize)
+
+    screen.blit(getBlindSprite(blindName, blindSpriteSize), blindSpritePosition)
+
+    drawRect(screen, colors.darkUI, (rewardPanelX, rewardPanelY, rewardPanelThickness, 60), round=5)
+    drawText(
+        screen, "Score at least", font, colors.white, (rewardTextX, rewardPanelY + 2),
+        "left", 20)
+    smallerChipSymbol = pygame.transform.scale(chipSymbol, (20, 20))
+    screen.blit(smallerChipSymbol, (rewardPanelX + 5, rewardPanelY + 20))
+    requiredScore = str(save.baseChips * blindInfo[1])
+    drawText(screen, requiredScore, font, colors.red, (rewardPanelX + 30, rewardPanelY + 20), "left",
+             getOptimalTextSize(requiredScore, 30, 180))
+    drawText(screen, "Reward:", font, colors.white, (rewardPanelX + 5, rewardPanelY + 43), "left", 15)
+    blindReward = blindInfo[2]
+    dollarText = "$" * blindReward
+    drawText(screen, dollarText, font, colors.yellow, (rewardPanelX + 55, rewardPanelY + 40), "left", 20)
 
 # TODO: when it's the boss blind the outlines change to the color of the boss blind
 def drawLeftBar(save, font, screen, colors, handType, level, score, chips, mult, camIndex):
@@ -62,28 +128,7 @@ def drawLeftBar(save, font, screen, colors, handType, level, score, chips, mult,
 
 
     if save.state == "playing":
-        # blind info display
-        drawRect(screen, colors.darkUI, (leftBarOrigin, 20, leftBarThickness, 170), round=5)
-        # TODO: Fix this it's dumb
-        blindName = save.blindInfo[0]
-        blindIndexList = ["Small Blind", "Big Blind", "Boss Blind"]
-        blindIndex = blindIndexList.index(blindName)
-        blindColor = colors.blindColors[blindIndex]
-        drawRect(screen, colors.uiOutline, (leftBarOrigin + 5, 25, leftBarThickness - 10, 40), round=5)
-        drawText(screen, blindName, font, colors.white, (leftBarOrigin + 150, 30), "center", 40)
-        drawRect(screen, blindColor, (leftBarOrigin + 5, 70, leftBarThickness - 10, 115), round=5)
-        screen.blit(getBlindSprite(blindName), (leftBarOrigin + 10, 125))
-        drawRect(screen, colors.darkUI, (leftBarOrigin + 70, 120, 220, 60), round=5)
-        drawText(screen, "Score at least", font, colors.white, (leftBarOrigin + 125, 122), "left", 20)
-        smallerChipSymbol = pygame.transform.scale(chipSymbol, (20, 20))
-        screen.blit(smallerChipSymbol, (leftBarOrigin + 75, 140))
-        requiredScore = str(save.requiredScore)
-        drawText(screen, requiredScore, font, colors.red, (leftBarOrigin + 100, 140), "left",
-                 getOptimalTextSize(requiredScore, 30, 180))
-        drawText(screen, "Reward:", font, colors.white, (leftBarOrigin + 75, 163), "left", 15)
-        blindReward = save.blindInfo[2]
-        dollarText = "$" * blindReward
-        drawText(screen, dollarText, font, colors.yellow, (leftBarOrigin + 125, 160), "left", 20)
+        drawBlindInfoScreen(save, save.blindInfo, screen, colors, font, (20, 20), "leftBar", chipSymbol)
 
 
     # round score display
@@ -211,7 +256,7 @@ blindImageDict = {
     "Boss Blind": 30
 }
 
-def getBlindSprite(name):
+def getBlindSprite(name, imageSize):
     blindSprites = Image.open("cardSprites/blindChips.png")
     blindImageIndex = blindImageDict[name]
     size = 34
@@ -219,7 +264,7 @@ def getBlindSprite(name):
     bottomRightY = (blindImageIndex + 1) * size
     croppedImage = blindSprites.crop((0, topLeftY, size, bottomRightY))
     formattedImage = pygame.image.frombytes(croppedImage.tobytes(), (size, size), "RGBA")
-    return pygame.transform.scale(formattedImage, (50, 50))
+    return pygame.transform.scale(formattedImage, imageSize)
 
 def drawButtons(save, screen, colors, font):
     buttonY = 580
@@ -254,12 +299,14 @@ def drawCardCounter(save, font, screen, colors, foundCards):
     mode = "handFinder"
     ind = 0
     handCards = prunedFoundCards["middle"]
+    otherCards = []
 
     for card in handCards:
         cardType = type(card).__name__
         if cardType != "Card":
             mode = "analysis"
             cardToAnalyze = card
+        else: otherCards.append(card)
         ind += 1
 
     # probably should have called them these from the start but I probably would forget
@@ -286,7 +333,7 @@ def drawCardCounter(save, font, screen, colors, foundCards):
         iterator += 133
 
     if mode == "analysis":
-        return cardToAnalyze, None
+        return cardToAnalyze, otherCards
     else:
         handType = findBestHand(handCards)[0]
         handInfo = save.handLevels[handType]
@@ -303,22 +350,93 @@ def drawAnalysisPopup(save, font, screen, colors, cardToAnalyze):
 
 # TODO: Figure out a way to get this displaying correctly if there's duplicate cards
 def displayChainEvent(event, screen, font):
+    card = event.card
+    if isinstance(event.card, tuple):
+        topLeftX, topLeftY = card
+        newX = topLeftX + 57
+        newY = topLeftY + 80
+        rect = (newX - 60, newY - 20, 120, 40)
 
-    # this is weird since the camera gets halved in size and offset 320 pixels to the right
-    cardOrigin = event.card.coords
-    newX = int((cardOrigin[0]/2) + 320)
-    newY = int(cardOrigin[1]/2)
+    else:
+        # this is weird since the camera gets halved in size and offset 320 pixels to the right
+        cardOrigin = card.coords
+        newX = int((cardOrigin[0]/2) + 320)
+        newY = int(cardOrigin[1]/2)
+        rect = (newX - 20, newY - 20, 40, 40)
 
-    drawRect(screen, event.color, (newX - 20, newY - 20, 40, 40), round=7)
+    drawRect(screen, event.color, rect, round=7)
     drawText(screen, event.text, font, (255, 255, 255), (newX, newY-10), "center")
 
 
-def drawBlindSelectScreen(save, colors):
-    return
-    # selectedBlind = save.blindIndex
-    # drawRect(screen, colors.darkUI)
+def drawBlindSelectScreen(save, font, screen, colors):
+    blindButtons = []
+    blindIndexToBlindInfo = [("Small Blind", 1, 3), ("Big Blind", 1.5, 4), ("Boss Blind", 2, 5)]
+    def drawBlindPopup(save, font, screen, colors, startX, selectionStatus, color, blindInfo):
+        y = 300
+        selectButtonColor = colors.yellow
+        if selectionStatus != "Select":
+            y = 350
+            selectRect = (startX + 30, y + 25, 140, 30)
+            selectButtonColor = colors.darkUI
+            if selectionStatus == "Defeated":
+                color = colors.darkUI
+        else:
+            selectRect = (startX + 30, y + 25, 140, 30)
+            blindButtons.append({
+                "name": "select",
+                "rect": selectRect
+            })
 
-def drawShop(save, font, screen, colors):
+        drawRect(screen, color, (startX, y, 200, 500), round=8)
+        drawRect(screen, colors.lightUI, (startX + 5, y + 5, 190, 490), round=8)
+        drawRect(screen, colors.lighterUI, (startX + 10, y + 10, 180, 250), round=8)
+        drawRect(screen, colors.lightUI, (startX + 15, y + 15, 170, 240), round=8)
+
+        drawRect(screen, selectButtonColor, selectRect, round=8)
+        drawText(screen, selectionStatus, font, colors.white, (startX + 100, y + 27))
+
+        drawBlindInfoScreen(
+            save, blindInfo, screen, colors, font, (startX + 25, y + 55), "selection",
+            pygame.image.load("cardSprites/white stake.png"))
+
+        if blindInfo[0] == "Boss Blind":
+            drawText(screen, "Up The Ante", font, colors.yellow, (startX + 100, y + 265), size=30)
+            drawText(screen, "Raise All Blinds", font, colors.white, (startX + 100, y + 290))
+            drawText(screen, "Refresh Blinds", font, colors.white, (startX + 100, y + 315))
+        else:
+            drawText(screen, "or", font, colors.white, (startX + 100, y + 260))
+            drawRect(screen, colors.darkUI, (startX + 20, y + 290, 160, 50), round=8)
+            skipRect = (startX + 60, y + 295, 115, 40)
+            if selectionStatus == "Select":
+                skipButtonColor = colors.red
+                blindButtons.append({
+                    "name": "skip",
+                    "rect": skipRect
+                })
+            else:
+                skipButtonColor = colors.lightUI
+            drawRect(screen, skipButtonColor, skipRect, round=8)
+            drawText(screen, "Skip Blind", font, colors.white, (startX + 75, y + 303), "left")
+
+
+    startX = 350
+
+    for i in range(3):
+        selectionStatus = "Upcoming"
+        if i == save.blindIndex:
+            selectionStatus = "Select"
+        elif i < save.blindIndex:
+            selectionStatus = "Defeated"
+        drawBlindPopup(save, font, screen, colors, startX, selectionStatus, colors.blindColors[i],
+                       blindIndexToBlindInfo[i])
+        startX += 220
+
+    return blindButtons
+
+
+def drawShop(save, font, screen, colors, mousePos):
+    shop = save.shop
+
     # backgrounds
     shopOriginX = 350
     shopOriginY = 340
@@ -341,67 +459,222 @@ def drawShop(save, font, screen, colors):
     drawRect(screen, colors.lightUI, (shopOriginX + 355, vouchersAndPacksY, 325, shopItemHeight + 10), round=8)
 
     # buttons
+    shopButtons = []
     nextRoundRect = (shopOriginX + 20, shopOriginY + 20, 180, 80)
     drawRect(screen, colors.red, nextRoundRect, round=8)
     drawText(screen, "Next Round", font, colors.white, (shopOriginX + 50, shopOriginY + 45), "left")
+    shopButtons.append({
+        "name": "Next Round",
+        "rect": nextRoundRect
+    })
 
     rerollRect = (shopOriginX + 20, shopOriginY + 110, 180, 80)
     drawRect(screen, colors.green, rerollRect, round=8)
     drawText(screen, "Reroll", font, colors.white, (shopOriginX + 85, shopOriginY + 120), "left", 20)
-    rerollText = f"${save.shop.rerollCost}"
+    rerollText = f"${shop.rerollCost}"
     drawText(screen, rerollText, font, colors.white, (shopOriginX + 105, shopOriginY + 145), "center", 40)
+    shopButtons.append({
+        "name": "Reroll",
+        "rect": rerollRect
+    })
 
-    shop = save.shop
-
-    def generateShopItem(coords, rawImg, price, pack=False):
+    # TODO: merge generateShopItem and generatePackItem at some point they're super similar
+    def generateShopItem(coords, rawImg, price, type, index, mousePos, item):
         x, y = coords
         drawRect(screen, colors.darkUI, (x + 20, y - 30, 74, 40), round=8)
         drawRect(screen, colors.lightUI, (x + 25, y - 25, 64, 25), round=8)
         drawText(screen, f"${price}", font, colors.yellow, (x + 57, y - 25))
 
-        if pack:
+        if type == "packs":
             size = (690, 930)
         else:
             size = (690, 966)
         cardImg = pygame.image.frombytes(rawImg.tobytes(), size, "RGBA")
         cardImg = pygame.transform.scale(cardImg, (114, shopItemHeight))
-        screen.blit(cardImg, (x, y + 5))
+        origin = (x, y + 5)
+        screen.blit(cardImg, origin)
+        rect = origin + (114, shopItemHeight)
+        shopButtons.append({
+            "name": "buy",
+            "rect": rect,
+            "type": type,
+            "index": index,
+            "coords": coords
+        })
+        # if the mouse is hovering over the shop item it displays a description
+        if pygame.Rect(rect).collidepoint(mousePos):
+            drawDescription(screen, font, save, colors, x, y, shopItemHeight, item)
 
-    # TODO: Double check the math here idk why it's not centered without the +50
-    cardCenterX = shopOriginX + 340 + 57 + 50
-    cardStarterX = cardCenterX - (60 * len(shop.cards))
+    # cards
 
+    cardCenterX = shopOriginX + 330 + 57
+    evenOffset = 0
+    amountOfCards = 0
+    for item in shop.cards:
+        if item is not None:
+            amountOfCards += 1
+    if amountOfCards % 2 == 0:
+        evenOffset = 60
+    cardStarterX = cardCenterX - (120 * (amountOfCards // 2)) + evenOffset
 
-    for card, price in shop.cards:
-        # idk how much this helps performance since it's not like generating the images is super expensive but whatever
-        if card in shop.images.keys():
-            rawImage = shop.images[card]
-        else:
-            rawImage = createImageFromCard(card)
-            shop.images[card] = rawImage
+    cardIndex = 0
+    for shopItem in shop.cards:
+        if shopItem is not None:
+            card = shopItem.item
+            price = shopItem.price
+            # idk how much this helps performance since it's not like generating the images is super expensive but whatever
+            if card in shop.images.keys():
+                rawImage = shop.images[card]
+            else:
+                rawImage = createImageFromCard(card)
+                shop.images[card] = rawImage
 
-        generateShopItem((cardStarterX, cardForSaleY), rawImage, price)
-        cardStarterX += 120
-
-    packCenterX = shopOriginX + 640
-    packStarterX = packCenterX - (120 * len(shop.packs))
-
-    for pack, price in shop.packs:
-        if pack in shop.images.keys():
-            rawImage = shop.images[pack]
-        else:
-            rawImage = createPackImage(pack)
-            shop.images[pack] = rawImage
-
-        generateShopItem((packStarterX, vouchersAndPacksY), rawImage, price, True)
-        packStarterX += 120
+            generateShopItem(
+                (cardStarterX, cardForSaleY), rawImage, price, "cards", cardIndex, mousePos, card)
+            cardStarterX += 120
+        cardIndex += 1
 
     # packs
+    packCenterX = shopOriginX + 400 + 57
+    evenOffset = 0
+    amountOfPacks = 0
+    for item in shop.packs:
+        if item is not None:
+            amountOfPacks += 1
+    if amountOfPacks % 2 == 0:
+        evenOffset = 60
+    packStarterX = packCenterX - (120 * (amountOfPacks // 2 )) + evenOffset
+    packIndex = 0
 
-    # vouchers
+    for shopItem in shop.packs:
+        if shopItem is not None:
+            pack = shopItem.item
+            price = shopItem.price
+            if pack in shop.images.keys():
+                rawImage = shop.images[pack]
+            else:
+                rawImage = createPackImage(pack)
+                shop.images[pack] = rawImage
 
+            generateShopItem(
+                (packStarterX, vouchersAndPacksY), rawImage, price, "packs", packIndex, mousePos, pack)
+            packStarterX += 120
+        packIndex += 1
 
+    # vouchers (eventually)
 
+    return shopButtons
+
+def drawPackButtons(save, items, pickAmount, font, screen, colors, mousePos):
+    packItemHeight = 160
+    packButtons = []
+
+    def generatePackItem(coords, rawImg, index, item):
+        x, y = coords
+        cardImg = pygame.image.frombytes(rawImg.tobytes(), (690, 966), "RGBA")
+        cardImg = pygame.transform.scale(cardImg, (114, packItemHeight))
+        origin = (x, y)
+        screen.blit(cardImg, origin)
+        rect = origin + (114, packItemHeight)
+        packButtons.append({
+            "name": "buy",
+            "rect": rect,
+            "index": index,
+            "coords": coords
+        })
+        # if the mouse is hovering over the shop item it displays a description
+        if pygame.Rect(rect).collidepoint(mousePos):
+            drawDescription(screen, font, save, colors, x, y, packItemHeight, item)
+
+    cardCenterX = 600
+    evenOffset = 0
+    if len(items) % 2 == 0:
+        evenOffset = 60
+    cardStarterX = cardCenterX - (120 * (len(items) // 2)) + evenOffset
+    cardIndex = 0
+
+    for item in items:
+        if item in save.images.keys():
+            rawImage = save.images[item]
+        else:
+            rawImage = createImageFromCard(item)
+            save.images[item] = rawImage
+
+        generatePackItem((cardStarterX, 550), rawImage, cardIndex, item)
+        cardStarterX += 120
+        cardIndex += 1
+
+    skipRect = (cardStarterX, 580, 50, 40)
+    drawRect(screen, colors.lightUI, skipRect, round=8)
+    drawText(screen, "Skip", font, colors.white, (cardStarterX + 25, 590))
+    packButtons.append({
+        "name": "skip",
+        "rect": skipRect
+    })
+    return packButtons
+
+# TODO: Eventually display editions/seals/enhancements and stuff
+# TODO: Spectrals and vouchers support
+
+def drawDescription(screen, font, save, colors, x, y, packItemHeight, item):
+    drawRect(screen, colors.lightUI, (x - 210, y + 5, 200, packItemHeight), colors.white, round=8)
+    drawText(screen, item.toString(mode="name"), font, colors.white, (x - 105, y + 10))
+    drawRect(screen, colors.white, (x - 205, y + 40, 190, packItemHeight - 80), round=8)
+    if isinstance(item, Planet):
+        descriptionRawText = item.toString("description", save)
+        bottomColor = colors.teal
+        bottomText = "Planet"
+    else:
+        descriptionRawText = item.toString("description")
+    descriptionText = textwrap.fill(descriptionRawText, 20)
+    drawText(screen, descriptionText, font, colors.darkUI, (x - 105, y + 50), size=20)
+    if isinstance(item, Pack):
+        bottomColor = colors.purple
+        bottomText = "Booster"
+    elif isinstance(item, Tarot):
+        bottomColor = colors.lightPurple
+        bottomText = "Tarot"
+    elif isinstance(item, Spectral):
+        bottomColor = colors.blue
+        bottomText = "Spectral"
+    elif isinstance(item, Joker):
+        bottomText = item.rarity
+        if bottomText == "Common":
+            bottomColor = colors.blue
+        elif bottomText == "Uncommon":
+            bottomColor = colors.green
+        elif bottomText == "Rare":
+            bottomColor = colors.red
+        elif bottomText == "Legendary":
+            bottomColor = colors.lightPurple
+    if not isinstance(item, Card):
+        drawRect(screen, bottomColor, (x - 165, y + 130, 110, 25), round=8)
+        drawText(screen, bottomText, font, colors.white, (x-105, y + 130))
+
+def drawImmediateUsePopup(save, font, screen, colors, item):
+    drawRect(screen, colors.lightUI, (375, 375, 650, 300), colors.uiOutline, round=8)
+    drawRect(screen, colors.darkUI, (380, 380, 640, 290), round=8)
+    drawText(screen, f"Use {item.toString(mode="name")} immediately?", font, colors.white, (700, 400))
+
+    immediateUseButtons = []
+    yesRect = (390, 560, 200, 100)
+    drawRect(screen, colors.green, yesRect, round=8)
+    drawText(screen, "Yes", font, colors.white, (490, 600), size=40)
+    immediateUseButtons.append({
+        "name": "yes",
+        "rect": yesRect
+    })
+
+    if len(save.consumables) < save.consumablesLimit:
+        noRect = (810, 560, 200, 100)
+        drawRect(screen, colors.red, noRect, round=8)
+        drawText(screen, "No", font, colors.white, (920, 600), size=40)
+        immediateUseButtons.append({
+            "name": "no",
+            "rect": noRect
+        })
+
+    return immediateUseButtons
 
 def drawRect(screen, color, rect, outline=None, round=None):
     if round is not None:

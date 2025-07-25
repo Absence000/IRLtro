@@ -1,7 +1,7 @@
 from subscripts.planetCards import Planet, generateShuffledListOfUnlockedPlanetCards
 from subscripts.spectralCards import Spectral
 from subscripts.tarotCards import Tarot, generateShuffledListOfFinishedTarotCards
-from subscripts.jokers import Joker, generateRandomWeightedJoker
+from subscripts.jokers import Joker, generateRandomWeightedJokers
 from subscripts.spacesavers import *
 import random
 
@@ -88,6 +88,10 @@ class Card:
     def getValue(self):
         numList = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"]
         return numList.index(self.number) + 2
+
+    # if I need to modify them in place
+    def copy(self):
+        return Card(self.toDict())
 
 # takes in a dictionary of card values and returns a Card object
 def createCardFromDict(cardDict):
@@ -189,8 +193,20 @@ def binaryToPlayingCardNumber(binary):
 
 # TODO: get this working with vouchers eventually
 # TODO: consumable blocking!
-def generateWeightedRandomCard(subset, save):
+def generateWeightedRandomCards(subset, save, amount):
+    # TODO: Showman stuff for packs
     if subset == "playing":
+        return generateListOfRandomPlayingCards(save, amount)
+    elif subset == "tarot":
+        return generateShuffledListOfFinishedTarotCards()[0:amount]
+    elif subset == "planet":
+        return generateShuffledListOfUnlockedPlanetCards(save)[0:amount]
+    elif subset == "joker":
+        return generateRandomWeightedJokers(save, amount)
+
+def generateListOfRandomPlayingCards(save, amount):
+    cardList = []
+    for i in range(amount):
         # editions: 1.2% for poly, 2.8% for holo, 4% for foil
         editionOptions = ["polychrome", "holographic", "foil", None]
         editionProbabilities = [0.012, 0.028, 0.04, 0.92]
@@ -219,21 +235,14 @@ def generateWeightedRandomCard(subset, save):
         random.shuffle(suitList)
 
         # the card number and suit is completely random
-        return Card({
-            "subset": subset,
+        cardList.append(Card({
             "number": numList[0],
             "suit": suitList[0],
             "edition": edition,
             "enhancement": enhancement,
             "seal": seal
-        })
-    elif subset == "tarot":
-        return generateShuffledListOfFinishedTarotCards()[0]
-    elif subset == "planet":
-        return generateShuffledListOfUnlockedPlanetCards(save)[0]
-    elif subset == "joker":
-        return generateRandomWeightedJoker(save)
-
+        }))
+    return cardList
 
 # I have pointers to differentiate the consumable types but I don't need them for cards or jokers since they have
 # unique keys

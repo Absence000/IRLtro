@@ -418,77 +418,70 @@
         }
     ],
     "ante": 1,
-    "blindIndex": 1,
+    "blindIndex": 2,
     "state": "shop",
-    "hands": 3,
+    "hands": 2,
     "discards": 4,
     "shop": {
         "cards": [
             [
                 [
-                    "Walkie Talkie",
+                    "The Family",
                     {
-                        "type": "chipsAndMult",
-                        "chip": 10,
-                        "mult": 4,
-                        "condition": "numbers",
-                        "numbers": [
-                            "10",
-                            "4"
-                        ],
+                        "type": "multmult",
+                        "multmult": 4,
+                        "condition": "hand",
+                        "hand": "Four Of A Kind",
                         "finished": true,
                         "position": [
-                            8,
-                            15
+                            7,
+                            4
                         ],
-                        "id": 101,
-                        "cost": 4,
-                        "rarity": "Common",
-                        "description": "Each played 10 or 4 gives +10 Chips and +4 Mult when scored",
+                        "id": 133,
+                        "cost": 8,
+                        "rarity": "Rare",
+                        "description": "x4 Mult if played hand contains a Four Of A Kind",
                         "additionalSellValue": 0,
                         "edition": null
                     }
                 ],
-                4
+                8
             ],
             [
                 [
-                    "Devious Joker",
+                    "8 Ball",
                     {
-                        "type": "chip",
-                        "condition": "hand",
-                        "hand": "Straight",
-                        "chip": 100,
+                        "type": "effect",
                         "finished": true,
                         "position": [
-                            3,
-                            14
+                            0,
+                            5
                         ],
-                        "id": 14,
-                        "cost": 4,
+                        "id": 26,
+                        "cost": 5,
                         "rarity": "Common",
-                        "description": "+100 Chips if a played hand contains a Straight",
+                        "description": "1 in 4 chance for each played 8 to create a Tarot card when scored (Must have room)",
                         "additionalSellValue": 0,
                         "edition": null
                     }
                 ],
-                4
+                5
             ]
         ],
         "packs": [
             [
                 {
-                    "subset": "celestial",
-                    "size": "jumbo"
+                    "subset": "arcana",
+                    "size": "normal"
                 },
-                6
+                4
             ],
             [
                 {
-                    "subset": "celestial",
-                    "size": "jumbo"
+                    "subset": "standard",
+                    "size": "normal"
                 },
-                6
+                4
             ]
         ],
         "vouchers": [
@@ -496,7 +489,7 @@
         ],
         "rerollCost": 5
     },
-    "money": 6,
+    "money": 11,
     "handLevels": {
         "High Card": {
             "level": 1,
@@ -569,19 +562,19 @@
     "consumablesLimit": 2,
     "hand": [
         {
+            "number": "7",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "H",
+            "retriggeredBy": []
+        },
+        {
             "number": "J",
             "enhancement": null,
             "edition": null,
             "seal": null,
             "suit": "S",
-            "retriggeredBy": []
-        },
-        {
-            "number": "7",
-            "enhancement": null,
-            "edition": null,
-            "seal": null,
-            "suit": "D",
             "retriggeredBy": []
         },
         {
@@ -596,30 +589,14 @@
     "handLimit": 8,
     "jokers": [],
     "jokerLimit": 5,
-    "requiredScore": 300,
+    "requiredScore": 600,
     "blindInfo": [
-        "Small Blind",
-        1,
-        3
+        "Boss Blind",
+        2,
+        5
     ],
     "discardedCards": [],
     "playedCards": [
-        {
-            "number": "A",
-            "enhancement": null,
-            "edition": null,
-            "seal": null,
-            "suit": "D",
-            "retriggeredBy": []
-        },
-        {
-            "number": "10",
-            "enhancement": null,
-            "edition": null,
-            "seal": null,
-            "suit": "D",
-            "retriggeredBy": []
-        },
         {
             "number": "J",
             "enhancement": null,
@@ -633,7 +610,7 @@
             "enhancement": null,
             "edition": null,
             "seal": null,
-            "suit": "H",
+            "suit": "C",
             "retriggeredBy": []
         },
         {
@@ -641,11 +618,27 @@
             "enhancement": null,
             "edition": null,
             "seal": null,
-            "suit": "S",
+            "suit": "C",
+            "retriggeredBy": []
+        },
+        {
+            "number": "A",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "C",
+            "retriggeredBy": []
+        },
+        {
+            "number": "10",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "C",
             "retriggeredBy": []
         }
     ],
-    "score": 324,
+    "score": 1208,
     "round": 1,
     "irl": true
 }

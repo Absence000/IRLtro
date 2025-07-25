@@ -8,8 +8,12 @@ class Colors:
         self.yellow = (245, 179, 68)
         self.uiOutline = (125, 62, 62)
         self.darkUI = (27, 38, 40)
-        self.lightUI = (59, 80, 85)
+        self.lightUI = (43, 61, 63)
+        self.lighterUI = (60, 76, 79)
         self.blindColors = [(15, 67, 96), (83, 69, 26), (87, 33, 34)]
+        self.teal = (1, 167, 199)
+        self.purple = (76, 74, 137)
+        self.lightPurple = (159, 116, 203)
 
     # TODO: make multiple colors for each boss blind
     def switchOutline(self, save):

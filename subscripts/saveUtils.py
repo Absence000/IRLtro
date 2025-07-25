@@ -1,9 +1,15 @@
+from oldCommandLineTesting import blindIndexToBlindInfo
 from subscripts.spacesavers import *
 from subscripts.jokers import Joker
 from subscripts.cardUtils import Card
 from subscripts.planetCards import Planet
 from subscripts.tarotCards import Tarot
 from subscripts.shop import Shop, createShopFromDict
+
+anteBaseChipsList = [100, 300, 800, 2000, 5000, 11000, 20000, 35000, 50000, 110000, 560000, 72000000, 300000000,
+                     47000000000, 2.9E+13, 7.7E+16, 8.6E+20, 4.2E+25, 9.2E+30, 9.2E+36, 4.3E+43, 9.7E+50, 1.0E+59,
+                     5.8E+67, 1.6E+77, 2.4E+87, 1.9E+98, 8.4E+109, 2.0E+122, 2.7E+135, 2.1E+149, 9.9E+163, 2.7E+179,
+                     4.4E+195, 4.4E+212, 2.8E+230, 1.1E+249, 2.7E+268, 4.5E+288, 4.8E+309]
 
 class Save:
     def __init__(self, saveDict):
@@ -35,8 +41,10 @@ class Save:
             jokers.append(Joker(joker))
         self.jokers = jokers
         self.jokerLimit = saveDict["jokerLimit"]
-        self.requiredScore = saveDict["requiredScore"]
         self.blindInfo = saveDict["blindInfo"]
+        print(self.blindInfo)
+        self.baseChips = anteBaseChipsList[self.ante]
+        self.requiredScore = self.baseChips * self.blindInfo[1]
 
         discardedCards = []
         for card in saveDict["discardedCards"]:
@@ -50,6 +58,8 @@ class Save:
         self.score = saveDict["score"]
         self.round = saveDict["round"]
         self.irl = saveDict["irl"]
+        # TODO: find a smarter way to store the images I need to load for card packs
+        self.images = {}
 
 
     def toDict(self):
@@ -117,6 +127,32 @@ class Save:
                 return True
         return False
 
+    def nextBlind(self):
+        if self.blindIndex == 2:
+            self.ante += 1
+            self.blindIndex = 0
+            self.baseChips = anteBaseChipsList[self.ante]
+            self.blindInfo = ("Small Blind", 1, 3)
+        else:
+            self.blindIndex += 1
+            self.blindInfo = [("Small Blind", 1, 3), ("Big Blind", 1.5, 4), ("Boss Blind", 2, 5)][self.blindIndex]
+        self.requiredScore = self.baseChips * self.blindInfo[1]
+
+    def replaceCardInDeck(self, oldCard, newCard):
+        for i, card in enumerate(self.deck):
+            if (card.number == oldCard.number and
+                    card.suit == oldCard.suit and
+                    card.enhancement == oldCard.enhancement and
+                    card.edition == oldCard.edition and
+                    card.seal == oldCard.seal):
+                if newCard is not None:
+                    self.deck[i] = newCard
+                    return
+                else:
+                    cardIndex = i
+        # TODO: have some sort of error handling here idk
+        del self.deck[cardIndex]
+
 def createSaveFromDict(saveDict):
     return Save(saveDict)
 
@@ -163,7 +199,11 @@ def createBlankSave(deck, irl):
         "jokers": [],
         "jokerLimit": 5,
         "requiredScore": 0,
-        "blindInfo": 0,
+        "blindInfo": [
+            "Small Blind",
+            1,
+            3
+        ],
         "discardedCards": [],
         "playedCards": [],
         "score": 0,

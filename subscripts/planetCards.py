@@ -8,12 +8,14 @@ class Planet:
         self.negative = negative
         self.coords = None
 
-    def toString(self, mode=None):
+    def toString(self, mode, save=None):
         isNegative = ""
         if self.negative:
             isNegative = "Negative "
-        if mode is None:
-            return f"{isNegative}{self.name} (Upgrade {openjson('consumables/planetDict')[self.name]['hand']})"
+        if mode == "description":
+            handType = openjson('consumables/planetDict')[self.name]['hand']
+            handInfo = save.handLevels[handType]
+            return f"(lvl.{handInfo['level']}) Level up {handType}\n+{handInfo['chips']} Chips\n+{handInfo['mult']} mult"
         else:
             return f"{isNegative}{self.name}"
 

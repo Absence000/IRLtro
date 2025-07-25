@@ -44,8 +44,8 @@ def clearPrintFolder():
         except Exception as e:
             print(f"Error deleting {file_path}: {e}")
 
-def prepareCardForPrinting(card, keep=None):
-    if keep is None:
+def prepareCardForPrinting(card, keep=True):
+    if not keep:
         clearPrintFolder()
     lookupTable = openjson("cardCreationAndRecognition/cardToArcuo.json", True)
     createTaggedCardImage(card, lookupTable)

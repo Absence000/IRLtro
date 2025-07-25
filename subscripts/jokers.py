@@ -31,6 +31,8 @@ class Joker:
             editionIndicator = f"{self.edition.capitalize()} "
         if mode is None:
             return (f"{editionIndicator}{self.name}: {self.description}")
+        elif mode is "description":
+            return self.description
         else:
             return f"{editionIndicator}{self.name}"
 
@@ -70,16 +72,26 @@ def generateShuffledListOfFinishedJokersByRarity(rarity, save):
     random.shuffle(finishedJokers)
     return finishedJokers
 
-def generateRandomWeightedJoker(save):
-    rarities = ["Common", "Uncommon", "Rare"]
-    weights = [70, 25, 5]
-    rarity = random.choices(rarities, weights)[0]
-    chosenJoker = generateShuffledListOfFinishedJokersByRarity(rarity, save)[0]
+# TODO: I think the main game classifies duplicate jokers as type regardless of edition but make sure
+def generateRandomWeightedJokers(save, amount):
+    jokerList = []
+    while len(jokerList) < amount:
+        rarities = ["Common", "Uncommon", "Rare"]
+        weights = [70, 25, 5]
+        rarity = random.choices(rarities, weights)[0]
+        chosenJoker = generateShuffledListOfFinishedJokersByRarity(rarity, save)[0]
 
-    # edition chances:
-    # 0.3% negative, 0.3% polychrome, 1.4% holographic, 2% foil
-    # TODO: Put code for Hone and Glow Up here
-    editions = [None, "negative", "polychrome", "holographic", "foil"]
-    editionChances = [96, 0.3, 0.3, 1.4, 2]
-    chosenJoker.edition = random.choices(editions, editionChances)[0]
-    return chosenJoker
+        # edition chances:
+        # 0.3% negative, 0.3% polychrome, 1.4% holographic, 2% foil
+        # TODO: Put code for Hone and Glow Up here
+        editions = [None, "negative", "polychrome", "holographic", "foil"]
+        editionChances = [96, 0.3, 0.3, 1.4, 2]
+        chosenJoker.edition = random.choices(editions, editionChances)[0]
+        isDuplicate = False
+        for joker in jokerList:
+            if joker.name == chosenJoker.name:
+                isDuplicate = True
+        if not isDuplicate:
+            jokerList.append(chosenJoker)
+
+    return jokerList
