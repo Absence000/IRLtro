@@ -345,8 +345,18 @@ def setOpacity(image, amnt):
 # createImageFromCard(Card(subset="playing", number="A", suit="H", edition="foil"))
 def createTaggedCardImage(card, lookupTable):
     cardImage = createImageFromCard(card)
-    lookupIndex = lookupTable.index(card.toBinary())
+    alreadyPrinted = openjson("printedCards")
+
+    iterator = 0
+    for binary in lookupTable:
+        if binary == card.toBinary() and iterator not in alreadyPrinted:
+            lookupIndex = iterator
+            break
+        iterator += 1
+
+    # should never return an error, right?
     generateBoardForCard(lookupIndex)
+
     fiducialImage = Image.open("testBoard.png")
 
     cardImage.paste(fiducialImage, (564, 50))
@@ -371,6 +381,10 @@ def createTaggedCardImage(card, lookupTable):
 
     background.paste(cardImage, (paste_x, paste_y), cardImage)
     background.save(f"print/{cardName}.png")
+
+    sentToPrinter = openjson("sentToPrinter")
+    sentToPrinter.append(lookupIndex)
+    savejson("sentToPrinter", sentToPrinter)
 
 packCoordsDict = {
     "arcana": {
@@ -419,72 +433,47 @@ def createPackImage(pack):
 
 # these things don't work rn bc of circular imports but I only needed to run them once so who cares
 
-def generateCardPairingList():
-    iterator = 0
-    # pairList = openjson("cardToArcuo old.json", True)
-    pairList = []
-    # playing cards (8320)
-    for suit in ["S", "C", "H", "D"]:
-        for number in ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"]:
-            for enhancement in [None, "bonus", "mult", "wild", "glass", "steel", "gold", "lucky"]:
-                for edition in [None, "foil", "holographic", "polychrome"]:
-                    for seal in [None, "gold", "red", "blue", "purple"]:
-                        card = Card({
-                            "suit": suit,
-                            "number": number,
-                            "enhancement": enhancement,
-                            "edition": edition,
-                            "seal": seal
-                        })
-                        pairList.append(card.toBinary())
-    # stone cards (they don't store numbers, so I'm storing them separate from playing cards to save space) (20)
-    for edition in [None, "foil", "holographic", "polychrome"]:
-        for seal in [None, "gold", "red", "blue", "purple"]:
-            card = Card({
-                "suit": "A",
-                "number": "S",
-                "enhancement": "stone",
-                "edition": edition,
-                "seal": seal
-            })
-            pairList.append(card.toBinary())
-    # tarot cards
-    tarotDict = openjson("consumables/tarotDict")
-    for name in tarotDict.keys():
-        for negative in [True, False]:
-            tarot = Tarot(name, negative)
-            pairList.append(tarot.toBinary())
-    # planet cards
-    planetDict = openjson("consumables/planetDict")
-    for name in planetDict.keys():
-        for negative in [True, False]:
-            planet = Planet(name, negative)
-            pairList.append(planet.toBinary())
-    # spectral cards
-    spectralDict = openjson("consumables/spectralDict")
-    for name in spectralDict.keys():
-        for negative in [True, False]:
-            spectral = Spectral(name, negative)
-            pairList.append(spectral.toBinary())
-    # jokers
-    jokerDict = openjson("jokerDict")
-    for jokerData in jokerDict.items():
-        for edition in [None, "foil", "holographic", "polychrome", "negative"]:
-            joker = Joker(jokerData, edition)
-            pairList.append(joker.toBinary())
-    savejson("cardToArcuo old.json", pairList, True)
-
-
-def makeStandardDeck():
-    suits = ["S", "C", "D", "H"]
-    values = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"]
-    for suit in suits:
-        for value in values:
-            createTaggedCardImage(Card({
-                "number": value,
-                "suit": suit
-            }), openjson("cardCreationAndRecognition/cardToArcuo old.json", True))
-    print("done")
+# def generateCardPairingList():
+#     iterator = 0
+#     # pairList = openjson("cardToArcuo old.json", True)
+#     pairList = []
+#     # playing cards (8320, 160/card)
+#     for suit in ["S", "C", "H", "D"]:
+#         for number in ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"]:
+#             for i in range(160):
+#                         card = Card({
+#                             "suit": suit,
+#                             "number": number
+#                         })
+#                         pairList.append(card.toBinary())
+#     # jokers (8/joker, 1200)
+#     jokerDict = openjson("jokerDict")
+#     for jokerData in jokerDict.items():
+#         for i in range(8):
+#             joker = Joker(jokerData, edition)
+#             pairList.append(joker.toBinary())
+#
+#     # stone cards (480)
+#     for i in range(480):
+#             card = Card({
+#                 "suit": "A",
+#                 "number": "S",
+#                 "enhancement": "stone"
+#             })
+#             pairList.append(card.toBinary())
+#     savejson("cardToArcuo final.json", pairList, True)
+#
+#
+# def makeStandardDeck():
+#     suits = ["S", "C", "D", "H"]
+#     values = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"]
+#     for suit in suits:
+#         for value in values:
+#             createTaggedCardImage(Card({
+#                 "number": value,
+#                 "suit": suit
+#             }), openjson("cardCreationAndRecognition/cardToArcuo old.json", True))
+#     print("done")
 
 # createTaggedCardImage(Card(subset="playing", suit="C", number="2"),
 #                       openjson("cardToArcuo old.json", True))

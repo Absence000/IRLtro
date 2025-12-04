@@ -35,7 +35,8 @@ class Card:
         # TODO: Figure out why some of them are getting None as retriggeredBy but not all of them
         self.retriggeredBy = cardDict.get("retriggeredBy", [])
         self.coords = None
-        self.id = cardDict.get("id")
+        self.id = None
+        self.debuffed = cardDict.get("debuffed", False)
 
     def toDict(self):
         return {
@@ -109,32 +110,45 @@ binaryDict = {
     "nonNumericalNumber": ["J", "Q", "K", "A"]
 }
 
-def createCardFromBinary(id, binary, save):
+def createCardFromBinary(id, binary, save, printedCards, sentToPrinter):
     formattedBinary = str(bin(binary)[2:]).zfill(17)
     subset = binaryToAttribute("subset", formattedBinary[0:3])
     if subset == "Card":
         suit = binaryToAttribute("suit", formattedBinary[11:13])
         number = binaryToPlayingCardNumber(formattedBinary[13:17])
         trueCard = Card({
-            "edition": binaryToAttribute("edition", formattedBinary[3:5]),
-            "enhancement": binaryToAttribute("enhancement", formattedBinary[5:8]),
-            "seal": binaryToAttribute("seal", formattedBinary[8:11]),
             "suit": suit,
-            "number": number
+            "number": number,
+            "debuffed": True
         })
 
         # dynamic remapping:
         # to stop people from needing to scan their entire deck at the start of each round it scans as it goes and
         # stores the ids automatically within the save's deck
+        cardIsAccountedFor = False
         for card in save.deck:
             if card.number == number and card.suit == suit:
                 if card.id is None:
+                    cardIsAccountedFor = True
                     card.id = id
-                    return card
+                    break
                 elif card.id == id:
-                    return card
+                    cardIsAccountedFor = True
+                    break
 
-        return trueCard
+
+        # if this ID has never been seen before it adds it to printedCards.json
+        # fingers crossed it doesn't scan a bunch of things as IDs and clog it up
+        # to stop this, if the new ID was never seen on sentToPrinter.json it won't be added to printedCards.json
+        if id not in printedCards and id in sentToPrinter:
+            printedCards.append(id)
+            print(f"New ID found! {id}")
+            savejson("printedCards", printedCards)
+        if cardIsAccountedFor:
+            return card
+        else:
+            return trueCard
+
 
     elif subset == "stone":
         # since stone cards don't show their suit or number, I just init them as an ace of spades

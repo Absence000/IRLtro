@@ -11,13 +11,17 @@ from subscripts.packs import Pack
 from subscripts.tarotCards import Tarot
 from subscripts.jokers import Joker
 from subscripts.spectralCards import Spectral
+from subscripts.spacesavers import *
 
 def drawWebcamAndReturnFoundCards(cap, lookupTable, screen, backupDetectedCardsScan, backupDetectedCardsScanTime,
                                   currentTime, save, frame, cutoff):
+
+    printedCards = openjson("printedCards")
+    sentToPrinter = openjson("sentToPrinter")
     if frame is None:
         ret, frame = cap.read()
     rawFrame = frame.copy()
-    frame, sortedDetectedCards = pygameDisplayFoundCards(lookupTable, frame, save)
+    frame, sortedDetectedCards = pygameDisplayFoundCards(lookupTable, frame, save, printedCards, sentToPrinter)
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
     # idk why I need to mirror and rotate it but whatever
@@ -58,7 +62,7 @@ def drawWebcamAndReturnFoundCards(cap, lookupTable, screen, backupDetectedCardsS
                 # whatever
                 if isinstance(card, Card):
                     debuffed = False
-                    if card not in save.deck:
+                    if card not in save.deck or card.debuffed:
                         debuffed = True
                     if card.enhancement is not None or card.edition is not None or card.seal is not None or debuffed:
                         x, y = getFixedCardCenter(card.coords)

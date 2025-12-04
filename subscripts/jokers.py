@@ -15,6 +15,7 @@ class Joker:
         self.additionalSellValue = unsortedData.get("additionalSellValue", 0)
         self.edition = edition
         self.coords = None
+        self.debuffed = False
 
     def getSellValue(self):
         # yes I know the joker is stored as a dict and all the other cards are objects deal with it
@@ -31,7 +32,7 @@ class Joker:
             editionIndicator = f"{self.edition.capitalize()} "
         if mode is None:
             return (f"{editionIndicator}{self.name}: {self.description}")
-        elif mode is "description":
+        elif mode == "description":
             return self.description
         else:
             return f"{editionIndicator}{self.name}"

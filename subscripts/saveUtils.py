@@ -155,6 +155,8 @@ class Save:
                     card.edition == oldCard.edition and
                     card.seal == oldCard.seal):
                 if newCard is not None:
+                    if newCard.suit != oldCard.suit or newCard.number != oldCard.number:
+                        newCard.id = None
                     self.deck[i] = newCard
                     return
                 else:

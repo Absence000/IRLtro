@@ -44,13 +44,16 @@ def clearPrintFolder():
         except Exception as e:
             print(f"Error deleting {file_path}: {e}")
 
-# TODO: new system! each card has 160 duplicate slots, use printedIDs.json to check if enough duplicates of the same
-#  card exist, if it needs a new one it prints it with a new unique tag
+
 def prepareCardForPrinting(card, keep=True):
     if not keep:
         clearPrintFolder()
-    lookupTable = openjson("cardCreationAndRecognition/cardToArcuo.json", True)
-    createTaggedCardImage(card, lookupTable)
+    lookupTable = openjson("cardCreationAndRecognition/cardToArcuo final.json", True)
+    prunedCard = card.copy()
+    prunedCard.enhancements = None
+    prunedCard.editions = None
+    prunedCard.seals = None
+    createTaggedCardImage(prunedCard, lookupTable)
 
 def CLDisplayHand(hand):
     handDisplay = []

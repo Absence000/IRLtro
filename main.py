@@ -30,7 +30,7 @@ def main():
     font = pygame.font.Font("cardSprites/font/balatro.otf")
     clock = pygame.time.Clock()
 
-    lookupTable = openjson("cardCreationAndRecognition/cardToArcuo.json", True)
+    lookupTable = openjson("cardCreationAndRecognition/cardToArcuo final.json", True)
     # save = Save(openjson("save"))
 
     # temp blank save stuff
@@ -483,3 +483,5 @@ def main():
         pygame.display.flip()
 
 main()
+
+# printedCards = openjson("printedCards")

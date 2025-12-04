@@ -98,81 +98,13 @@ def get_detected_boards(frame, aruco_dict, parameters):
         unpairedTags = list(unpaired_counter.elements())
     return detected_boards, unpairedTags
 
-
-def displayFoundCards(lookupTable):
-    """
-    Opens the webcam (index 2) and displays the feed, overlaying detected board information.
-    Draws squares around detected markers. Press 'q' to exit.
-    """
-    # Load ArUco dictionary and detector parameters
-    aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_100)
-    parameters = cv2.aruco.DetectorParameters()
-
-    # Open webcam at index 2
-    cap = cv2.VideoCapture(2)
-    if not cap.isOpened():
-        print("⚠️ Error: Could not open webcam.")
-        return
-
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            print("⚠️ Error: Failed to capture frame.")
-            break
-
-        detected_boards = get_detected_boards(frame, aruco_dict, parameters)
-
-        # Detect markers and draw detected squares
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        detector = cv2.aruco.ArucoDetector(aruco_dict, parameters)
-        corners, ids, _ = detector.detectMarkers(gray)
-
-        if ids is not None:
-            cv2.aruco.drawDetectedMarkers(frame, corners, ids)
-
-        finishedCardDetectionList = arcuoToCard(detected_boards, lookupTable)
-
-        # Draw detected boards on the frame
-        for card in finishedCardDetectionList:
-            ids_text = card.toString(mode="fancy")
-            position = (50, 50 + finishedCardDetectionList.index(card) * 30)
-            cv2.putText(frame, ids_text, position, cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
-
-        cv2.imshow("ArUco Board Detection", frame)
-
-        key = cv2.waitKey(1) & 0xFF
-        if key == ord('q'):
-            break
-
-    # Release resources
-    cap.release()
-    cv2.destroyAllWindows()
-
-
-def get_tracking_info():
-    """Returns detected board tracking information from the current webcam frame."""
-    cap = cv2.VideoCapture(2)
-    if not cap.isOpened():
-        print("⚠️ Error: Could not open webcam.")
-        return []
-
-    ret, frame = cap.read()
-    cap.release()
-    if not ret:
-        print("⚠️ Error: Failed to capture frame.")
-        return []
-
-    aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_100)
-    parameters = cv2.aruco.DetectorParameters()
-    return get_detected_boards(frame, aruco_dict, parameters)
-
 def correctID(id):
     if id == 0:
         return "00"
     else:
         return str(id).zfill(2)
 
-def arcuoToCard(detected_boards, lookupTable, unpairedTags, save):
+def arcuoToCard(detected_boards, lookupTable, unpairedTags, save, printedCards, sentToPrinter):
     # this stupid card filtering algorithm took so long jesus
     output = {"upper": [], "middle": [], "lower": [], "unpairedTags": unpairedTags}
 
@@ -186,7 +118,7 @@ def arcuoToCard(detected_boards, lookupTable, unpairedTags, save):
     for (cardID, pos), orientations in grouped.items():
         try:
             binaryValue = lookupTable[cardID]
-            detectedCard = createCardFromBinary(cardID, binaryValue, save)
+            detectedCard = createCardFromBinary(cardID, binaryValue, save, printedCards, sentToPrinter)
             detectedCard.coords = orientations[0]["roughPos"]
             detectedCard.scale = orientations[0]["markerSize"]
         except Exception as e:
@@ -213,33 +145,7 @@ def arcuoToCard(detected_boards, lookupTable, unpairedTags, save):
 
     return output
 
-# unused
-def returnFoundCards():
-    """Captures a single frame from the webcam and returns detected card objects."""
-    cap = cv2.VideoCapture(1)
-    if not cap.isOpened():
-        print("⚠️ Error: Could not open webcam.")
-        return []
-
-    ret, frame = cap.read()
-    cap.release()
-
-    if not ret:
-        print("⚠️ Error: Failed to capture frame.")
-        return []
-
-    frame = np.rot90(frame, k=1)
-    frame = np.ascontiguousarray(frame)  # idk why but I need this or it'll break the aruco detector when it rotates
-
-    # Detect ArUco boards
-    aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_100)
-    parameters = cv2.aruco.DetectorParameters()
-    detected_boards = get_detected_boards(frame, aruco_dict, parameters)
-    return arcuoToCard(detected_boards, openjson("cardCreationAndRecognition/cardToArcuo.json", True)
-)
-
-
-def pygameDisplayFoundCards(lookupTable, frame, save):
+def pygameDisplayFoundCards(lookupTable, frame, save, printedCards, sentToPrinter):
     # opens the webcam frame and draws all the cards and stuff
     aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_100)
     parameters = cv2.aruco.DetectorParameters()
@@ -253,6 +159,6 @@ def pygameDisplayFoundCards(lookupTable, frame, save):
     if ids is not None:
         cv2.aruco.drawDetectedMarkers(frame, corners, ids)
 
-    sortedDetectedCards = arcuoToCard(detected_boards, lookupTable, unpairedTags, save)
+    sortedDetectedCards = arcuoToCard(detected_boards, lookupTable, unpairedTags, save, printedCards, sentToPrinter)
 
     return frame, sortedDetectedCards
