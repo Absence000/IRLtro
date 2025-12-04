@@ -86,6 +86,7 @@ class Shop:
                     eval(f"self.{type}")[trueIndex] = None
                     return item
                 elif newItemIsConsumable(item):
+                    save.money -= price
                     if consumableCanBeUsedImmediately(item):
                         eval(f"self.{type}")[trueIndex] = None
                         return item

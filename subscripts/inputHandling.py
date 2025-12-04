@@ -44,6 +44,8 @@ def clearPrintFolder():
         except Exception as e:
             print(f"Error deleting {file_path}: {e}")
 
+# TODO: new system! each card has 160 duplicate slots, use printedIDs.json to check if enough duplicates of the same
+#  card exist, if it needs a new one it prints it with a new unique tag
 def prepareCardForPrinting(card, keep=True):
     if not keep:
         clearPrintFolder()
@@ -64,13 +66,10 @@ def prepareSelectedCards(save, foundCards):
     selectedHand = foundCards["middle"]
     save.hand = foundCards["lower"]
     save.jokers = []
-    save.consumables = []
     for card in foundCards["upper"]:
         cardType = type(card).__name__
         if cardType == "Joker":
             save.jokers.append(card)
-        else:
-            save.consumables.append(card)
 
     return selectedHand
 

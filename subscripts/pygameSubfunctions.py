@@ -1,9 +1,10 @@
 import pygame, cv2, textwrap
 import numpy as np
 from cardCreationAndRecognition.finalArcuoTracking import pygameDisplayFoundCards
+from subscripts.consumableCards import getConsumableSellPrice
 from subscripts.handFinderAndPointsAssigner import findBestHand
 from PIL import Image
-from cardCreationAndRecognition.cardImageCreator import createImageFromCard, createPackImage
+from cardCreationAndRecognition.cardImageCreator import createImageFromCard, createPackImage, getConsumableImageByCoords
 from subscripts.cardUtils import Card
 from subscripts.planetCards import Planet
 from subscripts.packs import Pack
@@ -16,7 +17,7 @@ def drawWebcamAndReturnFoundCards(cap, lookupTable, screen, backupDetectedCardsS
     if frame is None:
         ret, frame = cap.read()
     rawFrame = frame.copy()
-    frame, sortedDetectedCards = pygameDisplayFoundCards(lookupTable, frame)
+    frame, sortedDetectedCards = pygameDisplayFoundCards(lookupTable, frame, save)
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
     # idk why I need to mirror and rotate it but whatever
@@ -48,6 +49,32 @@ def drawWebcamAndReturnFoundCards(cap, lookupTable, screen, backupDetectedCardsS
         else:
             backupDetectedCardsScan[section] = sortedDetectedCards[section]
             backupDetectedCardsScanTime[section] = currentTime
+
+    # draws the extra stuff on top if needed
+    for section, sublist in sortedDetectedCards.items():
+        for card in sublist:
+            if cutoff != "top":
+                # why did I make it have both the unpaired tags and the cards
+                # whatever
+                if isinstance(card, Card):
+                    debuffed = False
+                    if card not in save.deck:
+                        debuffed = True
+                    if card.enhancement is not None or card.edition is not None or card.seal is not None or debuffed:
+                        x, y = getFixedCardCenter(card.coords)
+                        # TODO: I thought for sure I'd need to cache the images but somehow this godawful shit is fine for
+                        #  performance, but if there's lag later it'll probably be caused by this
+                        rawImg = createImageFromCard(card, True, debuffed)
+                        fixedImg = pygame.image.frombytes(rawImg.tobytes(), (690, 966), "RGBA")
+                        scalingFactor = 0.0045
+                        scale = card.scale * scalingFactor
+                        fixedImg = pygame.transform.scale(fixedImg, (int(scale * 690), int(scale * 966)))
+                        x -= int(scale * 350)
+                        y -= int(scale * 500)
+                        screen.blit(fixedImg, (x, y))
+
+
+
 
     return sortedDetectedCards, backupDetectedCardsScan, backupDetectedCardsScanTime, rawFrame
 
@@ -285,6 +312,44 @@ def drawButtons(save, screen, colors, font):
             {"name": "discard",
              "rect": discardRect}]
 
+def drawConsumables(save, screen, colors, font, mousePos):
+    hoveredConsumable = None
+    maxWidth = 280
+    drawRect(screen, colors.darkUI, (1000, 0, maxWidth, 220), round=8)
+    center = 1140
+    amnt = len(save.consumables)
+    if amnt > 0:
+        spacing = int(maxWidth / amnt)
+        currentPos = center - ((amnt-1) * spacing)
+        for consumable in save.consumables:
+            consumableImage = createImageFromCard(consumable)
+            fixedImg = pygame.image.frombytes(consumableImage.tobytes(), (690, 966), "RGBA")
+            fixedImg = pygame.transform.scale(fixedImg, (136, 190))
+            screen.blit(fixedImg, (currentPos - 68, 5))
+            if pygame.Rect((currentPos - 68, 5, 136, 190)).collidepoint(mousePos):
+                hoveredConsumable = [consumable, currentPos]
+                consumable.coords = (currentPos + 68, 95)
+
+            currentPos += spacing
+
+    drawText(screen, f"{amnt}/{save.consumablesLimit}", font, colors.white, (center, 200), size=20)
+    # if overlap draw on top of others
+    if hoveredConsumable is not None:
+        consumable, currentPos = hoveredConsumable
+        drawDescription(screen, font, save, colors, currentPos - 68, 5, 160, consumable)
+        useRect = (currentPos - 60, 5, 120, 90)
+        drawRect(screen, colors.green, useRect, round=8)
+        drawText(screen, "Use", font, colors.white, (currentPos, 50), size=20)
+        sellRect = (currentPos - 60, 95, 120, 90)
+        drawRect(screen, colors.red, sellRect, round=8)
+        drawText(screen, f"Sell (${getConsumableSellPrice(consumable, save)})", font, colors.white,
+                 (currentPos, 110), size=20)
+        return [{"name": "use",
+                 "rect": useRect},
+                {"name": "sell",
+                 "rect": sellRect}], consumable
+    return [], None
+
 def drawCardCounter(save, font, screen, colors, foundCards):
 
     prunedFoundCards = foundCards.copy()
@@ -311,7 +376,7 @@ def drawCardCounter(save, font, screen, colors, foundCards):
 
     # probably should have called them these from the start but I probably would forget
     subsetDict = {
-        "upper": "J/C",
+        "upper": "Jokers",
         "middle": "Selection",
         "lower": "Hand"
     }
@@ -358,10 +423,8 @@ def displayChainEvent(event, screen, font):
         rect = (newX - 60, newY - 20, 120, 40)
 
     else:
-        # this is weird since the camera gets halved in size and offset 320 pixels to the right
         cardOrigin = card.coords
-        newX = int((cardOrigin[0]/2) + 320)
-        newY = int(cardOrigin[1]/2)
+        newX, newY = getFixedCardCenter(cardOrigin)
         rect = (newX - 20, newY - 20, 40, 40)
 
     drawRect(screen, event.color, rect, round=7)
@@ -594,6 +657,7 @@ def drawPackButtons(save, items, pickAmount, font, screen, colors, mousePos):
     cardIndex = 0
 
     for item in items:
+        item.coords = (cardStarterX + 50, 550)
         if item in save.images.keys():
             rawImage = save.images[item]
         else:
@@ -675,6 +739,12 @@ def drawImmediateUsePopup(save, font, screen, colors, item):
         })
 
     return immediateUseButtons
+
+def getFixedCardCenter(origin):
+    # this is weird since the camera gets halved in size and offset 320 pixels to the right
+    newX = int((origin[0] / 2) + 320)
+    newY = int(origin[1] / 2)
+    return newX, newY
 
 def drawRect(screen, color, rect, outline=None, round=None):
     if round is not None:

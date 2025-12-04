@@ -27,12 +27,10 @@ def getConsumableSellPrice(consumable, save):
     buyPrice = calculatePrice(consumable, save)
     return math.floor(buyPrice/2)
 
-def sellConsumable(consumableIndex, save):
-    consumableToSell = save.consumables[consumableIndex]
-    sellPrice = getConsumableSellPrice(consumableToSell, save)
+def sellConsumable(consumable, save):
+    sellPrice = getConsumableSellPrice(consumable, save)
     save.money += sellPrice
-    del save.consumables[consumableIndex]
-    print(f"Sold {consumableToSell.toString()} for {save.money}!")
+    save.consumables.remove(consumable)
 
 def printConsumables(save):
     consumablesAmnt = len(save.consumables)
@@ -52,3 +50,11 @@ def consumableCanBeUsedImmediately(consumable):
         if openjson("consumables/tarotDict")[consumable.name]["type"] == "handModifier":
             return False
     return True
+
+def useImmediateConsumable(consumable, save):
+    if isinstance(consumable, Tarot):
+        useTarotCard(consumable, None, save)
+
+    if isinstance(consumable, Planet):
+        usePlanetCard(consumable, save)
+    # TODO: spectrals here

@@ -1,3 +1,5 @@
+from subscripts.jokers import generateRandomWeightedJokers
+from subscripts.planetCards import generateShuffledListOfUnlockedPlanetCards
 from subscripts.spacesavers import *
 from subscripts.inputHandling import CLDisplayHand, clearPrintFolder, prepareCardForPrinting, pushIRLInputIntoSave
 import random
@@ -36,75 +38,145 @@ class Tarot:
         return int(binaryEncoder, 2)
 
 def generateShuffledListOfFinishedTarotCards():
-    finishedTarots = ["The Magician (I)", "The Empress (III)", "The Hierophant (V)", "The Lovers (VI)",
-                      "The Chariot (VII)", "Justice (VIII)", "Strength (XI)", "The Hanged Man (XII)",
-                      "Death (XIII)", "The Devil (XV)", "The Tower (XVI)", "The Star (XVII)", "The Moon (XVIII)",
-                      "The Sun (XIX)", "The World (XXI)"]
+    finishedTarots = list(openjson("consumables/tarotDict").keys())
 
     viableTarotCards = []
     for tarot in finishedTarots:
         viableTarotCards.append(Tarot(tarot))
     random.shuffle(viableTarotCards)
     return viableTarotCards
-def useTarotCard(card, otherCards, save):
+
+def useTarotCard(card, otherCards, save, inConsumables = False):
     # unlike cards or jokers I can get away with using tarot card dictionaries since all this stuff is immutable for
     # all of them
     tarotCardInfo = openjson("consumables/tarotDict")[card.name]
+    tarotType = tarotCardInfo["type"]
+    usedSuccessfully = False
 
     # if the tarot card needs you to select cards from your hand (most of them)
-    if tarotCardInfo["type"] == "handModifier":
+    if tarotType == "handModifier":
         maxCardSelectAmount = tarotCardInfo["amnt"]
-        # death is the only one that needs exactly two cards picked
-        canSelectLessThanMax = True
-        if card.name == "Death (XIII)":
-            canSelectLessThanMax = False
 
-        if otherCards == []:
-            return False
+        if otherCards is None or otherCards == []:
+            return False, "No cards to use!"
 
         if len(otherCards) > maxCardSelectAmount:
-            return False
+            return False, "Too many cards!"
 
         if card.name == "Death (XIII)" and len(otherCards) == 1:
-            return False
+            return False, "Not enough cards!"
 
         # suit converters (star, moon, sun, world)
-        if tarotCardInfo["modifier"] == "suit":
+        subModifier = tarotCardInfo["modifier"]
+        if subModifier == "suit":
             for card in otherCards:
                 newCard = card.copy()
                 newCard.suit = tarotCardInfo["suit"]
                 save.replaceCardInDeck(card, newCard)
                 prepareCardForPrinting(newCard, keep=True)
+            return True, "Success!"
 
 
         # enhancer converters (magician, empress, hierophant, lovers, chariot, justice, devil, tower)
-        elif tarotCardInfo["modifier"] == "enhancer":
+        elif subModifier == "enhancer":
             for card in otherCards:
                 newCard = card.copy()
                 newCard.enhancement = tarotCardInfo["enhancement"]
                 save.replaceCardInDeck(card, newCard)
-                prepareCardForPrinting(newCard, keep=True)
+            return True, "Success!"
 
         # rank converter (strength)
-        elif tarotCardInfo["modifier"] == "rank":
+        elif subModifier == "rank":
             for card in otherCards:
                 newCard = card.copy()
                 newCard.number = increaseCardVal(card.number)
                 save.replaceCardInDeck(card, newCard)
                 prepareCardForPrinting(newCard, keep=True)
+            return True, "Success!"
 
         # destroy converter (hanged man)
-        elif tarotCardInfo["modifier"] == "destroy":
+        elif subModifier == "destroy":
             for card in otherCards:
                 save.replaceCardInDeck(card, None)
+            return True, "Success!"
 
         # convert converter (death)
-        elif tarotCardInfo["modifier"] == "convert":
+        elif subModifier == "convert":
             newCard = otherCards[1].copy()
             prepareCardForPrinting(newCard)
             save.replaceCardInDeck(otherCards[0], newCard)
+            return True, "Success!"
 
-        return True
+    # consumable/joker creators
+    # yeah I'm doing the possibility checks inside each subfunction now instead of at the top deal with it
+    elif tarotType == "creator":
+        subset = tarotCardInfo["subset"]
+        # fool
+        if subset == "last":
+            if save.lastUsedTarotOrPlanet is not None:
+                    if len(save.consumables) < save.consumablesLimit or inConsumables:
+                        save.consumables.append(save.lastUsedTarotOrPlanet)
+                        return True, "Success!"
+            return False, "Did nothing!"
+
+        # judgement
+        if subset == "joker":
+            if len(save.jokers) < save.jokerLimit:
+                save.jokers.append(generateRandomWeightedJokers(save, 1))
+                return True, "Success!"
+            return False, "Not enough space!"
+
+        # high priestess/emperor
+        else:
+            maxAmnt = tarotCardInfo["amnt"]
+            spaceLeft = save.consumablesLimit - len(save.consumables)
+            amountToGenerate = min(maxAmnt, spaceLeft)
+
+            if inConsumables:
+                amountToGenerate += 1
+
+            if amountToGenerate == 0: return False, "Not enough space!"
+
+            for i in range(amountToGenerate):
+                if subset == "planet":
+                    save.consumables.append(generateShuffledListOfUnlockedPlanetCards(save)[0])
+                elif subset == "tarot":
+                    save.consumables.append(generateShuffledListOfFinishedTarotCards()[0])
+            return True, "Success!"
+
+    # hermit/temperance
+    # ik the way I store the modifiers isn't easily scalable I should have had a unified system but whatever
+    elif tarotType == "monetary":
+        if tarotCardInfo["modifier"] == "mult":
+            moneyToAdd = min(save.money, 20)
+            save.money += moneyToAdd
+            return True, "Success!"
+
+        elif tarotCardInfo["modifier"] == "jokerSellValue":
+            sellValue = 0
+            for joker in save.jokers:
+                sellValue += joker.getSellValue()
+            save.money += min(sellValue, 40)
+            return True, "Success!"
+
+    # the wheel
+    elif tarotType == "meme":
+        if len(save.jokers) > 0:
+            # see it really is 1 in 4!
+            if random.randint(1, 4) == 1:
+                # random.shuffle will mess with the joker order, I need to modify a specific joker in place
+                # ik there's a better way to do this but I forget how
+                # TODO: fix this later
+                jokerModifyIndex = random.randint(0, len(save.jokers) - 1)
+                editions = ["foil", "holographic", "polychrome"]
+                weights = [12.5, 8.75, 3.75]
+                save.jokers(jokerModifyIndex).edition = random.choices(editions, weights)[0]
+                return True, "Success!"
+            else:
+                return True, "Nope!"
+        return False, "Not enough jokers!"
+
+
 
 def increaseCardVal(oldVal):
     face_cards = {"J": 11, "Q": 12, "K": 13, "A": 14}

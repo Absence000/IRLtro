@@ -12,7 +12,6 @@ def markerIsRightSideUp(corners):
 
 
 def get_detected_boards(frame, aruco_dict, parameters):
-    """Detects ArUco markers, groups them into valid 1×2 boards, and checks orientation."""
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     thirdOfFrameHeight = frame.shape[0]/3
 
@@ -88,7 +87,7 @@ def get_detected_boards(frame, aruco_dict, parameters):
 
                     detected_boards.append(
                         {"id": combinedID, "rightSideUp": upwards, "verticalPos": verticalPos,
-                         "roughPos": roughBoardPosition})
+                         "roughPos": roughBoardPosition, "markerSize": marker_size})
             i += 1  # Move to the next marker
 
         # stupid python list comprehension removing duplicates too I had to use chatGPT for this
@@ -173,7 +172,7 @@ def correctID(id):
     else:
         return str(id).zfill(2)
 
-def arcuoToCard(detected_boards, lookupTable, unpairedTags):
+def arcuoToCard(detected_boards, lookupTable, unpairedTags, save):
     # this stupid card filtering algorithm took so long jesus
     output = {"upper": [], "middle": [], "lower": [], "unpairedTags": unpairedTags}
 
@@ -187,8 +186,9 @@ def arcuoToCard(detected_boards, lookupTable, unpairedTags):
     for (cardID, pos), orientations in grouped.items():
         try:
             binaryValue = lookupTable[cardID]
-            detectedCard = createCardFromBinary(binaryValue)
+            detectedCard = createCardFromBinary(cardID, binaryValue, save)
             detectedCard.coords = orientations[0]["roughPos"]
+            detectedCard.scale = orientations[0]["markerSize"]
         except Exception as e:
             print(e)
             traceback.print_exc()
@@ -239,15 +239,13 @@ def returnFoundCards():
 )
 
 
-def pygameDisplayFoundCards(lookupTable, frame):
+def pygameDisplayFoundCards(lookupTable, frame, save):
     # opens the webcam frame and draws all the cards and stuff
-    # Load ArUco dictionary and detector parameters
     aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_100)
     parameters = cv2.aruco.DetectorParameters()
 
     detected_boards, unpairedTags = get_detected_boards(frame, aruco_dict, parameters)
 
-    # Detect markers and draw detected squares
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     detector = cv2.aruco.ArucoDetector(aruco_dict, parameters)
     corners, ids, _ = detector.detectMarkers(gray)
@@ -255,11 +253,6 @@ def pygameDisplayFoundCards(lookupTable, frame):
     if ids is not None:
         cv2.aruco.drawDetectedMarkers(frame, corners, ids)
 
-    sortedDetectedCards = arcuoToCard(detected_boards, lookupTable, unpairedTags)
+    sortedDetectedCards = arcuoToCard(detected_boards, lookupTable, unpairedTags, save)
 
-    # Draw detected boards on the frame
-    # for card in finishedCardDetectionList:
-    #     ids_text = card.toString(mode="fancy")
-    #     position = (50, 50 + finishedCardDetectionList.index(card) * 60)
-    #     cv2.putText(frame, ids_text, position, cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 255), 4)
     return frame, sortedDetectedCards

@@ -28,6 +28,7 @@ class Save:
         self.handLevels = saveDict["handLevels"]
         self.illegalHandsDiscovered = saveDict["illegalHandsDiscovered"]
         consumables = []
+        # TODO: Make a consumable base class or something idk this is dumb
         for consumable in saveDict["consumables"]:
             if consumable["type"] == "planet":
                 consumables.append(Planet(consumable["name"], consumable["negative"]))
@@ -58,6 +59,15 @@ class Save:
         self.score = saveDict["score"]
         self.round = saveDict["round"]
         self.irl = saveDict["irl"]
+        lastUsedTarotOrPlanetDict = saveDict["lastUsedTarotOrPlanet"]
+        if lastUsedTarotOrPlanetDict is not None:
+            if lastUsedTarotOrPlanetDict["type"] == "planet":
+                lastUsedTarotOrPlanet = Planet(lastUsedTarotOrPlanetDict["name"], lastUsedTarotOrPlanetDict["negative"])
+            else:
+                lastUsedTarotOrPlanet = Tarot(lastUsedTarotOrPlanetDict["name"], lastUsedTarotOrPlanetDict["negative"])
+        else:
+            lastUsedTarotOrPlanet = None
+        self.lastUsedTarotOrPlanet = lastUsedTarotOrPlanet
         # TODO: find a smarter way to store the images I need to load for card packs
         self.images = {}
 
@@ -75,13 +85,6 @@ class Save:
         for card in self.deck:
             deck.append(card.toDict())
 
-        consumables = []
-        for consumable in self.consumables:
-            if isinstance(consumable, Planet):
-                consumables.append(consumable.toDict())
-            elif isinstance(consumable, Tarot):
-                consumables.append(consumable.toDict())
-
         hand = []
         for card in self.hand:
             hand.append(card.toDict())
@@ -93,6 +96,11 @@ class Save:
         playedCards = []
         for card in self.playedCards:
             playedCards.append(card.toDict())
+
+        if self.lastUsedTarotOrPlanet is None:
+            lastUsedTarotOrPlanet = None
+        else:
+            lastUsedTarotOrPlanet = self.lastUsedTarotOrPlanet.toDict()
 
         saveDict = {
             "deck": deck,
@@ -117,7 +125,8 @@ class Save:
             "playedCards": playedCards,
             "score": self.score,
             "round": self.round,
-            "irl": self.irl
+            "irl": self.irl,
+            "lastUsedTarotOrPlanet": lastUsedTarotOrPlanet,
         }
         return saveDict
 
@@ -189,7 +198,7 @@ def createBlankSave(deck, irl):
             "vouchers": [None],
             "rerollCost": 0
         },
-        "money": 0,
+        "money": 4,
         "handLevels": handLevels,
         "illegalHandsDiscovered": [],
         "consumables": [],
@@ -208,7 +217,8 @@ def createBlankSave(deck, irl):
         "playedCards": [],
         "score": 0,
         "round": 1,
-        "irl": irl
+        "irl": irl,
+        "lastUsedTarotOrPlanet": None,
     })
 
 def getJokerByName(save, name):

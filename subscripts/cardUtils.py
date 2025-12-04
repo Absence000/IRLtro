@@ -35,6 +35,7 @@ class Card:
         # TODO: Figure out why some of them are getting None as retriggeredBy but not all of them
         self.retriggeredBy = cardDict.get("retriggeredBy", [])
         self.coords = None
+        self.id = cardDict.get("id")
 
     def toDict(self):
         return {
@@ -43,7 +44,8 @@ class Card:
             "edition": self.edition,
             "seal": self.seal,
             "suit": self.suit,
-            "retriggeredBy": self.retriggeredBy
+            "retriggeredBy": self.retriggeredBy,
+            "id": self.id
         }
 
     def toString(self, mode=None):
@@ -107,17 +109,33 @@ binaryDict = {
     "nonNumericalNumber": ["J", "Q", "K", "A"]
 }
 
-def createCardFromBinary(binary):
-    binary = str(bin(binary)[2:]).zfill(17)
-    subset = binaryToAttribute("subset", binary[0:3])
+def createCardFromBinary(id, binary, save):
+    formattedBinary = str(bin(binary)[2:]).zfill(17)
+    subset = binaryToAttribute("subset", formattedBinary[0:3])
     if subset == "Card":
-        return Card({
-            "edition": binaryToAttribute("edition", binary[3:5]),
-            "enhancement": binaryToAttribute("enhancement", binary[5:8]),
-            "seal": binaryToAttribute("seal", binary[8:11]),
-            "suit": binaryToAttribute("suit", binary[11:13]),
-            "number": binaryToPlayingCardNumber(binary[13:17])
+        suit = binaryToAttribute("suit", formattedBinary[11:13])
+        number = binaryToPlayingCardNumber(formattedBinary[13:17])
+        trueCard = Card({
+            "edition": binaryToAttribute("edition", formattedBinary[3:5]),
+            "enhancement": binaryToAttribute("enhancement", formattedBinary[5:8]),
+            "seal": binaryToAttribute("seal", formattedBinary[8:11]),
+            "suit": suit,
+            "number": number
         })
+
+        # dynamic remapping:
+        # to stop people from needing to scan their entire deck at the start of each round it scans as it goes and
+        # stores the ids automatically within the save's deck
+        for card in save.deck:
+            if card.number == number and card.suit == suit:
+                if card.id is None:
+                    card.id = id
+                    return card
+                elif card.id == id:
+                    return card
+
+        return trueCard
+
     elif subset == "stone":
         # since stone cards don't show their suit or number, I just init them as an ace of spades
         # if vampire removes the stone enhancement, the number and suit will be randomized

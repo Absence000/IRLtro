@@ -559,8 +559,10 @@ def triggerCard(card, save, chain):
         chain.add("multmult", 2, card, chips, mult)
 
     if enhancementBonusChips > 0:
+        chips += enhancementBonusChips
         chain.add("chip", enhancementBonusChips, card, chips, mult)
     if enhancementBonusMult > 0:
+        mult += enhancementBonusMult
         chain.add("mult", enhancementBonusMult, card, chips, mult)
 
     # edition checks

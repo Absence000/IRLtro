@@ -29,20 +29,25 @@ enhancersCoordsDict = {
 editionsCoordsDict = {
     "foil": [2, 1],
     "holographic": [3, 1],
-    "polychrome": [4, 1]
+    "polychrome": [4, 1],
+    "debuffed": [5, 1]
 }
 
-def createImageFromCard(card):
+def createImageFromCard(card, forPygame=False, debuffed=False):
     # stupid circular imports making me do this instead of isinstance()
     cardType = type(card).__name__
     if cardType == "Card":
-        cardImage = selectPlayingCardBackground(card)
+        cardImage = selectPlayingCardBackground(card, forPygame)
         if card.enhancement != "stone":
-            cardValueImage = returnCroppedImageByName("playing", card.number, card.suit)
-            cardImage.paste(cardValueImage, (0, 0), cardValueImage)
-        if card.edition is not None:
-            cardEditionImage = returnCroppedImageByName("playing", card.edition)
-            if card.edition == "polychrome":
+            if not forPygame or card.enhancement not in ["wild", "bonus", "mult"]:
+                cardValueImage = returnCroppedImageByName("playing", card.number, card.suit)
+                cardImage.paste(cardValueImage, (0, 0), cardValueImage)
+        if card.edition is not None or debuffed:
+            edition = card.edition
+            if debuffed:
+                edition = "debuffed"
+            cardEditionImage = returnCroppedImageByName("playing", edition)
+            if edition == "polychrome":
                 # reduces opacity if it's on glass
                 if card.enhancement == "glass":
                     cardEditionImage = setOpacity(cardEditionImage, 0.5)
@@ -50,6 +55,9 @@ def createImageFromCard(card):
                 r, g, b, a = cardImage.split()
                 mask = ImageChops.invert(Image.merge("RGB", (r, g, b))).convert("L")
                 cardImage.paste(cardEditionImage, (0, 0), mask)
+            elif edition == "debuffed":
+                cardEditionImage = setOpacity(cardEditionImage, 2)
+                cardImage.paste(cardEditionImage, (0, 0), cardEditionImage)
             else:
                 # cardEditionImage = setOpacity(cardEditionImage, 0.5)
                 cardImage.paste(cardEditionImage, (0, 0), cardEditionImage)
@@ -256,10 +264,10 @@ def turnNegative(image):
 
     return inverted_image
 
-def selectPlayingCardBackground(card):
+def selectPlayingCardBackground(card, forPygame):
     if card.enhancement is None:
         return returnCroppedImageByName("playing", "base")
-    else: return returnCroppedImageByName("playing", card.enhancement)
+    else: return returnCroppedImageByName("playing", card.enhancement, forPygame=forPygame)
 
 
 def selectPlayingCardValueImage(card):
@@ -280,7 +288,7 @@ nonIntCoordsDict = {
     "A": 13
 }
 
-def returnCroppedImageByName(subset, name, suit=None):
+def returnCroppedImageByName(subset, name, suit=None, forPygame=False):
     if subset == "playing":
         if suit is not None:
             baseImageName = "cardSprites/playing.png"
@@ -291,7 +299,7 @@ def returnCroppedImageByName(subset, name, suit=None):
             coords = [xCoord, nonIntCoordsDict[suit]]
 
         else:
-            if name in ["polychrome", "holographic", "foil"]:
+            if name in ["polychrome", "holographic", "foil", "debuffed"]:
                 baseImageName = "cardSprites/editions.png"
                 coordsDict = editionsCoordsDict
             else:
@@ -304,6 +312,14 @@ def returnCroppedImageByName(subset, name, suit=None):
         crop = baseImage.crop((topLeftX, topLeftY, topLeftX + enhancersWidth, topLeftY + enhancersHeight))
         # if name == "glass":
         #     crop = fixGlass(crop)
+        if forPygame:
+            pixels = crop.load()
+            for x in range(enhancersWidth):
+                for y in range(enhancersHeight):
+                    r, g, b, a = pixels[x, y]
+                    if (r, g, b) == (255, 255, 255) or (r, g, b) == (192, 200, 214):
+                        pixels[x, y] = (0, 0, 0, 0)
+
         return crop
 
 
