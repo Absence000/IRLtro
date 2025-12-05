@@ -1,4 +1,3 @@
-from oldCommandLineTesting import blindIndexToBlindInfo
 from subscripts.spacesavers import *
 from subscripts.jokers import Joker
 from subscripts.cardUtils import Card
@@ -41,9 +40,14 @@ class Save:
         for joker in saveDict["jokers"]:
             jokers.append(Joker(joker))
         self.jokers = jokers
+
+        jokersInPlay = []
+        for joker in saveDict["jokersInPlay"]:
+            jokersInPlay.append(Joker(joker))
+        self.jokersInPlay = jokersInPlay
+
         self.jokerLimit = saveDict["jokerLimit"]
         self.blindInfo = saveDict["blindInfo"]
-        print(self.blindInfo)
         self.baseChips = anteBaseChipsList[self.ante]
         self.requiredScore = self.baseChips * self.blindInfo[1]
 
@@ -70,6 +74,10 @@ class Save:
         self.lastUsedTarotOrPlanet = lastUsedTarotOrPlanet
         # TODO: find a smarter way to store the images I need to load for card packs
         self.images = {}
+        self.startingHands = saveDict["startingHands"]
+        self.startingDiscards = saveDict["startingDiscards"]
+        self.ectoUses = saveDict["ectoUses"]
+        self.firstShopEncountered = saveDict["firstShopEncountered"]
 
 
     def toDict(self):
@@ -80,6 +88,10 @@ class Save:
         jokers = []
         for joker in self.jokers:
             jokers.append(joker.toDict())
+
+        jokersInPlay = []
+        for joker in self.jokersInPlay:
+            jokersInPlay.append(joker.toDict())
 
         deck = []
         for card in self.deck:
@@ -118,6 +130,7 @@ class Save:
             "hand": hand,
             "handLimit": self.handLimit,
             "jokers": jokers,
+            "jokersInPlay": jokersInPlay,
             "jokerLimit": self.jokerLimit,
             "requiredScore": self.requiredScore,
             "blindInfo": self.blindInfo,
@@ -127,11 +140,15 @@ class Save:
             "round": self.round,
             "irl": self.irl,
             "lastUsedTarotOrPlanet": lastUsedTarotOrPlanet,
+            "startingHands": self.startingHands,
+            "startingDiscards": self.startingDiscards,
+            "ectoUses": self.ectoUses,
+            "firstShopEncountered": self.firstShopEncountered
         }
         return saveDict
 
     def hasJoker(self, name):
-        for joker in self.jokers:
+        for joker in self.jokersInPlay:
             if joker.name == name:
                 return True
         return False
@@ -207,6 +224,7 @@ def createBlankSave(deck, irl):
         "consumablesLimit": 2,
         "hand": [],
         "handLimit": 8,
+        "jokersInPlay": [],
         "jokers": [],
         "jokerLimit": 5,
         "requiredScore": 0,
@@ -221,10 +239,18 @@ def createBlankSave(deck, irl):
         "round": 1,
         "irl": irl,
         "lastUsedTarotOrPlanet": None,
+        "startingHands": 4,
+        "startingDiscards": 3,
+        "ectoUses": 0,
+        "firstShopEncountered": True
     })
 
-def getJokerByName(save, name):
-    for joker_name, joker_data in save.jokers:
-        if joker_name == name:
-            return joker_data
-    return None
+def addToJokerAttribute(save, jokerName, attribute, amount):
+    for joker in save.jokersInPlay:
+        if joker.name == jokerName:
+            if attribute not in joker.data:
+                raise ValueError(f"{jokerName} doesn't have {attribute}")
+            joker.data[attribute] += amount
+            return
+
+    raise ValueError(f"{jokerName} not found")

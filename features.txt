@@ -1,6 +1,6 @@
 so far I have:
 - recognizing and scoring all hands including illegal ones
-- bonus, mult, glass (without breaking), stone, and lucky cards (without money)
+- bonus, mult, glass, stone, and lucky cards
 - foil, holographic, and polychrome
 - red seal
 
@@ -19,16 +19,16 @@ barebones
 
 harder
     - planet cards (done)
-    - packs
-    - blue seal
-    - purple seal
+    - packs (done)
+    - blue seal (done)
+    - purple seal (done)
     - rounds (done)
 
 
 final
-    - tarot and spectral cards
-    - antes
-    - shop
+    - tarot (done) and spectral cards
+    - antes (done)
+    - shop (done)
     - vouchers
     - boss blinds
     - every single joker

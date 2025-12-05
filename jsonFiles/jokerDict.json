@@ -642,7 +642,7 @@
         "id": 65,
         "cost": 4,
         "rarity": "Common",
-        "description": "This Joker gains +4 Chips if played hand has exactly 4 cards",
+        "description": "This Joker gains +4 Chips if played hand has exactly 4 cards (currently {self.chip} chips)",
         "type": "chip",
         "chip": 0,
         "condition": "active",
@@ -1166,7 +1166,8 @@
         "rarity": "Uncommon",
         "description": "Joker, Tarot, Planet, and Spectral cards may appear multiple times",
         "type": "effect",
-        "position": [6, 5]
+        "position": [6, 5],
+        "finished": true
     },
     "Flower Pot": {
         "id": 122,

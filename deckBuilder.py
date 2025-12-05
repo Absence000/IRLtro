@@ -4,8 +4,7 @@ from subscripts.spacesavers import *
 from subscripts.cardUtils import Card
 
 
-# used to make decks
-# right now it just does the standard one
+# this was for testing the scoring system in the command line with weird decks
 def createDeck(name):
     deck = openjson("decks")
     deck[name] = []

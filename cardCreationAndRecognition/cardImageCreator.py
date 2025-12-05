@@ -39,9 +39,12 @@ def createImageFromCard(card, forPygame=False, debuffed=False):
     if cardType == "Card":
         cardImage = selectPlayingCardBackground(card, forPygame)
         if card.enhancement != "stone":
-            if not forPygame or card.enhancement not in ["wild", "bonus", "mult"]:
+            # if it's for pygame it only gives the base card image if the enhancement is one of the ones that covers
+            # the suit+number
+            if not forPygame or card.enhancement not in [None, "wild", "bonus", "mult"]:
                 cardValueImage = returnCroppedImageByName("playing", card.number, card.suit)
                 cardImage.paste(cardValueImage, (0, 0), cardValueImage)
+
         if card.edition is not None or debuffed:
             edition = card.edition
             if debuffed:
@@ -62,7 +65,7 @@ def createImageFromCard(card, forPygame=False, debuffed=False):
                 # cardEditionImage = setOpacity(cardEditionImage, 0.5)
                 cardImage.paste(cardEditionImage, (0, 0), cardEditionImage)
         if card.seal != None:
-            sealImage = returnCroppedImageByName("playing", card.seal + " seal")
+            sealImage = returnCroppedImageByName("playing", card.seal + " seal", forPygame=forPygame)
             cardImage.paste(sealImage, (0, 0), sealImage)
 
     elif cardType == "Tarot":
@@ -72,7 +75,6 @@ def createImageFromCard(card, forPygame=False, debuffed=False):
         x = tarotIndex % 10
         y = tarotIndex // 10
         cardImage =  getConsumableImageByCoords(x, y, card)
-
     elif cardType == "Planet":
         # the secret ones are in weird spots but the others are all on the same row in order
         regularOrder = ["Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto"]
@@ -88,7 +90,6 @@ def createImageFromCard(card, forPygame=False, debuffed=False):
             x = secretPosDict[card.name]
             y = 2
         cardImage = getConsumableImageByCoords(x, y, card)
-
     elif cardType == "Spectral":
         regularOrder = ["Black Hole", "Familiar", "Grim", "Incantation", "Talisman", "Aura", "Wraith", "Sigil",
                         "Ouija", "Ectoplasm", "Immolate", "Ankh", "Deja Vu", "Hex", "Trance", "Medium", "Cryptid"]
@@ -112,21 +113,27 @@ def createImageFromCard(card, forPygame=False, debuffed=False):
         jokerDict = openjson("jokerDict")
         x, y = jokerDict[card.name]["position"]
         cardImage = getConsumableImageByCoords(x, y, card)
-
         # handles editions
-        if card.edition is not None and card.edition != "negative":
-            cardEditionImage = returnCroppedImageByName("playing", card.edition)
+        edition = card.edition
+        if card.debuffed:
+            edition = "debuffed"
+        if edition is not None and edition != "negative":
+            cardEditionImage = returnCroppedImageByName("playing", edition)
             r, g, b, a = cardImage.split()
-            if card.edition == "polychrome":
+            if edition == "polychrome":
                 # overlays only on nonwhite pixels with an alpha greater than 0
                 rgbMask = ImageChops.invert(Image.merge("RGB", (r, g, b))).convert("L")
                 alphaMask = a.point(lambda x: 255 if x > 0 else 0)
                 mask = ImageChops.multiply(rgbMask, alphaMask)
+                cardImage.paste(cardEditionImage, (0, 0), mask)
+            elif edition == "debuffed":
+                cardEditionImage = setOpacity(cardEditionImage, 2)
+                cardImage.paste(cardEditionImage, (0, 0), cardEditionImage)
             else:
                 # overlays only on pixels with an alpha greater than 0
                 r2, g2, b2, a2 = cardEditionImage.split()
                 mask = ImageChops.multiply(a, a2)
-            cardImage.paste(cardEditionImage, (0, 0), mask)
+                cardImage.paste(cardEditionImage, (0, 0), mask)
 
         # hologram has a secondary position, all the legendaries have the faces under it
         if card.name == "Hologram":
@@ -266,16 +273,8 @@ def turnNegative(image):
 
 def selectPlayingCardBackground(card, forPygame):
     if card.enhancement is None:
-        return returnCroppedImageByName("playing", "base")
+        return returnCroppedImageByName("playing", "base", forPygame=forPygame)
     else: return returnCroppedImageByName("playing", card.enhancement, forPygame=forPygame)
-
-
-def selectPlayingCardValueImage(card):
-    return
-
-# polychrome only overlays on stuff that isn't white!
-def selectPlayingCardOverlay(card):
-    return
 
 nonIntCoordsDict = {
     "H": 1,
@@ -310,9 +309,9 @@ def returnCroppedImageByName(subset, name, suit=None, forPygame=False):
         topLeftX = ((coords[0] - 1) * enhancersWidth) + ((coords[0] - 1) * enhancersPixelGap) + 1
         topLeftY = ((coords[1] - 1) * enhancersHeight) + ((coords[1] - 1) * enhancersPixelGap) + 1
         crop = baseImage.crop((topLeftX, topLeftY, topLeftX + enhancersWidth, topLeftY + enhancersHeight))
-        # if name == "glass":
-        #     crop = fixGlass(crop)
+
         if forPygame:
+            # removes all white/border pixels
             pixels = crop.load()
             for x in range(enhancersWidth):
                 for y in range(enhancersHeight):
@@ -348,8 +347,9 @@ def createTaggedCardImage(card, lookupTable):
     alreadyPrinted = openjson("printedCards")
 
     iterator = 0
+    cardBinary = card.toBinary()
     for binary in lookupTable:
-        if binary == card.toBinary() and iterator not in alreadyPrinted:
+        if binary == cardBinary and iterator not in alreadyPrinted:
             lookupIndex = iterator
             break
         iterator += 1
@@ -383,8 +383,9 @@ def createTaggedCardImage(card, lookupTable):
     background.save(f"print/{cardName}.png")
 
     sentToPrinter = openjson("sentToPrinter")
-    sentToPrinter.append(lookupIndex)
-    savejson("sentToPrinter", sentToPrinter)
+    if lookupIndex not in sentToPrinter:
+        sentToPrinter.append(lookupIndex)
+        savejson("sentToPrinter", sentToPrinter)
 
 packCoordsDict = {
     "arcana": {
@@ -431,8 +432,6 @@ def createPackImage(pack):
     packImage = packImage.resize((690, 930))
     return packImage
 
-# these things don't work rn bc of circular imports but I only needed to run them once so who cares
-
 # def generateCardPairingList():
 #     iterator = 0
 #     # pairList = openjson("cardToArcuo old.json", True)
@@ -462,20 +461,3 @@ def createPackImage(pack):
 #             })
 #             pairList.append(card.toBinary())
 #     savejson("cardToArcuo final.json", pairList, True)
-#
-#
-# def makeStandardDeck():
-#     suits = ["S", "C", "D", "H"]
-#     values = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"]
-#     for suit in suits:
-#         for value in values:
-#             createTaggedCardImage(Card({
-#                 "number": value,
-#                 "suit": suit
-#             }), openjson("cardCreationAndRecognition/cardToArcuo old.json", True))
-#     print("done")
-
-# createTaggedCardImage(Card(subset="playing", suit="C", number="2"),
-#                       openjson("cardToArcuo old.json", True))
-# print("created!")
-# arucoBoardsToCard(openjson("cardToArcuo old.json", True))

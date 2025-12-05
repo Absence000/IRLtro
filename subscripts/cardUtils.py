@@ -1,5 +1,5 @@
 from subscripts.planetCards import Planet, generateShuffledListOfUnlockedPlanetCards
-from subscripts.spectralCards import Spectral
+from subscripts.spectralCards import generateShuffledListOfFinishedSpectralCards
 from subscripts.tarotCards import Tarot, generateShuffledListOfFinishedTarotCards
 from subscripts.jokers import Joker, generateRandomWeightedJokers
 from subscripts.spacesavers import *
@@ -96,9 +96,6 @@ class Card:
     def copy(self):
         return Card(self.toDict())
 
-# takes in a dictionary of card values and returns a Card object
-def createCardFromDict(cardDict):
-    return Card(cardDict)
 
 
 binaryDict = {
@@ -127,7 +124,7 @@ def createCardFromBinary(id, binary, save, printedCards, sentToPrinter):
         # stores the ids automatically within the save's deck
         cardIsAccountedFor = False
         for card in save.deck:
-            if card.number == number and card.suit == suit:
+            if card.number == number and card.suit == suit and card.enhancement != "stone":
                 if card.id is None:
                     cardIsAccountedFor = True
                     card.id = id
@@ -153,17 +150,85 @@ def createCardFromBinary(id, binary, save, printedCards, sentToPrinter):
     elif subset == "stone":
         # since stone cards don't show their suit or number, I just init them as an ace of spades
         # if vampire removes the stone enhancement, the number and suit will be randomized
-        return Card({
+        trueCard = Card({
             "subset": "playing",
-            "edition": binaryToAttribute("edition", binary[5:7]),
+            "edition": None,
             "enhancement": "stone",
-            "seal": binaryToAttribute("seal", binary[7:10]),
+            "seal": None,
             "suit": "S",
-            "number": "A"
+            "number": "A",
+            "debuffed": True
         })
 
-    else:
-        return returnNonPlayingCardFromBinary(binary, subset)
+        # dynamic remapping:
+        # to stop people from needing to scan their entire deck at the start of each round it scans as it goes and
+        # stores the ids automatically within the save's deck
+        cardIsAccountedFor = False
+        for card in save.deck:
+            if card.enhancement == "stone":
+                if card.id is None:
+                    cardIsAccountedFor = True
+                    card.id = id
+                    break
+                elif card.id == id:
+                    cardIsAccountedFor = True
+                    break
+
+
+        # if this ID has never been seen before it adds it to printedCards.json
+        # fingers crossed it doesn't scan a bunch of things as IDs and clog it up
+        # to stop this, if the new ID was never seen on sentToPrinter.json it won't be added to printedCards.json
+        if id not in printedCards and id in sentToPrinter:
+            printedCards.append(id)
+            print(f"New ID found! {id}")
+            savejson("printedCards", printedCards)
+        if cardIsAccountedFor:
+            return card
+        else:
+            return trueCard
+
+    if subset == "Joker":
+        cardData = NonPlayingCardTypeToBinaryIndexes[subset]
+        cardDict = openjson(cardData["jsonPath"])
+        nameStartBit, nameEndBit = cardData["index"]
+        nameIndex = int(formattedBinary[nameStartBit:nameEndBit], 2)
+        editionIndex = int(formattedBinary[11:13], 2)
+
+        edition = [None, "foil", "holographic", "polychrome", "negative"][editionIndex]
+        data = list(cardDict.items())[nameIndex]
+        trueJoker = Joker(data, edition)
+
+        trueJoker.debuffed = True
+
+        # dynamic remapping:
+        # to stop people from needing to scan their entire deck at the start of each round it scans as it goes and
+        # stores the ids automatically within the save's deck
+        jokerIsAccountedFor = False
+        for joker in save.jokersInPlay:
+            if joker.id == trueJoker.id:
+                if joker.trackingID is None:
+                    jokerIsAccountedFor = True
+                    joker.trackingID = id
+                    break
+                elif joker.trackingID == id:
+                    jokerIsAccountedFor = True
+                    break
+
+        # if this ID has never been seen before it adds it to printedCards.json
+        # fingers crossed it doesn't scan a bunch of things as IDs and clog it up
+        # to stop this, if the new ID was never seen on sentToPrinter.json it won't be added to printedCards.json
+        if id not in printedCards and id in sentToPrinter:
+            printedCards.append(id)
+            print(f"New ID found! {id}")
+            savejson("printedCards", printedCards)
+
+        if jokerIsAccountedFor:
+            return joker
+        else:
+            trueJoker.trackingID = id
+            return trueJoker
+
+
 
 
 NonPlayingCardTypeToBinaryIndexes = {
@@ -184,22 +249,6 @@ NonPlayingCardTypeToBinaryIndexes = {
         "jsonPath": "jokerDict"
     },
 }
-
-def returnNonPlayingCardFromBinary(binary, subset):
-    cardData = NonPlayingCardTypeToBinaryIndexes[subset]
-    cardDict = openjson(cardData["jsonPath"])
-    nameStartBit, nameEndBit = cardData["index"]
-    nameIndex = int(binary[nameStartBit:nameEndBit], 2)
-    if subset == "Joker":
-        editionIndex = int(binary[11:13], 2)
-        edition = [None, "foil", "holographic", "polychrome", "negative"][editionIndex]
-        data = list(cardDict.items())[nameIndex]
-        return Joker(data, edition)
-    else:
-        negative = True
-        if binary[nameEndBit + 1] == "0":
-            negative = False
-        return eval(subset)(name=list(cardDict)[nameIndex], negative=negative)
 
 
 def attributeToBinary(type, attribute, bits):
@@ -224,17 +273,19 @@ def binaryToPlayingCardNumber(binary):
         return str(number)
 
 # TODO: get this working with vouchers eventually
-# TODO: consumable blocking!
 def generateWeightedRandomCards(subset, save, amount):
-    # TODO: Showman stuff for packs
     if subset == "playing":
         return generateListOfRandomPlayingCards(save, amount)
     elif subset == "tarot":
-        return generateShuffledListOfFinishedTarotCards()[0:amount]
+        return generateShuffledListOfFinishedTarotCards(save)[0:amount]
     elif subset == "planet":
         return generateShuffledListOfUnlockedPlanetCards(save)[0:amount]
     elif subset == "joker":
         return generateRandomWeightedJokers(save, amount)
+    elif subset == "spectral":
+        return generateShuffledListOfFinishedSpectralCards(save)[0:amount]
+
+
 
 def generateListOfRandomPlayingCards(save, amount):
     cardList = []
@@ -276,25 +327,16 @@ def generateListOfRandomPlayingCards(save, amount):
         }))
     return cardList
 
-# I have pointers to differentiate the consumable types but I don't need them for cards or jokers since they have
-# unique keys
-# ik it's good practice to have them anyway but whatever
-# I won't need this once the visual component is integrated into the program instead of its own thing
-def unsortedDictToCard(cardDict):
-    cardName, cardItems = cardDict
-    if ["suit"] in cardDict:
-        return Card()
 
 def addTarotCardIfRoom(save):
     if len(save.consumables) <= save.consumablesLimit:
-        save.consumables.append(generateShuffledListOfFinishedTarotCards([0]))
+        save.consumables.append(generateShuffledListOfFinishedTarotCards(save)[0])
         return True
     return False
-
 
 def cardCountsAsFaceCard(card, save):
     if save.hasJoker("Pareidolia"):
         return True
-    elif isinstance(card.number, str):
+    elif card.number in ["J", "Q", "K"] and card.enhancement != "stone":
         return True
     return False

@@ -42,6 +42,9 @@ class Shop:
             packForSale = generatePackForSale()
             price = calculatePrice(packForSale, save)
             packList.append(ShopItem(packForSale, price))
+        if save.firstShopEncountered:
+            packList[0] = ShopItem(Pack("buffoon", "normal"), 4)
+            save.firstShopEncountered = False
         self.packs = packList
 
     def toDict(self):
@@ -76,7 +79,7 @@ class Shop:
             if save.money >= listing.price:
                 # checks if they have enough room
                 if isinstance(item, Joker):
-                    if item.edition == "Negative" or len(save.jokers) < save.jokerLimit:
+                    if item.edition == "Negative" or len(save.jokersInPlay) < save.jokerLimit:
                         save.money -= price
                         eval(f"self.{type}")[trueIndex] = None
                         return item
@@ -102,24 +105,30 @@ class Shop:
 def createShopFromDict(shopDict):
     cardList = []
     for cardForSale in shopDict["cards"]:
-        #TODO: Add support for spectrals and playing cards here since you can buy them with the voucher
-        cardData = cardForSale[0]
-        if cardData is not None:
-            if "type" not in cardData:
-                newCard = Joker(cardData)
-            elif cardData["type"] == "Planet":
-                newCard = Planet(cardData["name"], cardData["negative"])
-            elif cardData["type"] == "Tarot":
-                newCard = Tarot(cardData["name"], cardData["negative"])
-            cardList.append(ShopItem(newCard, cardForSale[1]))
+        if cardForSale is not None:
+            #TODO: Add support for spectrals and playing cards here since you can buy them with the voucher
+            cardData = cardForSale[0]
+            if cardData is not None:
+                if "type" not in cardData:
+                    newCard = Joker(cardData)
+                elif cardData["type"] == "Planet":
+                    newCard = Planet(cardData["name"], cardData["negative"])
+                elif cardData["type"] == "Tarot":
+                    newCard = Tarot(cardData["name"], cardData["negative"])
+                cardList.append(ShopItem(newCard, cardForSale[1]))
+            else:
+                cardList.append(None)
         else:
             cardList.append(None)
 
     packList = []
     for packForSale in shopDict["packs"]:
-        packInfo = packForSale[0]
-        if packInfo is not None:
-            packList.append(ShopItem(Pack(packInfo["subset"], packInfo["size"]), packForSale[1]))
+        if packForSale is not None:
+            packInfo = packForSale[0]
+            if packInfo is not None:
+                packList.append(ShopItem(Pack(packInfo["subset"], packInfo["size"]), packForSale[1]))
+            else:
+                packList.append(None)
         else:
             packList.append(None)
     # TODO: Put vouchers here too

@@ -2,30 +2,6 @@ import cv2, os, shutil
 from subscripts.spacesavers import *
 from cardCreationAndRecognition.cardImageCreator import createTaggedCardImage
 
-def captureImage():
-    cap = cv2.VideoCapture(2)
-
-    if not cap.isOpened():
-        print("Error: Could not open webcam.")
-        return
-
-    # Capture a single frame
-    ret, frame = cap.read()
-
-    if ret:
-        # Save the image to the specified path
-        cv2.imwrite("hand.png", frame)
-    else:
-        print("Error: Could not capture image.")
-
-    # Release the webcam
-    cap.release()
-    cv2.destroyAllWindows()
-
-# def returnCardsFromImage():
-#     return returnFoundCards(openjson("cardCreationAndRecognition/cardToArcuo old.json", True))
-
-
 def clearPrintFolder():
 
     path = "print"
@@ -40,7 +16,7 @@ def clearPrintFolder():
             if os.path.isfile(file_path):
                 os.remove(file_path)
             elif os.path.isdir(file_path):
-                shutil.rmtree(file_path)  # Deletes subdirectories and their contents
+                shutil.rmtree(file_path)
         except Exception as e:
             print(f"Error deleting {file_path}: {e}")
 
@@ -50,9 +26,10 @@ def prepareCardForPrinting(card, keep=True):
         clearPrintFolder()
     lookupTable = openjson("cardCreationAndRecognition/cardToArcuo final.json", True)
     prunedCard = card.copy()
-    prunedCard.enhancements = None
-    prunedCard.editions = None
-    prunedCard.seals = None
+    if hasattr(prunedCard, "enhancement") and prunedCard.enhancement != "stone":
+        prunedCard.enhancement = None
+    prunedCard.edition = None
+    prunedCard.seal = None
     createTaggedCardImage(prunedCard, lookupTable)
 
 def CLDisplayHand(hand):
@@ -72,46 +49,14 @@ def prepareSelectedCards(save, foundCards):
     for card in foundCards["upper"]:
         cardType = type(card).__name__
         if cardType == "Joker":
-            save.jokers.append(card)
+            for joker in save.jokersInPlay:
+                if joker.id == card.id:
+                    save.jokers.append(card)
 
     return selectedHand
 
-def pushIRLInputIntoSave(save):
-    from subscripts.cardUtils import Card
-    from subscripts.jokers import Joker
-    from subscripts.planetCards import Planet
-    from subscripts.tarotCards import Tarot
-    from subscripts.spectralCards import Spectral
-    inputCardsDict = openjson("sortedDetectedCards")
-    inputCards = {
-        "upper": [],
-        "middle": [],
-        "lower": []
-    }
-    for key, cardList in inputCardsDict.items():
-        for cardDict in cardList:
-            if len(cardDict) == 2:
-                inputCards[key].append(Joker(cardDict))
-            elif "suit" in cardDict.keys():
-                inputCards[key].append(Card(cardDict))
-            elif "type" in cardDict.keys():
-                type = cardDict["type"]
-                name = cardDict["name"]
-                negative = cardDict["negative"]
-                inputCards[key].append(eval(type)(name, negative))
-    # inputCards = {
-    #     key: [Card(cardDict) for cardDict in cardList]
-    #     for key, cardList in inputCardsDict.items()
-    # }
-    selectedHand = inputCards["middle"]
-    save.hand = inputCards["lower"]
-    jokers = []
-    consumables = []
-    for card in inputCards["upper"]:
-        if isinstance(card, Joker):
-            jokers.append(card)
-        else:
-            consumables.append(card)
-    save.jokers = jokers
-    save.consumables = consumables
-    return selectedHand
+def alreadyHasConsumable(save, consumable):
+    for alreadyOwnedConsumable in save.consumables:
+        if consumable.name == alreadyOwnedConsumable.name:
+            return True
+    return False

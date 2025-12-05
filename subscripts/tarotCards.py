@@ -1,7 +1,8 @@
+from subscripts.inputHandling import alreadyHasConsumable
 from subscripts.jokers import generateRandomWeightedJokers
 from subscripts.planetCards import generateShuffledListOfUnlockedPlanetCards
 from subscripts.spacesavers import *
-from subscripts.inputHandling import CLDisplayHand, clearPrintFolder, prepareCardForPrinting, pushIRLInputIntoSave
+from subscripts.inputHandling import CLDisplayHand, clearPrintFolder, prepareCardForPrinting
 import random
 
 
@@ -37,12 +38,15 @@ class Tarot:
         binaryEncoder = "011" + str(format(nameIndex, '05b')) + negativeBit + "00000000"
         return int(binaryEncoder, 2)
 
-def generateShuffledListOfFinishedTarotCards():
+# TODO: make this be able to generate duplicates with showman
+def generateShuffledListOfFinishedTarotCards(save):
     finishedTarots = list(openjson("consumables/tarotDict").keys())
 
     viableTarotCards = []
     for tarot in finishedTarots:
-        viableTarotCards.append(Tarot(tarot))
+        tarotObj = Tarot(tarot)
+        if not alreadyHasConsumable(save, tarotObj) or save.hasJoker("Showman"):
+            viableTarotCards.append(tarotObj)
     random.shuffle(viableTarotCards)
     return viableTarotCards
 
@@ -51,7 +55,6 @@ def useTarotCard(card, otherCards, save, inConsumables = False):
     # all of them
     tarotCardInfo = openjson("consumables/tarotDict")[card.name]
     tarotType = tarotCardInfo["type"]
-    usedSuccessfully = False
 
     # if the tarot card needs you to select cards from your hand (most of them)
     if tarotType == "handModifier":
@@ -69,6 +72,7 @@ def useTarotCard(card, otherCards, save, inConsumables = False):
         # suit converters (star, moon, sun, world)
         subModifier = tarotCardInfo["modifier"]
         if subModifier == "suit":
+            clearPrintFolder()
             for card in otherCards:
                 newCard = card.copy()
                 newCard.suit = tarotCardInfo["suit"]
@@ -82,11 +86,15 @@ def useTarotCard(card, otherCards, save, inConsumables = False):
             for card in otherCards:
                 newCard = card.copy()
                 newCard.enhancement = tarotCardInfo["enhancement"]
+                if newCard.enhancement == "stone":
+                    newCard.id = None
+                    prepareCardForPrinting(newCard, keep=True)
                 save.replaceCardInDeck(card, newCard)
             return True, "Success!"
 
         # rank converter (strength)
         elif subModifier == "rank":
+            clearPrintFolder()
             for card in otherCards:
                 newCard = card.copy()
                 newCard.number = increaseCardVal(card.number)
@@ -121,8 +129,8 @@ def useTarotCard(card, otherCards, save, inConsumables = False):
 
         # judgement
         if subset == "joker":
-            if len(save.jokers) < save.jokerLimit:
-                save.jokers.append(generateRandomWeightedJokers(save, 1))
+            if len(save.jokersInPlay) < save.jokerLimit:
+                save.jokersInPlay.append(generateRandomWeightedJokers(save, 1))
                 return True, "Success!"
             return False, "Not enough space!"
 
@@ -141,7 +149,7 @@ def useTarotCard(card, otherCards, save, inConsumables = False):
                 if subset == "planet":
                     save.consumables.append(generateShuffledListOfUnlockedPlanetCards(save)[0])
                 elif subset == "tarot":
-                    save.consumables.append(generateShuffledListOfFinishedTarotCards()[0])
+                    save.consumables.append(generateShuffledListOfFinishedTarotCards(save)[0])
             return True, "Success!"
 
     # hermit/temperance
@@ -154,23 +162,23 @@ def useTarotCard(card, otherCards, save, inConsumables = False):
 
         elif tarotCardInfo["modifier"] == "jokerSellValue":
             sellValue = 0
-            for joker in save.jokers:
+            for joker in save.jokersInPlay:
                 sellValue += joker.getSellValue()
             save.money += min(sellValue, 40)
             return True, "Success!"
 
     # the wheel
     elif tarotType == "meme":
-        if len(save.jokers) > 0:
+        if len(save.jokersInPlay) > 0:
             # see it really is 1 in 4!
             if random.randint(1, 4) == 1:
                 # random.shuffle will mess with the joker order, I need to modify a specific joker in place
                 # ik there's a better way to do this but I forget how
                 # TODO: fix this later
-                jokerModifyIndex = random.randint(0, len(save.jokers) - 1)
+                jokerModifyIndex = random.randint(0, len(save.jokersInPlay) - 1)
                 editions = ["foil", "holographic", "polychrome"]
                 weights = [12.5, 8.75, 3.75]
-                save.jokers(jokerModifyIndex).edition = random.choices(editions, weights)[0]
+                save.jokersInPlay[jokerModifyIndex].edition = random.choices(editions, weights)[0]
                 return True, "Success!"
             else:
                 return True, "Nope!"

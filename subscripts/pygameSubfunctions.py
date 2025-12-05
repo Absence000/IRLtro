@@ -43,16 +43,65 @@ def drawWebcamAndReturnFoundCards(cap, lookupTable, screen, backupDetectedCardsS
     drawRect(screen, (0, 0, 0), (320, 180, 960, 3))
     drawRect(screen, (0, 0, 0), (320, 360, 960, 3))
 
-    # ok I think I finally figured out a way to get the anti flicker working
-    # it checks the bottom, middle, and top separately against an old reference scan
-    # if the old one has more cards and is less than 3 seconds old it defaults to that
+    foundIDs = []
     for section in ["upper", "middle", "lower"]:
-        if len(sortedDetectedCards[section]) < len(backupDetectedCardsScan[section]):
+        for card in sortedDetectedCards[section]:
+            foundIDs.append(getCardAndJokerTrackingID(card))
+
+    # this is really confusing sorry
+    # anti flicker:
+    # checks bottom, middle, and top separately against old reference scan
+    for section in ["upper", "middle", "lower"]:
+        oldSection = backupDetectedCardsScan[section]
+        newSection = sortedDetectedCards[section]
+        # if the old reference scan has more cards and is less than 3 seconds old:
+        if len(newSection) < len(oldSection):
             if currentTime - backupDetectedCardsScanTime[section] < 3:
-                sortedDetectedCards[section] = backupDetectedCardsScan[section]
+                # to prevent a missing card being moved to a different section "ghosting" as part of the anti flicker:
+                # it checks if the old cards' IDs are anywhere else in the new scan
+                # if they are it uses the new scan instead
+                # if they aren't it uses the old one
+                oldIDs = {getCardAndJokerTrackingID(c) for c in oldSection}
+                newIDs = {getCardAndJokerTrackingID(c) for c in newSection}
+                oldIDsNotInSection = list(oldIDs - newIDs)
+                lostCardFoundInOtherSection = False
+                for lostID in oldIDsNotInSection:
+                    if lostID in foundIDs:
+                        lostCardFoundInOtherSection = True
+                if not lostCardFoundInOtherSection:
+                    sortedDetectedCards[section] = backupDetectedCardsScan[section]
         else:
+            # makes a new backup scan
             backupDetectedCardsScan[section] = sortedDetectedCards[section]
             backupDetectedCardsScanTime[section] = currentTime
+
+    # anti card-appearing-in-multiple-sections +
+    # if a card is showing up in multiple sections now after anti flicker we delete it from the top down
+    previousSectionIDs = []
+    currentSectionIDs = []
+    for section in ["upper", "middle", "lower"]:
+        newSection = sortedDetectedCards[section]
+        for card in newSection:
+            trackingID = getCardAndJokerTrackingID(card)
+            # anti playing-card-appearing-as-joker:
+            # if a playing card is appearing up top it gets moved to the middle
+            if section == "upper":
+                if isinstance(card, Card):
+                    sortedDetectedCards["upper"].remove(card)
+                    sortedDetectedCards["middle"].append(card)
+                else:
+                    currentSectionIDs.append(trackingID)
+            else:
+                if trackingID in previousSectionIDs:
+                    sortedDetectedCards[section].remove(card)
+                else:
+                    currentSectionIDs.append(trackingID)
+
+        previousSectionIDs = currentSectionIDs
+
+
+
+
 
     # draws the extra stuff on top if needed
     for section, sublist in sortedDetectedCards.items():
@@ -64,18 +113,11 @@ def drawWebcamAndReturnFoundCards(cap, lookupTable, screen, backupDetectedCardsS
                     debuffed = False
                     if card not in save.deck or card.debuffed:
                         debuffed = True
-                    if card.enhancement is not None or card.edition is not None or card.seal is not None or debuffed:
-                        x, y = getFixedCardCenter(card.coords)
-                        # TODO: I thought for sure I'd need to cache the images but somehow this godawful shit is fine for
-                        #  performance, but if there's lag later it'll probably be caused by this
-                        rawImg = createImageFromCard(card, True, debuffed)
-                        fixedImg = pygame.image.frombytes(rawImg.tobytes(), (690, 966), "RGBA")
-                        scalingFactor = 0.0045
-                        scale = card.scale * scalingFactor
-                        fixedImg = pygame.transform.scale(fixedImg, (int(scale * 690), int(scale * 966)))
-                        x -= int(scale * 350)
-                        y -= int(scale * 500)
-                        screen.blit(fixedImg, (x, y))
+                    if card.enhancement not in [None, "stone"] or card.edition is not None or card.seal is not None or debuffed:
+                        overlayStuffOnCard(card, debuffed, screen)
+                elif isinstance(card, Joker):
+                    if card.edition is not None or card.debuffed:
+                        overlayStuffOnCard(card, card.debuffed, screen)
 
 
 
@@ -89,6 +131,25 @@ def openCamera(index):
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
     return cap
 
+def getCardAndJokerTrackingID(card):
+    # TODO: Change the id for playing cards to tracking ID it's a mess rn
+    if isinstance(card, Card):
+        return card.id
+    elif isinstance(card, Joker):
+        return card.trackingID
+
+def overlayStuffOnCard(card, debuffed, screen):
+    x, y = getFixedCardCenter(card.coords)
+    # TODO: I thought for sure I'd need to cache the images but somehow this godawful shit is fine for
+    #  performance, but if there's lag later it'll probably be caused by this
+    rawImg = createImageFromCard(card, True, debuffed)
+    fixedImg = pygame.image.frombytes(rawImg.tobytes(), (690, 966), "RGBA")
+    scalingFactor = 0.0045
+    scale = card.scale * scalingFactor
+    fixedImg = pygame.transform.scale(fixedImg, (int(scale * 690), int(scale * 966)))
+    x -= int(scale * 350)
+    y -= int(scale * 500)
+    screen.blit(fixedImg, (x, y))
 
 def drawBlindInfoScreen(save, blindInfo, screen, colors, font, origin, mode, chipSymbol):
     # TODO: Fix this it's dumb
@@ -355,7 +416,6 @@ def drawConsumables(save, screen, colors, font, mousePos):
     return [], None
 
 def drawCardCounter(save, font, screen, colors, foundCards):
-
     prunedFoundCards = foundCards.copy()
     del prunedFoundCards["unpairedTags"]
 
@@ -414,8 +474,12 @@ def drawAnalysisPopup(save, font, screen, colors, cardToAnalyze):
 
     drawRect(screen, colors.lightUI, (xOrigin - 10, yOrigin-10, 220, 220), round=7)
     drawRect(screen, colors.darkUI, (xOrigin - 5, yOrigin - 5, 210, 210), round=7)
+    sellRect = (xOrigin - 10, yOrigin + 210, 220, 50)
+    drawRect(screen, colors.red, sellRect, round=7)
+    drawText(screen, f"Sell (${cardToAnalyze.getSellValue()})", font, colors.white, (550, 250))
     message = textwrap.fill(cardToAnalyze.toString(), 20)
     drawText(screen, message, font, colors.white, (xOrigin, yOrigin), "left")
+    return [{"name": "sellJoker", "rect": sellRect}]
 
 # TODO: Figure out a way to get this displaying correctly if there's duplicate cards
 def displayChainEvent(event, screen, font):

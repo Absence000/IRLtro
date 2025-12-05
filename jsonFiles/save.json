@@ -7,7 +7,7 @@
             "seal": null,
             "suit": "S",
             "retriggeredBy": [],
-            "id": null
+            "id": 0
         },
         {
             "number": "3",
@@ -16,7 +16,7 @@
             "seal": null,
             "suit": "S",
             "retriggeredBy": [],
-            "id": null
+            "id": 160
         },
         {
             "number": "4",
@@ -61,7 +61,7 @@
             "seal": null,
             "suit": "S",
             "retriggeredBy": [],
-            "id": null
+            "id": 960
         },
         {
             "number": "9",
@@ -83,21 +83,21 @@
         },
         {
             "number": "J",
-            "enhancement": null,
+            "enhancement": "bonus",
             "edition": null,
             "seal": null,
             "suit": "S",
             "retriggeredBy": [],
-            "id": null
+            "id": 1440
         },
         {
             "number": "Q",
-            "enhancement": null,
+            "enhancement": "gold",
             "edition": null,
             "seal": null,
             "suit": "S",
             "retriggeredBy": [],
-            "id": null
+            "id": 1600
         },
         {
             "number": "K",
@@ -106,7 +106,7 @@
             "seal": null,
             "suit": "S",
             "retriggeredBy": [],
-            "id": null
+            "id": 1760
         },
         {
             "number": "A",
@@ -115,7 +115,7 @@
             "seal": null,
             "suit": "S",
             "retriggeredBy": [],
-            "id": null
+            "id": 1920
         },
         {
             "number": "2",
@@ -124,7 +124,7 @@
             "seal": null,
             "suit": "C",
             "retriggeredBy": [],
-            "id": null
+            "id": 2080
         },
         {
             "number": "3",
@@ -133,7 +133,7 @@
             "seal": null,
             "suit": "C",
             "retriggeredBy": [],
-            "id": null
+            "id": 2240
         },
         {
             "number": "4",
@@ -160,7 +160,7 @@
             "seal": null,
             "suit": "C",
             "retriggeredBy": [],
-            "id": null
+            "id": 2720
         },
         {
             "number": "7",
@@ -178,7 +178,7 @@
             "seal": null,
             "suit": "C",
             "retriggeredBy": [],
-            "id": null
+            "id": 3040
         },
         {
             "number": "9",
@@ -214,7 +214,7 @@
             "seal": null,
             "suit": "C",
             "retriggeredBy": [],
-            "id": 3680
+            "id": null
         },
         {
             "number": "K",
@@ -247,10 +247,10 @@
             "number": "3",
             "enhancement": null,
             "edition": null,
-            "seal": null,
+            "seal": "blue",
             "suit": "D",
             "retriggeredBy": [],
-            "id": null
+            "id": 6400
         },
         {
             "number": "4",
@@ -268,7 +268,7 @@
             "seal": null,
             "suit": "D",
             "retriggeredBy": [],
-            "id": null
+            "id": 6720
         },
         {
             "number": "6",
@@ -295,7 +295,7 @@
             "seal": null,
             "suit": "D",
             "retriggeredBy": [],
-            "id": null
+            "id": 7200
         },
         {
             "number": "9",
@@ -304,7 +304,7 @@
             "seal": null,
             "suit": "D",
             "retriggeredBy": [],
-            "id": null
+            "id": 7360
         },
         {
             "number": "10",
@@ -313,7 +313,7 @@
             "seal": null,
             "suit": "D",
             "retriggeredBy": [],
-            "id": null
+            "id": 7520
         },
         {
             "number": "J",
@@ -322,16 +322,16 @@
             "seal": null,
             "suit": "D",
             "retriggeredBy": [],
-            "id": null
+            "id": 7680
         },
         {
             "number": "Q",
-            "enhancement": null,
+            "enhancement": "gold",
             "edition": null,
-            "seal": null,
+            "seal": "red",
             "suit": "D",
             "retriggeredBy": [],
-            "id": null
+            "id": 7840
         },
         {
             "number": "K",
@@ -340,7 +340,7 @@
             "seal": null,
             "suit": "D",
             "retriggeredBy": [],
-            "id": null
+            "id": 8000
         },
         {
             "number": "A",
@@ -349,7 +349,7 @@
             "seal": null,
             "suit": "D",
             "retriggeredBy": [],
-            "id": null
+            "id": 8160
         },
         {
             "number": "2",
@@ -376,7 +376,7 @@
             "seal": null,
             "suit": "H",
             "retriggeredBy": [],
-            "id": null
+            "id": 4480
         },
         {
             "number": "5",
@@ -385,7 +385,7 @@
             "seal": null,
             "suit": "H",
             "retriggeredBy": [],
-            "id": null
+            "id": 4640
         },
         {
             "number": "6",
@@ -394,7 +394,7 @@
             "seal": null,
             "suit": "H",
             "retriggeredBy": [],
-            "id": null
+            "id": 4800
         },
         {
             "number": "7",
@@ -403,7 +403,7 @@
             "seal": null,
             "suit": "H",
             "retriggeredBy": [],
-            "id": null
+            "id": 4960
         },
         {
             "number": "8",
@@ -412,7 +412,7 @@
             "seal": null,
             "suit": "H",
             "retriggeredBy": [],
-            "id": null
+            "id": 5120
         },
         {
             "number": "9",
@@ -421,7 +421,7 @@
             "seal": null,
             "suit": "H",
             "retriggeredBy": [],
-            "id": null
+            "id": 5280
         },
         {
             "number": "10",
@@ -430,16 +430,16 @@
             "seal": null,
             "suit": "H",
             "retriggeredBy": [],
-            "id": null
+            "id": 5440
         },
         {
             "number": "J",
-            "enhancement": null,
+            "enhancement": "lucky",
             "edition": null,
             "seal": null,
             "suit": "H",
             "retriggeredBy": [],
-            "id": null
+            "id": 5600
         },
         {
             "number": "Q",
@@ -448,16 +448,16 @@
             "seal": null,
             "suit": "H",
             "retriggeredBy": [],
-            "id": null
+            "id": 5760
         },
         {
             "number": "K",
-            "enhancement": null,
+            "enhancement": "lucky",
             "edition": null,
             "seal": null,
             "suit": "H",
             "retriggeredBy": [],
-            "id": null
+            "id": 5920
         },
         {
             "number": "A",
@@ -469,58 +469,53 @@
             "id": null
         }
     ],
-    "ante": 2,
-    "blindIndex": 0,
-    "state": "shop",
-    "hands": 2,
-    "discards": 4,
+    "ante": 5,
+    "blindIndex": 1,
+    "state": "dead",
+    "hands": 0,
+    "discards": 0,
     "shop": {
         "cards": [
             [
+                {
+                    "name": "Earth",
+                    "negative": null,
+                    "type": "Planet"
+                },
+                3
+            ],
+            [
                 [
-                    "Scary Face",
+                    "Jolly Joker",
                     {
-                        "condition": "face",
-                        "type": "chip",
-                        "chip": 30,
+                        "type": "mult",
+                        "condition": "hand",
+                        "hand": "Pair",
+                        "mult": 8,
                         "finished": true,
                         "position": [
                             2,
-                            3
+                            0
                         ],
-                        "id": 33,
-                        "cost": 4,
+                        "id": 6,
+                        "cost": 3,
                         "rarity": "Common",
-                        "description": "Played face cards give +30 Chips when scored",
+                        "description": "+8 Mult if played hand contains a Pair",
                         "additionalSellValue": 0,
                         "edition": null
                     }
                 ],
-                4
-            ],
-            [
-                {
-                    "name": "Justice (VIII)",
-                    "negative": null,
-                    "type": "Tarot"
-                },
                 3
             ]
         ],
         "packs": [
-            [
-                {
-                    "subset": "celestial",
-                    "size": "normal"
-                },
-                4
-            ],
+            null,
             [
                 {
                     "subset": "buffoon",
-                    "size": "jumbo"
+                    "size": "normal"
                 },
-                6
+                4
             ]
         ],
         "vouchers": [
@@ -528,17 +523,17 @@
         ],
         "rerollCost": 5
     },
-    "money": 19,
+    "money": 36,
     "handLevels": {
         "High Card": {
-            "level": 1,
-            "chips": 5,
-            "mult": 1
-        },
-        "Pair": {
-            "level": 1,
+            "level": 2,
             "chips": 10,
             "mult": 2
+        },
+        "Pair": {
+            "level": 2,
+            "chips": 25,
+            "mult": 3
         },
         "Two Pair": {
             "level": 1,
@@ -601,43 +596,22 @@
     "consumablesLimit": 2,
     "hand": [
         {
-            "number": "A",
-            "enhancement": null,
+            "number": "Q",
+            "enhancement": "gold",
             "edition": null,
-            "seal": null,
-            "suit": "C",
+            "seal": "red",
+            "suit": "D",
             "retriggeredBy": [],
-            "id": 4000
+            "id": 7840
         },
         {
-            "number": "K",
-            "enhancement": null,
+            "number": "Q",
+            "enhancement": "gold",
             "edition": null,
             "seal": null,
-            "suit": "C",
+            "suit": "S",
             "retriggeredBy": [],
-            "id": 3840
-        }
-    ],
-    "handLimit": 8,
-    "jokers": [],
-    "jokerLimit": 5,
-    "requiredScore": 800,
-    "blindInfo": [
-        "Small Blind",
-        1,
-        3
-    ],
-    "discardedCards": [],
-    "playedCards": [
-        {
-            "number": "K",
-            "enhancement": null,
-            "edition": null,
-            "seal": null,
-            "suit": "C",
-            "retriggeredBy": [],
-            "id": 3840
+            "id": 1600
         },
         {
             "number": "10",
@@ -647,15 +621,293 @@
             "suit": "C",
             "retriggeredBy": [],
             "id": 3360
-        },
+        }
+    ],
+    "handLimit": 8,
+    "jokers": [
+        [
+            "Square Joker",
+            {
+                "type": "chip",
+                "chip": 72,
+                "condition": "active",
+                "finished": true,
+                "position": [
+                    9,
+                    11
+                ],
+                "additionalSellValue": 0,
+                "edition": null,
+                "id": 65,
+                "cost": 4,
+                "rarity": "Common",
+                "description": "This Joker gains +4 Chips if played hand has exactly 4 cards (currently {self.chip} chips)"
+            }
+        ],
+        [
+            "Wrathful Joker",
+            {
+                "type": "mult",
+                "condition": "suit",
+                "suit": "S",
+                "mult": 3,
+                "finished": true,
+                "position": [
+                    8,
+                    1
+                ],
+                "additionalSellValue": 0,
+                "edition": null,
+                "id": 4,
+                "cost": 5,
+                "rarity": "Common",
+                "description": "Played cards with Spade suit give +3 Mult when scored"
+            }
+        ],
+        [
+            "Half Joker",
+            {
+                "type": "mult",
+                "condition": "cardCount",
+                "cardCount": "<3",
+                "mult": 20,
+                "finished": true,
+                "position": [
+                    7,
+                    0
+                ],
+                "additionalSellValue": 0,
+                "edition": null,
+                "id": 16,
+                "cost": 5,
+                "rarity": "Common",
+                "description": "+20 Mult if played hand contains 3 or fewer cards"
+            }
+        ],
+        [
+            "Odd Todd",
+            {
+                "type": "chip",
+                "chip": 31,
+                "condition": "numbers",
+                "numbers": [
+                    "3",
+                    "5",
+                    "7",
+                    "9",
+                    "A"
+                ],
+                "finished": true,
+                "position": [
+                    9,
+                    3
+                ],
+                "additionalSellValue": 0,
+                "edition": null,
+                "id": 40,
+                "cost": 4,
+                "rarity": "Common",
+                "description": "Played cards with odd rank give +31 Chips when scored (A, 9, 7, 5, 3)"
+            }
+        ],
+        [
+            "Smiley Face",
+            {
+                "type": "mult",
+                "mult": 5,
+                "condition": "face",
+                "finished": true,
+                "position": [
+                    6,
+                    15
+                ],
+                "additionalSellValue": 0,
+                "edition": null,
+                "id": 104,
+                "cost": 4,
+                "rarity": "Common",
+                "description": "Played face cards give +5 Mult when scored"
+            }
+        ]
+    ],
+    "jokersInPlay": [
+        [
+            "Wrathful Joker",
+            {
+                "type": "mult",
+                "condition": "suit",
+                "suit": "S",
+                "mult": 3,
+                "finished": true,
+                "position": [
+                    8,
+                    1
+                ],
+                "additionalSellValue": 0,
+                "edition": null,
+                "id": 4,
+                "cost": 5,
+                "rarity": "Common",
+                "description": "Played cards with Spade suit give +3 Mult when scored"
+            }
+        ],
+        [
+            "Half Joker",
+            {
+                "type": "mult",
+                "condition": "cardCount",
+                "cardCount": "<3",
+                "mult": 20,
+                "finished": true,
+                "position": [
+                    7,
+                    0
+                ],
+                "additionalSellValue": 0,
+                "edition": null,
+                "id": 16,
+                "cost": 5,
+                "rarity": "Common",
+                "description": "+20 Mult if played hand contains 3 or fewer cards"
+            }
+        ],
+        [
+            "Odd Todd",
+            {
+                "type": "chip",
+                "chip": 31,
+                "condition": "numbers",
+                "numbers": [
+                    "3",
+                    "5",
+                    "7",
+                    "9",
+                    "A"
+                ],
+                "finished": true,
+                "position": [
+                    9,
+                    3
+                ],
+                "additionalSellValue": 0,
+                "edition": null,
+                "id": 40,
+                "cost": 4,
+                "rarity": "Common",
+                "description": "Played cards with odd rank give +31 Chips when scored (A, 9, 7, 5, 3)"
+            }
+        ],
+        [
+            "Square Joker",
+            {
+                "type": "chip",
+                "chip": 72,
+                "condition": "active",
+                "finished": true,
+                "position": [
+                    9,
+                    11
+                ],
+                "additionalSellValue": 0,
+                "edition": null,
+                "id": 65,
+                "cost": 4,
+                "rarity": "Common",
+                "description": "This Joker gains +4 Chips if played hand has exactly 4 cards (currently {self.chip} chips)"
+            }
+        ],
+        [
+            "Smiley Face",
+            {
+                "type": "mult",
+                "mult": 5,
+                "condition": "face",
+                "finished": true,
+                "position": [
+                    6,
+                    15
+                ],
+                "additionalSellValue": 0,
+                "edition": null,
+                "id": 104,
+                "cost": 4,
+                "rarity": "Common",
+                "description": "Played face cards give +5 Mult when scored"
+            }
+        ]
+    ],
+    "jokerLimit": 5,
+    "requiredScore": 16500.0,
+    "blindInfo": [
+        "Big Blind",
+        1.5,
+        4
+    ],
+    "discardedCards": [
         {
-            "number": "Q",
-            "enhancement": "mult",
+            "number": "8",
+            "enhancement": null,
             "edition": null,
             "seal": null,
-            "suit": "C",
+            "suit": "D",
             "retriggeredBy": [],
-            "id": 3680
+            "id": 7200
+        }
+    ],
+    "playedCards": [
+        {
+            "number": "9",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "D",
+            "retriggeredBy": [],
+            "id": 7360
+        },
+        {
+            "number": "8",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "H",
+            "retriggeredBy": [],
+            "id": 5120
+        },
+        {
+            "number": "9",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "H",
+            "retriggeredBy": [],
+            "id": 5280
+        },
+        {
+            "number": "8",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": [],
+            "id": 960
+        },
+        {
+            "number": "J",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "D",
+            "retriggeredBy": [],
+            "id": 7680
+        },
+        {
+            "number": "J",
+            "enhancement": "lucky",
+            "edition": null,
+            "seal": null,
+            "suit": "H",
+            "retriggeredBy": [],
+            "id": 5600
         },
         {
             "number": "J",
@@ -667,6 +919,24 @@
             "id": 3520
         },
         {
+            "number": "J",
+            "enhancement": "bonus",
+            "edition": null,
+            "seal": null,
+            "suit": "S",
+            "retriggeredBy": [],
+            "id": 1440
+        },
+        {
+            "number": "Q",
+            "enhancement": null,
+            "edition": null,
+            "seal": null,
+            "suit": "H",
+            "retriggeredBy": [],
+            "id": 5760
+        },
+        {
             "number": "A",
             "enhancement": null,
             "edition": null,
@@ -676,12 +946,16 @@
             "id": 4000
         }
     ],
-    "score": 2416,
+    "score": 16400,
     "round": 1,
     "irl": true,
     "lastUsedTarotOrPlanet": {
-        "name": "The Empress (III)",
+        "name": "The Hierophant (V)",
         "negative": null,
         "type": "Tarot"
-    }
+    },
+    "startingHands": 4,
+    "startingDiscards": 3,
+    "ectoUses": 0,
+    "firstShopEncountered": false
 }

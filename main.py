@@ -6,12 +6,12 @@ from subscripts.saveUtils import *
 from subscripts.colorManagement import Colors
 from subscripts.eventChainManagement import EventChain, Event
 from subscripts.packs import Pack
-from subscripts.cardUtils import Card
+from subscripts.cardUtils import Card, addTarotCardIfRoom
 from subscripts.jokers import Joker
 from subscripts.planetCards import Planet, usePlanetCard
 from subscripts.shop import newItemIsConsumable
 from subscripts.tarotCards import Tarot, useTarotCard
-from subscripts.spectralCards import Spectral
+from subscripts.spectralCards import Spectral, useSpectralCard
 import pygame, time
 
 def main():
@@ -31,10 +31,12 @@ def main():
     clock = pygame.time.Clock()
 
     lookupTable = openjson("cardCreationAndRecognition/cardToArcuo final.json", True)
-    # save = Save(openjson("save"))
+    save = Save(openjson("save"))
+    if save.state == "dead":
+        save = createBlankSave("standard", True)
 
     # temp blank save stuff
-    save = createBlankSave("standard", True)
+    # save = createBlankSave("standard", True)
     # save.blindInfo = blindIndexToBlindInfo[save.blindIndex]
     # save.requiredScore = anteBaseChipsList[save.ante] * save.blindInfo[1]
     # save.state = "playing"
@@ -43,6 +45,8 @@ def main():
     # save.discards = 4
     # save.hands = 4
     # save.score = 0
+
+    jokerDict = openjson("jokerDict")
 
     backupDetectedCardsScan = {
         "upper": [],
@@ -128,14 +132,24 @@ def main():
             consumableButtons, selectedConsumable = drawConsumables(save, screen, colors, font, mousePos)
             buttons += consumableButtons
 
+            handType, handInfo = drawCardCounter(save, font, screen, colors, foundCards)
+            handTypeType = type(handType).__name__
+            if handTypeType == "Joker":
+                # analysis mode, draws a popup saying what the joker does
+                analysisMode = True
+                selectedJoker = handType
+                buttons += drawAnalysisPopup(save, font, screen, colors, handType)
+            else:
+                selectedJoker = None
+
             if canInteract:
                 if pressedButton == "select":
                     pressedButton = ""
                     save.state = "playing"
                     save.discardedCards = []
                     save.playedCards = []
-                    save.discards = 4
-                    save.hands = 3
+                    save.discards = save.startingDiscards
+                    save.hands = save.startingHands
                     save.score = 0
 
                 elif pressedButton == "skip":
@@ -152,6 +166,17 @@ def main():
                     pressedButton = ""
                     sellConsumable(selectedConsumable, save)
 
+                elif pressedButton == "sellJoker":
+                    pressedButton = ""
+                    jokerInPlay = False
+                    for joker in save.jokersInPlay:
+                        if selectedJoker.id == joker.id:
+                            jokerInPlay = True
+                    if jokerInPlay:
+                        save.money += selectedJoker.getSellValue()
+                    save.jokersInPlay = [joker for joker in save.jokersInPlay if joker.id != selectedJoker.id]
+
+
         elif save.state == "playing":
             if calculatingHand:
                 freezeFrame = rawFrame
@@ -162,6 +187,8 @@ def main():
             foundCards, backupDetectedCardsScan, backupDetectedCardsScanTime, rawFrame = (
                 drawWebcamAndReturnFoundCards(cap, lookupTable, screen, backupDetectedCardsScan,
                                               backupDetectedCardsScanTime, currentTime, save, freezeFrame, None))
+
+            buttons = []
 
             if calculatingHand:
                 # this part took so long to figure out holy shit
@@ -184,6 +211,19 @@ def main():
                             save.score += points
                             save.hands -= 1
                             if save.score >= save.requiredScore:
+                                # blue seals
+                                planetDict = openjson("consumables/planetDict")
+                                for card in foundCards["lower"]:
+                                    if card.seal == "blue":
+                                        planetFound = None
+                                        if len(save.consumables) < save.consumablesLimit:
+                                            for planet, info in planetDict.items():
+                                                if info["hand"] == lastPlayedHandName:
+                                                    planetFound = planet
+
+                                            save.consumables.append(Planet(planetFound))
+                                            print(save.consumables)
+
                                 # advances to the next round
                                 baseReward = save.blindInfo[2]
                                 save.nextBlind()
@@ -209,11 +249,11 @@ def main():
             else:
                 handType, handInfo = drawCardCounter(save, font, screen, colors, foundCards)
                 handTypeType = type(handType).__name__
-                if handTypeType in ["Joker", "Planet", "Tarot", "Spectral"]:
-                    # analysis mode, draws a popup saying what the joker/consumable does
+                if handTypeType == "Joker":
+                    # analysis mode, draws a popup saying what the joker does
                     analysisMode = True
-                    drawAnalysisPopup(save, font, screen, colors, handType)
-                    consumable = handType
+                    buttons += drawAnalysisPopup(save, font, screen, colors, handType)
+                    selectedJoker = handType
                     otherCards = handInfo
                     handType = ""
                     level = ""
@@ -229,7 +269,7 @@ def main():
                     displayChips = handInfo["chips"]
                     displayMult = handInfo["mult"]
 
-            buttons = drawLeftBar(save, font, screen, colors, handType, level, score, displayChips, displayMult, camIndex)
+            buttons += drawLeftBar(save, font, screen, colors, handType, level, score, displayChips, displayMult, camIndex)
 
             buttons += drawButtons(save, screen, colors, font)
             consumableButtons, selectedConsumable = drawConsumables(save, screen, colors, font, mousePos)
@@ -237,23 +277,29 @@ def main():
             if canInteract:
                 if pressedButton == "play":
                     pressedButton = ""
-                    # TODO: delete all the analysis mode stuff now that the consumables are digital
-                    selectedHand = prepareSelectedCards(save, foundCards)
-                    if len(selectedHand) <= 5:
-                        calculatingHand = True
-                        canInteract = False
-                        points, chain, selectedHand = (
-                            calcPointsFromHand(selectedHand, findBestHand(selectedHand), save.hand, save))
-                        lastEventTime = currentTime
-                        chainIndex = 0
+                    if not analysisMode:
+                        selectedHand = prepareSelectedCards(save, foundCards)
+                        if 0 < len(selectedHand) <= 5:
+                            calculatingHand = True
+                            canInteract = False
+                            lastPlayedHandName = handType
+                            points, chain, selectedHand = (
+                                calcPointsFromHand(selectedHand, findBestHand(selectedHand), save.hand, save))
+                            lastEventTime = currentTime
+                            chainIndex = 0
                 elif pressedButton == "discard":
-                    selectedHand = prepareSelectedCards(save, foundCards)
-                    if len(selectedHand) <= 5:
-                        # TODO: Discard check stuff here
-                        pressedButton = ""
-                        save.discardedCards += selectedHand
-                        save.discards -= 1
-
+                    if not analysisMode:
+                        selectedHand = prepareSelectedCards(save, foundCards)
+                        if len(selectedHand) <= 5:
+                            # TODO: Discard check stuff here
+                            for card in selectedHand:
+                                if card.seal == "purple":
+                                    if len(save.consumables) < save.consumablesLimit:
+                                        save.consumables.append(addTarotCardIfRoom(save))
+                            pressedButton = ""
+                            save.discardedCards += selectedHand
+                            save.discards -= 1
+                    # TODO: Joker selling
 
                 elif pressedButton == "use":
                     pressedButton = ""
@@ -262,11 +308,25 @@ def main():
                         success, successMessage = useTarotCard(selectedConsumable, selectedHand, save, True)
                         chain = EventChain()
                         canInteract = False
+                        calculatingHand = True
                         lastEventTime = currentTime
                         chainIndex = 0
                         if success:
                             chain.add("chips", successMessage, selectedConsumable, 0, 0)
-                            save.lastUsedTarotOrPlanet = chosenCard
+                            save.lastUsedTarotOrPlanet = selectedConsumable
+                            save.consumables.remove(selectedConsumable)
+                        else:
+                            chain.add("mult", successMessage, selectedConsumable, 0, 0)
+                    elif isinstance(selectedConsumable, Spectral):
+                        selectedHand = prepareSelectedCards(save, foundCards)
+                        success, successMessage = useSpectralCard(selectedConsumable, selectedHand, save, True)
+                        chain = EventChain()
+                        canInteract = False
+                        calculatingHand = True
+                        lastEventTime = currentTime
+                        chainIndex = 0
+                        if success:
+                            chain.add("chips", successMessage, selectedConsumable, 0, 0)
                             save.consumables.remove(selectedConsumable)
                         else:
                             chain.add("mult", successMessage, selectedConsumable, 0, 0)
@@ -274,11 +334,22 @@ def main():
                     elif isinstance(selectedConsumable, Planet):
                         usePlanetCard(selectedConsumable, save)
                         save.consumables.remove(selectedConsumable)
-                        save.lastUsedTarotOrPlanet = chosenCard
+                        save.lastUsedTarotOrPlanet = selectedConsumable
 
                 elif pressedButton == "sell":
                     pressedButton = ""
                     sellConsumable(selectedConsumable, save)
+
+                elif pressedButton == "sellJoker":
+                    print("aaa")
+                    pressedButton = ""
+                    jokerInPlay = False
+                    for joker in save.jokersInPlay:
+                        if selectedJoker.id == joker.id:
+                            jokerInPlay = True
+                    if jokerInPlay:
+                        save.money += selectedJoker.getSellValue()
+                    save.jokersInPlay = [joker for joker in save.jokersInPlay if joker.id != selectedJoker.id]
 
         elif save.state == "shop":
             buttons = drawLeftBar(save, font, screen, colors, "", "", 0, 0, 0, camIndex)
@@ -292,6 +363,15 @@ def main():
                 drawWebcamAndReturnFoundCards(cap, lookupTable, screen, backupDetectedCardsScan,
                                               backupDetectedCardsScanTime, currentTime, save, freezeFrame, "top"))
 
+            handType, handInfo = drawCardCounter(save, font, screen, colors, foundCards)
+            handTypeType = type(handType).__name__
+            if handTypeType == "Joker":
+                # analysis mode, draws a popup saying what the joker does
+                analysisMode = True
+                selectedJoker = handType
+                buttons += drawAnalysisPopup(save, font, screen, colors, handType)
+            else:
+                selectedJoker = None
 
             if askingAboutImmediateUse: buttons += drawImmediateUsePopup(save, font, screen, colors, item)
             else: buttons += drawShop(save, font, screen, colors, mousePos)
@@ -329,9 +409,7 @@ def main():
                             shopChain.add("visual", "Bought!", pressedButtonInfo["coords"], 0, 0)
                             canInteract = False
                             item = buyStatus
-                            needsToBePrinted = True
                             if isinstance(item, Pack):
-                                needsToBePrinted = False
                                 save.state = "openingPack"
                                 pickAmount = item.pickAmount
                                 doneOpeningPack = False
@@ -343,6 +421,12 @@ def main():
                                     askingAboutImmediateUse = True
                                 else:
                                     save.consumables.append(item)
+                            else:
+                                if isinstance(item, Card):
+                                    save.deck.append(item)
+                                else:
+                                    save.jokersInPlay.append(item)
+                                prepareCardForPrinting(item, keep=True)
 
                         lastEventTime = currentTime
                     elif pressedButton == "use":
@@ -357,31 +441,58 @@ def main():
                             if success:
                                 shopChain.add("chips", successMessage, selectedConsumable, 0, 0)
                                 save.consumables.remove(selectedConsumable)
-                                save.lastUsedTarotOrPlanet = chosenCard
+                                save.lastUsedTarotOrPlanet = selectedConsumable
+                            else:
+                                shopChain.add("mult", successMessage, selectedConsumable, 0, 0)
+                        if isinstance(selectedConsumable, Spectral):
+                            selectedHand = prepareSelectedCards(save, foundCards)
+                            success, successMessage = useSpectralCard(selectedConsumable, selectedHand, save, True)
+                            shopChain = EventChain()
+                            canInteract = False
+                            lastEventTime = currentTime
+                            chainIndex = 0
+                            if success:
+                                shopChain.add("chips", successMessage, selectedConsumable, 0, 0)
+                                save.consumables.remove(selectedConsumable)
                             else:
                                 shopChain.add("mult", successMessage, selectedConsumable, 0, 0)
                         elif isinstance(selectedConsumable, Planet):
                             usePlanetCard(selectedConsumable, save)
                             save.consumables.remove(selectedConsumable)
-                            save.lastUsedTarotOrPlanet = chosenCard
+                            save.lastUsedTarotOrPlanet = selectedConsumable
 
                     elif pressedButton == "sell":
                         pressedButton = ""
                         sellConsumable(selectedConsumable, save)
+
+                    elif pressedButton == "sellJoker":
+                        pressedButton = ""
+                        jokerInPlay = False
+                        for joker in save.jokersInPlay:
+                            if selectedJoker.id == joker.id:
+                                jokerInPlay = True
+                        if jokerInPlay:
+                            save.money += selectedJoker.getSellValue()
+                        save.jokersInPlay = [joker for joker in save.jokersInPlay if joker.id != selectedJoker.id]
                 else:
                     if pressedButton == "yes":
                         pressedButton = ""
                         askingAboutImmediateUse = False
                         # TODO: Move this to a separate function once you figure out the circular import stuff
-                        if isinstance(item, Card) or isinstance(item, Joker):
+                        if isinstance(item, Card):
+                            save.deck.append(item)
+                            prepareCardForPrinting(item, keep=True)
+                        elif isinstance(item, Joker):
+                            save.jokersInPlay.append(item)
                             prepareCardForPrinting(item, keep=True)
                         elif isinstance(item, Tarot):
                             useTarotCard(item, None, save, False)
-                            save.lastUsedTarotOrPlanet = chosenCard
+                            save.lastUsedTarotOrPlanet = item
                         elif isinstance(item, Planet):
                             usePlanetCard(item, save)
-                            save.lastUsedTarotOrPlanet = chosenCard
-                        # TODO: spectrals here
+                            save.lastUsedTarotOrPlanet = item
+                        elif isinstance(item, Spectral):
+                            useSpectralCard(item, None, save, False)
                     elif pressedButton == "no":
                         askingAboutImmediateUse = False
                         pressedButton = ""
@@ -398,7 +509,16 @@ def main():
                 drawWebcamAndReturnFoundCards(cap, lookupTable, screen, backupDetectedCardsScan,
                                               backupDetectedCardsScanTime, currentTime, save, freezeFrame, cutoff=None))
 
-            drawCardCounter(save, font, screen, colors, foundCards)
+            handType, handInfo = drawCardCounter(save, font, screen, colors, foundCards)
+            handTypeType = type(handType).__name__
+            if handTypeType == "Joker":
+                # analysis mode, draws a popup saying what the joker does
+                analysisMode = True
+                selectedJoker = handType
+                buttons += drawAnalysisPopup(save, font, screen, colors, handType)
+            else:
+                selectedJoker = None
+
             if len(packChain.events) > 0:
                 if currentTime - lastEventTime < 0.25:
                     displayChainEvent(packChain.events[0], screen, font)
@@ -425,16 +545,11 @@ def main():
                     chosenItemIndex = pressedButtonInfo["index"]
                     chosenCard = items[chosenItemIndex]
 
-                    if isinstance(chosenCard, Card) or isinstance(chosenCard, Joker):
-                        prepareCardForPrinting(chosenCard, keep=True)
-                        del items[chosenItemIndex]
-                        pickAmount -= 1
-                    elif isinstance(chosenCard, Planet):
+                    if isinstance(chosenCard, Planet):
                         usePlanetCard(chosenCard, save)
                         save.lastUsedTarotOrPlanet = chosenCard
                         del items[chosenItemIndex]
                         pickAmount -= 1
-                    # TODO: spectrals here
                     elif isinstance(chosenCard, Tarot):
                         selectedHand = prepareSelectedCards(save, foundCards)
                         success, successMessage = useTarotCard(chosenCard, selectedHand, save, False)
@@ -447,7 +562,25 @@ def main():
                             save.lastUsedTarotOrPlanet = chosenCard
                         else:
                             packChain.add("mult", successMessage, chosenCard, 0, 0)
-
+                    elif isinstance(chosenCard, Spectral):
+                        selectedHand = prepareSelectedCards(save, foundCards)
+                        success, successMessage = useSpectralCard(chosenCard, selectedHand, save, False)
+                        canInteract = False
+                        lastEventTime = currentTime
+                        if success:
+                            packChain.add("chips", successMessage, chosenCard, 0, 0)
+                            pickAmount -= 1
+                            del items[chosenItemIndex]
+                        else:
+                            packChain.add("mult", successMessage, chosenCard, 0, 0)
+                    else:
+                        if isinstance(chosenCard, Card):
+                            save.deck.append(chosenCard)
+                        else:
+                            save.jokersInPlay.append(chosenCard)
+                        prepareCardForPrinting(chosenCard, keep=True)
+                        del items[chosenItemIndex]
+                        pickAmount -= 1
                     if pickAmount <= 0:
                         doneOpeningPack = True
 
@@ -463,17 +596,38 @@ def main():
                         if success:
                             packChain.add("chips", successMessage, selectedConsumable, 0, 0)
                             save.consumables.remove(selectedConsumable)
-                            save.lastUsedTarotOrPlanet = chosenCard
+                            save.lastUsedTarotOrPlanet = selectedConsumable
                         else:
                             packChain.add("mult", successMessage, selectedConsumable, 0, 0)
+                    elif isinstance(chosenCard, Spectral):
+                        selectedHand = prepareSelectedCards(save, foundCards)
+                        success, successMessage = useSpectralCard(chosenCard, selectedHand, save, False)
+                        canInteract = False
+                        lastEventTime = currentTime
+                        if success:
+                            packChain.add("chips", successMessage, chosenCard, 0, 0)
+                            pickAmount -= 1
+                            del items[chosenItemIndex]
+                        else:
+                            packChain.add("mult", successMessage, chosenCard, 0, 0)
                     elif isinstance(selectedConsumable, Planet):
                         usePlanetCard(selectedConsumable, save)
                         save.consumables.remove(selectedConsumable)
-                        save.lastUsedTarotOrPlanet = chosenCard
+                        save.lastUsedTarotOrPlanet = selectedConsumable
 
                 elif pressedButton == "sell":
                     pressedButton = ""
                     sellConsumable(selectedConsumable, save)
+
+                elif pressedButton == "sellJoker":
+                    pressedButton = ""
+                    jokerInPlay = False
+                    for joker in save.jokersInPlay:
+                        if selectedJoker.id == joker.id:
+                            jokerInPlay = True
+                    if jokerInPlay:
+                        save.money += selectedJoker.getSellValue()
+                    save.jokersInPlay = [joker for joker in save.jokersInPlay if joker.id != selectedJoker.id]
 
         elif save.state == "dead":
             running = False
@@ -483,5 +637,3 @@ def main():
         pygame.display.flip()
 
 main()
-
-# printedCards = openjson("printedCards")

@@ -39,7 +39,8 @@ packTypeToCardTypeDict = {
     "arcana": "tarot",
     "celestial": "planet",
     "standard": "playing",
-    "buffoon": "joker"
+    "buffoon": "joker",
+    "spectral": "spectral"
 }
 
 packWeightDict = {
@@ -66,7 +67,7 @@ packWeightDict = {
 }
 
 sizes = ["normal", "jumbo", "mega"]
-addedPacks = ["standard", "arcana", "celestial", "buffoon"]
+addedPacks = ["standard", "arcana", "celestial", "buffoon", "spectral"]
 
 # TODO: add support for buffoon and spectral packs
 def generatePackForSale():

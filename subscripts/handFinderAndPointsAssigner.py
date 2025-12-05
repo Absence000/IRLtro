@@ -3,7 +3,7 @@ from subscripts.cardUtils import cardCountsAsFaceCard, addTarotCardIfRoom
 from subscripts.planetCards import upgradeHandLevel
 from subscripts.spacesavers import *
 from subscripts.jokers import Joker
-from subscripts.saveUtils import getJokerByName
+from subscripts.saveUtils import addToJokerAttribute
 from subscripts.eventChainManagement import *
 import random
 
@@ -213,19 +213,19 @@ def calcPointsFromHand(hand, handData, unselectedHand, save):
             # card count dependent end-of-hand check jokers (half joker, square joker)
             if condition == "cardCount":
                 if jokerName == "Half Joker":
-                    if len(hand) >= 3:
+                    if len(hand) <= 3:
                         jokerMult = jokerData["mult"]
                         mult += jokerMult
                         chain.add("mult", jokerMult, joker, chips, mult)
-                elif jokerName == "Square Joker":
-                    if len(hand) == 4:
-                        getJokerByName(save, "Square Joker")["chip"] += 4
-                        chain.add("visual", "+4", joker, chips, mult)
+            if jokerName == "Square Joker":
+                if len(hand) == 4:
+                    addToJokerAttribute(save, "Square Joker", "chip", 4)
+                    chain.add("visual", "+4", joker, chips, mult)
 
             # hand dependent end-of-hand check jokers (spare trousers)
             if jokerName == "Spare Trousers":
                 if handType == jokerData["hand"] or jokerData["hand"] in handContainerDict[handType]:
-                    getJokerByName(save, "Spare Trousers")["mult"] += 2
+                    addToJokerAttribute(save, "Spare Trousers", "mult", 2)
                     chain.add("visual", "+2", joker, chips, mult)
 
             # always active end-of-hand check jokers:
@@ -488,15 +488,15 @@ def calcPointsFromHand(hand, handData, unselectedHand, save):
                     jokerMultMult = jokerData["multmult"]
                     mult *= jokerMultMult
                     chain.add("multmult", jokerMultMult, joker, chips, mult)
-            # after the effects come the enhancements
-            if joker.enhancement is not None:
-                if joker.enhancement == "foil":
+            # after the effects come the editions
+            if joker.edition is not None:
+                if joker.edition == "foil":
                     chips += 50
                     chain.add("chips", 50, joker, chips, mult)
-                if joker.enhancement == "holographic":
+                if joker.edition == "holographic":
                     mult += 10
                     chain.add("mult", 10, joker, chips, mult)
-                elif joker.enhancement == "polychrome":
+                elif joker.edition == "polychrome":
                     mult = mult * 1.5
                     chain.add("multmult", 1.5, joker, chips, mult)
 
@@ -535,15 +535,16 @@ def triggerCard(card, save, chain):
     # A = 11 chips, face cards = 10 chips, all numbered cards are = their value
     global chips
     global mult
-    try:
-        baseCardChipAmount = int(card.number)
-    except:
-        if card.number == "A":
-            baseCardChipAmount = 11
-        elif card.number == "S":
-            baseCardChipAmount = 50
-        else:
-            baseCardChipAmount = 10
+    if card.enhancement != "stone":
+        try:
+            baseCardChipAmount = int(card.number)
+        except:
+            if card.number == "A":
+                baseCardChipAmount = 11
+            else:
+                baseCardChipAmount = 10
+    else:
+        baseCardChipAmount = 50
 
 
     chips += baseCardChipAmount
@@ -569,7 +570,7 @@ def triggerCard(card, save, chain):
             luckyCardTriggered = True
         # On lucky card trigger (lucky cat)
         if luckyCardTriggered and save.hasJoker("Lucky Cat"):
-            getJokerByName(save, "Lucky Cat")["multmult"] += 0.25
+            addToJokerAttribute(save, "Lucky Cat", "multmult", 0.25)
     elif card.enhancement == "glass":
         mult = mult * 2
         chain.add("multmult", 2, card, chips, mult)
@@ -630,7 +631,7 @@ def triggerCard(card, save, chain):
         if condition == "numbers":
             if card.number in jokerData["numbers"]:
                 if jokerName == "Wee Joker":
-                    getJokerByName(save, "Wee Joker")["chip"] += 8
+                    addToJokerAttribute(save, "Wee Joker", "chip", 8)
                     chain.add("visual", "+8", joker, chips, mult)
                 else:
                     # can't use elif bc of walkie talkie
@@ -688,12 +689,9 @@ def triggerCard(card, save, chain):
         # it a random value
         if jokerName == "Vampire":
             if card.enhancement is not None:
-                if card.enhancement == "stone":
-                    card.suit = random.choice(["H", "D", "S", "C"])
-                    card.number = random.choice([2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K", "A"])
                 card.enhancement = None
                 chain.add("visual", "Unenhanced!", card, chips, mult)
-                getJokerByName(save, "Vampire")["multmult"] += 0.1
+                addToJokerAttribute(save, "Vampire", "multmult", 0.1)
                 chain.add("visual", "+0.1", joker, chips, mult)
 
         # Face Cards turn to gold (Midas)

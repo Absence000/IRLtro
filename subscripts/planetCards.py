@@ -1,4 +1,6 @@
 from subscripts.spacesavers import *
+from subscripts.inputHandling import alreadyHasConsumable
+
 import random
 
 
@@ -39,18 +41,17 @@ def usePlanetCard(card, save):
     planetCardInfo = openjson("consumables/planetDict")[card.name]
     upgradeHandLevel(planetCardInfo["hand"], 1, planetCardInfo["addition"][1], planetCardInfo["addition"][0], save)
 
+
 # TODO: make this work with downgrading as well
-
-
 def upgradeHandLevel(hand, level, chipUpgrade, multUpgrade, save):
     for i in range(level):
         save.handLevels[hand]["level"] += 1
         save.handLevels[hand]["chips"] += chipUpgrade
         save.handLevels[hand]["mult"] += multUpgrade
-    plural = ""
-    if level > 1:
-        plural = "s"
-    print(f'{hand} upgraded {level} level{plural} (now at level {save.handLevels[hand]["level"]})!')
+    # plural = ""
+    # if level > 1:
+    #     plural = "s"
+    # print(f'{hand} upgraded {level} level{plural} (now at level {save.handLevels[hand]["level"]})!')
 
 defaultplanetCards = [Planet("Pluto"),
                       Planet("Mercury"),
@@ -68,9 +69,13 @@ secretPlanetCardDict = {"Five Of A Kind": Planet("Planet X"),
 
 
 def generateShuffledListOfUnlockedPlanetCards(save):
-    viablePlanetCards = defaultplanetCards
+    unlockedPlanetCards = defaultplanetCards
     for illegalHand in save.illegalHandsDiscovered:
-        viablePlanetCards.append(secretPlanetCardDict[illegalHand])
+        unlockedPlanetCards.append(secretPlanetCardDict[illegalHand])
 
+    viablePlanetCards = []
+    for planet in unlockedPlanetCards:
+        if not alreadyHasConsumable(save, planet) or save.hasJoker("Showman"):
+            viablePlanetCards.append(planet)
     random.shuffle(viablePlanetCards)
     return viablePlanetCards

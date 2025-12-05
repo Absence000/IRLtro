@@ -1,6 +1,7 @@
 from subscripts.planetCards import usePlanetCard, Planet
 from subscripts.priceCalcLogic import calculatePrice
 from subscripts.tarotCards import useTarotCard, Tarot
+from subscripts.spectralCards import useSpectralCard, Spectral
 from subscripts.spacesavers import *
 import math
 
@@ -13,14 +14,14 @@ def CLUseOrSellConsumables(consumable, save):
     if consumableCanBeUsedImmediately(consumable):
         return
 
-# TODO: move the function for adding consumables to the player's hand here
-
-# TODO: get spectrals working here too
+# TODO: eventually this will replace all the garbage in main.py it's not finished yet
 def useConsumable(consumable, save):
     if isinstance(consumable, Planet):
         usePlanetCard(consumable, save)
     if isinstance(consumable, Tarot):
         useTarotCard(consumable, save)
+    if isinstance(consumable, Spectral):
+        useSpectralCard(consumable, save)
 
 
 def getConsumableSellPrice(consumable, save):
@@ -32,22 +33,13 @@ def sellConsumable(consumable, save):
     save.money += sellPrice
     save.consumables.remove(consumable)
 
-def printConsumables(save):
-    consumablesAmnt = len(save.consumables)
-    if consumablesAmnt >= 1:
-        print(f"Consumables ({consumablesAmnt}/{save.consumablesLimit}):")
-        iterator = 1
-        for consumable in save.consumables:
-            print(f"{iterator}: {consumable.toString()}")
-            iterator += 1
-    else:
-        print("You have no consumables!")
-
 # consumables that need a hand to work can't be used immediately
-# TODO: make this work for spectrals when they're added
 def consumableCanBeUsedImmediately(consumable):
     if isinstance(consumable, Tarot):
         if openjson("consumables/tarotDict")[consumable.name]["type"] == "handModifier":
+            return False
+    elif isinstance(consumable, Spectral):
+        if openjson("consumables/tarotDict")[consumable.name]["type"] in ["handModifier", "destroyRandom"]:
             return False
     return True
 
@@ -57,4 +49,6 @@ def useImmediateConsumable(consumable, save):
 
     if isinstance(consumable, Planet):
         usePlanetCard(consumable, save)
-    # TODO: spectrals here
+
+    elif isinstance(consumable, Spectral):
+        useSpectralCard(consumable, None, save)
